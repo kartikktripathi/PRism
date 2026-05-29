@@ -11,6 +11,8 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-rock-salt: var(--font-rock-salt), cursive;
+  --font-oswald: var(--font-oswald), sans-serif;
+  --font-dm-sans: var(--font-dm-sans), sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,3 +27,13 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+@keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
