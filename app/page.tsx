@@ -8,6 +8,17 @@ export default function Home() {
   const { data: session } = useSession();
   const [prs, setPrs] = useState<any[]>([]);
   const [username, setUsername] = useState<string | null>(null);
+  const [position, setPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  const [dragging, setDragging] = useState(false);
+
+  const [dragOffset, setDragOffset] = useState({
+    x: 0,
+    y: 0,
+  });
 
   useEffect(() => {
     if (session) return;
@@ -52,6 +63,38 @@ export default function Home() {
     setPrs(data.items || []);
   }
 
+  function handleMouseDown(e: React.MouseEvent) {
+    setDragging(true);
+
+    setDragOffset({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    });
+  }
+
+  useEffect(() => {
+    function handleMouseMove(e: MouseEvent) {
+      if (!dragging) return;
+
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y,
+      });
+    }
+
+    function handleMouseUp() {
+      setDragging(false);
+    }
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging, dragOffset]);
+
   if (!session) {
     return (
       <main className="relative min-h-screen bg-[#09090b] text-[#a1a1aa] font-mono flex flex-col items-center justify-center p-4 overflow-hidden select-none">
@@ -66,18 +109,20 @@ export default function Home() {
 
         </div>
 
-        <div className="w-full max-w-lg relative z-10">
+        <div className="w-full max-w-lg relative z-10" style={{
+          left: position.x,
+          top: position.y,
+        }}>
 
-          <div className="border border-zinc-800/80 rounded-lg bg-zinc-950/70 backdrop-blur-md shadow-2xl overflow-hidden">
+          <div className="rounded-lg bg-zinc-950/70 backdrop-blur-md shadow-2xl overflow-hidden">
 
-            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/60 bg-zinc-900/20">
+            <div onMouseDown={handleMouseDown} className="cursor-move flex items-center justify-between px-4 py-3 border-b border-zinc-800/60 bg-zinc-900/20">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-red-500 cursor-pointer" />
                 <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-yellow-500 cursor-pointer" />
                 <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-green-500 cursor-pointer" />
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 justify-center">
-                <img src="/logo.png" className="w-3.5 h-3.5 object-contain invert brightness-200" alt="" />
                 <span>http://localhost:3000/</span>
               </div>
               <div className="w-10" />
@@ -86,9 +131,9 @@ export default function Home() {
             <div className="p-6 md:p-8 space-y-6">
 
               <div className="space-y-2 text-center flex flex-col items-center">
-                <img src="/logo.png" className="w-32 h-32 object-contain" alt="PRism Logo" />
+                <img src="/logo.png" className="w-48 h-24 object-contain" alt="PRism Logo" />
                 <h1 className="text-base text-zinc-200 font-semibold tracking-wide font-sans">
-                  <span className="text-emerald-500 font-bold">❯</span> An Open Sourcerer's Playground
+                  <span className="text-emerald-500 font-bold">❯</span> PRism — An Open Sourcerer's Playground
                 </h1>
                 <p className="text-xs text-zinc-500 leading-relaxed font-sans">
                   A simple dashboard to track, review, and merge pull requests. No bloat, no complex tracking. Just your repo queue in one spot.
