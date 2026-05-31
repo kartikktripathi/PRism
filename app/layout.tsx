@@ -3,8 +3,11 @@ import "./globals.css";
 import { Geist, Geist_Mono, DM_Sans } from "next/font/google";
 
 export const metadata = {
+  title: "PRism",
+  description: "An Open Sourcerer's Playground to track, review, and merge pull requests.",
   icons: {
-    icon: "/logo.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
   },
 };
 
