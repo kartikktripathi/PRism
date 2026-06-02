@@ -12,6 +12,7 @@ export default function Home() {
     x: 0,
     y: 0,
   });
+  const [selectedTab, setSelectedTab] = useState('dashboard');
 
   const [dragging, setDragging] = useState(false);
 
@@ -19,6 +20,10 @@ export default function Home() {
     x: 0,
     y: 0,
   });
+
+  function handleTabChange(tab: string) {
+    setSelectedTab(tab);
+  }
 
   useEffect(() => {
     if (session) return;
@@ -176,21 +181,24 @@ export default function Home() {
   }
 
   return (
-    <div>
-      <p>Logged in as {session.user?.name}</p>
-
-      <button onClick={fetchUser}>Get Username</button>
-      <button onClick={fetchPRs}>Fetch PRs</button>
-      <button onClick={() => signOut()}>Logout</button>
+    <main className="min-h-screen bg-[#09090b] text-white">
+      <header>
+        PRism
+      </header>
 
       <div>
-        {prs.map((pr) => (
-          <div key={pr.id}>
-            <p>{pr.title}</p>
-            <p>{pr.state}</p>
-          </div>
-        ))}
+        <aside>
+          <button onClick={() => handleTabChange('Dashboard')}>Dashboard</button>
+          <button onClick={() => handleTabChange('Pull Requests')}>Pull Requests</button>
+          <button onClick={() => handleTabChange('Reviews')}>Reviews</button>
+          <button onClick={() => handleTabChange('Comments')}>Comments</button>
+          <button onClick={() => handleTabChange('Organizations')}>Organizations</button>
+        </aside>
+
+        <section>
+          {selectedTab}
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
