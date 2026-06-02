@@ -180,24 +180,82 @@ export default function Home() {
     );
   }
 
+  const tabs = [
+    'Dashboard',
+    'Pull Requests',
+    'Reviews',
+    'Comments',
+    'Organizations',
+    'Settings'
+  ];
+
   return (
-    <main className="min-h-screen bg-[#09090b] text-white">
-      <header>
-        PRism
+    <main className="h-screen w-screen bg-[#09090b] text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
+      {/* Top Header */}
+      <header className="h-14 border-b border-zinc-800/60 bg-zinc-950/20 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
+        {/* Left Side: PRism Logo */}
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-sm tracking-wider font-semibold text-white">PRism</span>
+          <span className="px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900/40 text-[9px] font-mono text-zinc-500">v0.1.0</span>
+        </div>
+
+        {/* Right Side: GitHub Avatar & Name */}
+        <div className="flex items-center gap-3.5">
+          <div className="flex flex-col items-end text-[11px] font-mono leading-none gap-0.5">
+            <span className="text-zinc-300 font-sans text-xs font-medium">{session?.user?.name || "Open Sourcerer"}</span>
+            <span className="text-zinc-500">{session?.user?.email || "github-auth"}</span>
+          </div>
+
+          {session?.user?.image ? (
+            <img src={session.user.image} className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 object-cover" alt="avatar" />
+          ) : (
+            <div className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center text-xs font-mono text-zinc-400">
+              {session?.user?.name?.[0] || "U"}
+            </div>
+          )}
+
+          <button 
+            onClick={() => signOut()}
+            className="p-1.5 rounded border border-zinc-800 bg-zinc-900/10 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer ml-1"
+            title="Sign out"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
       </header>
 
-      <div>
-        <aside>
-          <button onClick={() => handleTabChange('Dashboard')}>Dashboard</button>
-          <button onClick={() => handleTabChange('Pull Requests')}>Pull Requests</button>
-          <button onClick={() => handleTabChange('Reviews')}>Reviews</button>
-          <button onClick={() => handleTabChange('Comments')}>Comments</button>
-          <button onClick={() => handleTabChange('Organizations')}>Organizations</button>
+      {/* Main Container */}
+      <div className="flex flex-1 overflow-hidden w-full">
+        {/* Sidebar Nav */}
+        <aside className="w-60 border-r border-zinc-800/60 bg-zinc-950/10 py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
+          <nav className="space-y-1">
+            {tabs.map((tab) => {
+              const isActive = selectedTab === tab || (selectedTab === 'dashboard' && tab === 'Dashboard');
+              return (
+                <button
+                  key={tab}
+                  onClick={() => handleTabChange(tab)}
+                  className={`w-full flex items-center px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono ${
+                    isActive
+                      ? "bg-zinc-900/60 border border-zinc-800/60 text-white font-medium"
+                      : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/10 border border-transparent"
+                  }`}
+                >
+                  {tab}
+                </button>
+              );
+            })}
+          </nav>
         </aside>
 
-        <section>
-          {selectedTab}
-        </section>
+        {/* Content Area */}
+        <main className="flex-1 overflow-y-auto p-8 bg-zinc-950/5">
+          <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">
+            {selectedTab === 'dashboard' ? 'Dashboard' : selectedTab}
+          </h1>
+        </main>
       </div>
     </main>
   );
