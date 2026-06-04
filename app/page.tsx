@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { LiquidOcean } from "@/components/ui/liquid-ocean";
+import Dashboard from "@/components/pages/Dashboard";
+import IssuesAndPRs from "@/components/pages/IssuesAndPRs";
+import ReviewsAndComments from "@/components/pages/ReviewsAndComments";
+import Organizations from "@/components/pages/Organizations";
+import GitWrapped from "@/components/pages/GitWrapped";
+import Settings from "@/components/pages/Settings";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -182,10 +188,10 @@ export default function Home() {
 
   const tabs = [
     'Dashboard',
-    'Pull Requests',
-    'Reviews',
-    'Comments',
+    'Issues & PRs',
+    'Reviews and Comments',
     'Organizations',
+    'GitWrapped',
     'Settings'
   ];
 
@@ -252,9 +258,12 @@ export default function Home() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-8 bg-zinc-950/5">
-          <h1 className="text-2xl font-semibold text-zinc-100 tracking-tight">
-            {selectedTab === 'dashboard' ? 'Dashboard' : selectedTab}
-          </h1>
+          {selectedTab === "Dashboard" && <Dashboard />}
+          {selectedTab === "Issues & PRs" && <IssuesAndPRs />}
+          {selectedTab === "Reviews and Comments" && <ReviewsAndComments />}
+          {selectedTab === "Organizations" && <Organizations />}
+          {selectedTab === "GitWrapped" && <GitWrapped />}
+          {selectedTab === "Settings" && <Settings />}
         </main>
       </div>
     </main>
