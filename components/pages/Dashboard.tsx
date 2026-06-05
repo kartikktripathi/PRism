@@ -3,19 +3,24 @@ type DashboardProps = {
     session: any;
 }
 export default function Dashboard({prs, session}: DashboardProps) {
-    console.log();
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const newPRs = prs.filter((pr) => {
+        return new Date(pr.created_at) >= thirtyDaysAgo;
+    });
+
+    console.log("hola", newPRs)
+
     const stats = [
         {
             title: "Open PRs",
-            value: prs.filter((pr: any) => pr.state === "open").length,
+            value: newPRs.filter((pr: any) => pr.state === "open").length,
         },
         {
             title: "Merged PRs",
-            value: prs.filter((pr: any) => pr.state === "merged").length,
-        },
-        {
-            title: "Closed PRs",
-            value: prs.filter((pr) => pr.state === "closed").length,
+            value: newPRs.filter((pr) => pr.pull_request?.merged_at).length,
         },
         {
             title: "Repositories",
