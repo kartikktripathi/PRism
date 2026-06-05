@@ -11,8 +11,6 @@ export default function Dashboard({prs, session}: DashboardProps) {
         return new Date(pr.created_at) >= thirtyDaysAgo;
     });
 
-    console.log("hola", newPRs)
-
     const stats = [
         {
             title: "Open PRs",
