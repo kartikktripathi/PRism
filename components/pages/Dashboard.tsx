@@ -1,23 +1,25 @@
-import { useSession } from "next-auth/react";
-
-export default function Dashboard() {
-    const { data: session } = useSession();
+type DashboardProps = {
+    prs: any[];
+    session: any;
+}
+export default function Dashboard({prs, session}: DashboardProps) {
+    console.log();
     const stats = [
         {
             title: "Open PRs",
-            value: 12,
+            value: prs.filter((pr: any) => pr.state === "open").length,
         },
         {
             title: "Merged PRs",
-            value: 38,
+            value: prs.filter((pr: any) => pr.state === "merged").length,
         },
         {
-            title: "Reviews",
-            value: 21,
+            title: "Closed PRs",
+            value: prs.filter((pr) => pr.state === "closed").length,
         },
         {
             title: "Repositories",
-            value: 7,
+            value: 1,
         },
     ];
 
