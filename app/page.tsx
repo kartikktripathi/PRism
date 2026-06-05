@@ -14,6 +14,8 @@ export default function Home() {
   const { data: session } = useSession();
   const [prs, setPrs] = useState<any[]>([]);
   const [username, setUsername] = useState<string | null>(null);
+  const [githubUser, setGithubUser] = useState<any>(null);
+  const [userRepos, setUserRepos] = useState<any[]>([]);
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -32,7 +34,9 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (session) return;
+    if (session) {
+      fetchUser();
+    };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
         signIn("github");
@@ -41,6 +45,31 @@ export default function Home() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [session]);
+
+  async function fetchRepos() {
+    const res = await fetch(
+      "https://api.github.com/user/repos?per_page=100",
+      {
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    console.log("Repos:", data);
+
+    setUserRepos(data);
+  }
+
+  useEffect(() => {
+    if (username) {
+      fetchPRs();
+      fetchRepos();
+      console.log(userRepos);
+    }
+  }, [username]);
 
   async function fetchUser() {
     const res = await fetch("https://api.github.com/user", {
@@ -51,6 +80,7 @@ export default function Home() {
 
     const data = await res.json();
     console.log("User:", data);
+    setGithubUser(data);
     setUsername(data.login);
   }
 
@@ -258,7 +288,7 @@ export default function Home() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-8 bg-zinc-950/5">
-          {selectedTab === "Dashboard" && <Dashboard />}
+          {selectedTab === "Dashboard" && (<Dashboard prs={prs} session={session} data={githubUser}/>)}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs />}
           {selectedTab === "Reviews and Comments" && <ReviewsAndComments />}
           {selectedTab === "Organizations" && <Organizations />}

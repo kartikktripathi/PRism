@@ -1,23 +1,26 @@
-import { useSession } from "next-auth/react";
+type DashboardProps = {
+    prs: any[];
+    session: any;
+    data: any;
+}
+export default function Dashboard({prs, session, data}: DashboardProps) {
 
-export default function Dashboard() {
-    const { data: session } = useSession();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    console.log(data)
+
+    const newPRs = prs.filter((pr) => {
+        return new Date(pr.created_at) >= thirtyDaysAgo;
+    });
+
     const stats = [
         {
-            title: "Open PRs",
-            value: 12,
-        },
-        {
             title: "Merged PRs",
-            value: 38,
-        },
-        {
-            title: "Reviews",
-            value: 21,
+            value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
         },
         {
             title: "Repositories",
-            value: 7,
+            value: data.public_repos + data.total_private_repos,
         },
     ];
 
@@ -31,6 +34,8 @@ export default function Dashboard() {
                 <p className="text-zinc-500 mt-2">
                     Here's what's happening across your GitHub activity.
                 </p>
+
+                <h2>Activity stats of last 30 days </h2>
             </div>
             <div className="grid grid-cols-4 gap-4">
                 {stats.map((stat) => (
