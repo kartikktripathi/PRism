@@ -1,11 +1,13 @@
 type DashboardProps = {
     prs: any[];
     session: any;
+    data: any;
 }
-export default function Dashboard({prs, session}: DashboardProps) {
+export default function Dashboard({prs, session, data}: DashboardProps) {
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    console.log(data)
 
     const newPRs = prs.filter((pr) => {
         return new Date(pr.created_at) >= thirtyDaysAgo;
@@ -13,16 +15,12 @@ export default function Dashboard({prs, session}: DashboardProps) {
 
     const stats = [
         {
-            title: "Open PRs",
-            value: newPRs.filter((pr: any) => pr.state === "open").length,
-        },
-        {
             title: "Merged PRs",
-            value: newPRs.filter((pr) => pr.pull_request?.merged_at).length,
+            value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
         },
         {
             title: "Repositories",
-            value: 1,
+            value: data.public_repos + data.total_private_repos,
         },
     ];
 
@@ -36,6 +34,8 @@ export default function Dashboard({prs, session}: DashboardProps) {
                 <p className="text-zinc-500 mt-2">
                     Here's what's happening across your GitHub activity.
                 </p>
+
+                <h2>Activity stats of last 30 days </h2>
             </div>
             <div className="grid grid-cols-4 gap-4">
                 {stats.map((stat) => (
