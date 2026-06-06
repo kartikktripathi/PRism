@@ -9,13 +9,17 @@ export default function Dashboard({prs, session, data, repos}: DashboardProps) {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const userReposOwned = repos.filter(repo => repo.owner.login == data.login).filter((repo) => { return new Date(repo.created_at) >= thirtyDaysAgo;})
-    console.log(userReposOwned)
 
     const newPRs = prs.filter((pr) => {
         return new Date(pr.created_at) >= thirtyDaysAgo;
     });
+    console.log(newPRs)
 
     const stats = [
+        {
+            title: "Open PRs",
+            value: newPRs.filter(pr => pr.state == "open").length,
+        },
         {
             title: "Merged PRs",
             value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
