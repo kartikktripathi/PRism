@@ -48,7 +48,7 @@ export default function Home() {
 
   async function fetchRepos() {
     const res = await fetch(
-      "https://api.github.com/user/repos?per_page=100",
+      "https://api.github.com/user/repos?per_page=100&type=all",
       {
         headers: {
           Authorization: `Bearer ${session?.accessToken}`,
@@ -57,8 +57,6 @@ export default function Home() {
     );
 
     const data = await res.json();
-
-    console.log("Repos:", data);
 
     setUserRepos(data);
   }
@@ -288,7 +286,7 @@ export default function Home() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-8 bg-zinc-950/5">
-          {selectedTab === "Dashboard" && (<Dashboard prs={prs} session={session} data={githubUser}/>)}
+          {selectedTab === "Dashboard" && (<Dashboard prs={prs} session={session} data={githubUser} repos={userRepos}/>)}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs />}
           {selectedTab === "Reviews and Comments" && <ReviewsAndComments />}
           {selectedTab === "Organizations" && <Organizations />}
