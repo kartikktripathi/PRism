@@ -2,12 +2,14 @@ type DashboardProps = {
     prs: any[];
     session: any;
     data: any;
+    repos: any[];
 }
-export default function Dashboard({prs, session, data}: DashboardProps) {
+export default function Dashboard({prs, session, data, repos}: DashboardProps) {
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    console.log(data)
+    const userReposOwned = repos.filter(repo => repo.owner.login == data.login).filter((repo) => { return new Date(repo.created_at) >= thirtyDaysAgo;})
+    console.log(userReposOwned)
 
     const newPRs = prs.filter((pr) => {
         return new Date(pr.created_at) >= thirtyDaysAgo;
@@ -20,7 +22,7 @@ export default function Dashboard({prs, session, data}: DashboardProps) {
         },
         {
             title: "Repositories",
-            value: data.public_repos + data.total_private_repos,
+            value: userReposOwned.length,
         },
     ];
 
