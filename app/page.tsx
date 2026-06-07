@@ -16,6 +16,8 @@ export default function Home() {
   const [username, setUsername] = useState<string | null>(null);
   const [githubUser, setGithubUser] = useState<any>(null);
   const [userRepos, setUserRepos] = useState<any[]>([]);
+  const [topRepos, setTopRepos] = useState<any[]>([]);
+  const [loadingTopRepos, setLoadingTopRepos] = useState<boolean>(false);
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -65,9 +67,80 @@ export default function Home() {
     if (username) {
       fetchPRs();
       fetchRepos();
+      fetchRecentCommits();
       console.log(userRepos);
     }
   }, [username]);
+
+  async function fetchRecentCommits() {
+    if (!username || !session?.accessToken) return;
+    setLoadingTopRepos(true);
+    try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const dateString = sevenDaysAgo.toISOString().split("T")[0];
+
+      let page = 1;
+      let allCommits: any[] = [];
+      let hasNextPage = true;
+      const maxPages = 5; // Capped at 5 pages because I hate it when APIs die lol.
+
+      while (hasNextPage && page <= maxPages) {
+        const res = await fetch(
+          `https://api.github.com/search/commits?q=author:${username}+committer-date:>=${dateString}&per_page=100&page=${page}`,
+          {
+            headers: {
+              Accept: "application/vnd.github+json",
+              Authorization: `Bearer ${session?.accessToken}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch commits page ${page}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        const items = data.items || [];
+        allCommits = [...allCommits, ...items];
+
+        if (items.length < 100 || allCommits.length >= data.total_count) {
+          hasNextPage = false;
+        } else {
+          page++;
+        }
+      }
+
+      const repoCounts: {
+        [key: string]: { name: string; fullName: string; url: string; count: number };
+      } = {};
+
+      allCommits.forEach((item: any) => {
+        const repo = item.repository;
+        if (!repo) return;
+        const fullName = repo.full_name;
+        if (!repoCounts[fullName]) {
+          repoCounts[fullName] = {
+            name: repo.name,
+            fullName: repo.full_name,
+            url: repo.html_url,
+            count: 0,
+          };
+        }
+        repoCounts[fullName].count += 1;
+      });
+
+      const sorted = Object.values(repoCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+
+      setTopRepos(sorted);
+    } catch (error) {
+      console.error("Error fetching commits:", error);
+    } finally {
+      setLoadingTopRepos(false);
+    }
+  }
 
   async function fetchUser() {
     const res = await fetch("https://api.github.com/user", {
@@ -286,7 +359,16 @@ export default function Home() {
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-8 bg-zinc-950/5">
-          {selectedTab === "Dashboard" && (<Dashboard prs={prs} session={session} data={githubUser} repos={userRepos}/>)}
+          {selectedTab === "Dashboard" && (
+            <Dashboard
+              prs={prs}
+              session={session}
+              data={githubUser}
+              repos={userRepos}
+              topRepos={topRepos}
+              loadingTopRepos={loadingTopRepos}
+            />
+          )}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs />}
           {selectedTab === "Reviews and Comments" && <ReviewsAndComments />}
           {selectedTab === "Organizations" && <Organizations />}
