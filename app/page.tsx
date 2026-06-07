@@ -142,6 +142,46 @@ export default function Home() {
     }
   }
 
+  async function fetchContributions() {
+    const query = `
+      query($login: String!) {
+        user(login: $login) {
+          contributionsCollection {
+            contributionCalendar {
+              weeks {
+                contributionDays {
+                  date
+                  contributionCount
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const res = await fetch(
+      "https://api.github.com/graphql",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          variables: {
+            login: username,
+          },
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    console.log(data);
+  }
+
   async function fetchUser() {
     const res = await fetch("https://api.github.com/user", {
       headers: {
