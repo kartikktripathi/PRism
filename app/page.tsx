@@ -18,6 +18,8 @@ export default function Home() {
   const [userRepos, setUserRepos] = useState<any[]>([]);
   const [topRepos, setTopRepos] = useState<any[]>([]);
   const [loadingTopRepos, setLoadingTopRepos] = useState<boolean>(false);
+  const [contributionData, setContributionData] = useState<any[]>([]);
+  const [loadingContribution, setLoadingContribution] = useState<boolean>(false);
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -68,6 +70,7 @@ export default function Home() {
       fetchPRs();
       fetchRepos();
       fetchRecentCommits();
+      fetchContributionCalendar();
       console.log(userRepos);
     }
   }, [username]);
@@ -139,6 +142,84 @@ export default function Home() {
       console.error("Error fetching commits:", error);
     } finally {
       setLoadingTopRepos(false);
+    }
+  }
+
+  async function fetchContributionCalendar() {
+    if (!username || !session?.accessToken) return;
+    setLoadingContribution(true);
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `
+            query userInfo($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+              user(login: $LOGIN) {
+                contributionsCollection(from: $FROM, to: $TO) {
+                  contributionCalendar {
+                    weeks {
+                      contributionDays {
+                        contributionCount
+                        date
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          `,
+          variables: {
+            LOGIN: username,
+            FROM: thirtyDaysAgo.toISOString(),
+            TO: tomorrow.toISOString(),
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`GraphQL request failed: ${res.statusText}`);
+      }
+
+      const json = await res.json();
+      if (json.errors) {
+        throw new Error(JSON.stringify(json.errors));
+      }
+
+      const weeks = json.data?.user?.contributionsCollection?.contributionCalendar?.weeks || [];
+      const contributions: any[] = [];
+      weeks.forEach((week: any) => {
+        week.contributionDays.forEach((day: any) => {
+          contributions.push({
+            count: day.contributionCount,
+            date: day.date,
+          });
+        });
+      });
+
+      const today = new Date();
+      const past30Days = contributions.filter((c: any) => {
+        const cDate = new Date(c.date);
+        const timeDiff = today.getTime() - cDate.getTime();
+        const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        return diffDays >= 0 && diffDays <= 30;
+      });
+
+      past30Days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      setContributionData(past30Days);
+    } catch (error) {
+      console.error("Error fetching contribution calendar:", error);
+    } finally {
+      setLoadingContribution(false);
     }
   }
 
@@ -367,6 +448,8 @@ export default function Home() {
               repos={userRepos}
               topRepos={topRepos}
               loadingTopRepos={loadingTopRepos}
+              contributionData={contributionData}
+              loadingContribution={loadingContribution}
             />
           )}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs />}

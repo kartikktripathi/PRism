@@ -1,3 +1,25 @@
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler
+);
+
 type DashboardProps = {
     prs: any[];
     session: any;
@@ -5,8 +27,10 @@ type DashboardProps = {
     repos: any[];
     topRepos: any[];
     loadingTopRepos: boolean;
+    contributionData: any[];
+    loadingContribution: boolean;
 }
-export default function Dashboard({prs, session, data, repos, topRepos, loadingTopRepos}: DashboardProps) {
+export default function Dashboard({prs, session, data, repos, topRepos, loadingTopRepos, contributionData, loadingContribution}: DashboardProps) {
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -32,6 +56,104 @@ export default function Dashboard({prs, session, data, repos, topRepos, loadingT
         },
     ];
 
+    // Format labels and dataset for the line chart
+    const chartLabels = (contributionData || []).map((day: any) => {
+        const dateObj = new Date(day.date);
+        return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    });
+
+    const chartCounts = (contributionData || []).map((day: any) => day.count);
+
+    const chartData = {
+        labels: chartLabels,
+        datasets: [
+            {
+                label: 'Contributions',
+                data: chartCounts,
+                borderColor: '#10b981',
+                backgroundColor: (context: any) => {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                    gradient.addColorStop(0, 'rgba(16, 185, 129, 0.15)');
+                    gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                    return gradient;
+                },
+                fill: true,
+                tension: 0.4,
+                borderWidth: 2,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: 'transparent',
+                pointHoverBackgroundColor: '#10b981',
+                pointHoverBorderColor: '#ffffff',
+                pointRadius: 2,
+                pointHoverRadius: 6,
+                pointHitRadius: 10,
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                backgroundColor: '#09090b',
+                titleColor: '#a1a1aa',
+                bodyColor: '#f4f4f5',
+                borderColor: '#27272a',
+                borderWidth: 1,
+                padding: 10,
+                displayColors: false,
+                callbacks: {
+                    title: (tooltipItems: any) => {
+                        return tooltipItems[0].label;
+                    },
+                    label: (tooltipItem: any) => {
+                        const count = tooltipItem.raw;
+                        return `${count > 0 ? `You made ${count}` : `You made no`} ${count === 1 || count === 0 ? 'contribution' : 'contributions'}`;
+                    },
+                },
+            },
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false,
+                },
+                ticks: {
+                    color: '#71717a',
+                    font: {
+                        family: 'monospace',
+                        size: 9,
+                    },
+                    maxTicksLimit: 10,
+                },
+                border: {
+                    display: false,
+                },
+            },
+            y: {
+                grid: {
+                    color: 'rgba(39, 39, 42, 0.3)',
+                },
+                ticks: {
+                    color: '#71717a',
+                    font: {
+                        family: 'monospace',
+                        size: 9,
+                    },
+                    precision: 0,
+                },
+                border: {
+                    display: false,
+                },
+            },
+        },
+    };
+
     return (
         <div className="space-y-8">
             <div>
@@ -45,7 +167,7 @@ export default function Dashboard({prs, session, data, repos, topRepos, loadingT
 
                 <h2 className="text-zinc-400 mt-4 text-sm font-semibold tracking-wide font-mono uppercase">Activity stats of last 30 days</h2>
             </div>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {stats.map((stat) => (
                     <div
                     key={stat.title}
@@ -60,6 +182,32 @@ export default function Dashboard({prs, session, data, repos, topRepos, loadingT
                     </p>
                     </div>
                 ))}
+            </div>
+
+            {/* Commit Graph Section */}
+            <div className="border-t border-zinc-800/60 pt-8">
+                <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
+                    Commit & Contribution Activity <span className="text-zinc-500 text-xs font-normal font-sans capitalize">(Past 30 Days)</span>
+                </h3>
+                <p className="text-xs text-zinc-500 mt-1 mb-6">
+                    A daily breakdown of your commits, pull requests, issues, and reviews.
+                </p>
+
+                {loadingContribution ? (
+                    <div className="animate-pulse rounded-lg border border-zinc-800 bg-zinc-950/20 p-6 h-[300px] flex items-center justify-center">
+                        <span className="text-xs text-zinc-500 font-mono animate-pulse">Fetching contribution history...</span>
+                    </div>
+                ) : (contributionData || []).length === 0 ? (
+                    <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
+                        <p className="text-xs text-zinc-500 font-mono">
+                            No contributions recorded on GitHub in the past 30 days.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-6 h-[300px]">
+                        <Line data={chartData} options={chartOptions} />
+                    </div>
+                )}
             </div>
 
             {/* Top Repositories Section */}
