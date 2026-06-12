@@ -54,6 +54,8 @@ export default function Home() {
   const [contributionData, setContributionData] = useState<any[]>([]);
   const [loadingContribution, setLoadingContribution] = useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState<boolean>(false);
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -105,6 +107,7 @@ export default function Home() {
       fetchRepos();
       fetchRecentCommits();
       fetchContributionCalendar();
+      fetchRecentActivities();
       console.log(userRepos);
     }
   }, [username]);
@@ -290,6 +293,356 @@ export default function Home() {
       console.error("Error fetching contribution calendar:", error);
     } finally {
       setLoadingContribution(false);
+    }
+  }
+
+  async function fetchRecentActivities() {
+    if (!username || !session?.accessToken) return;
+    setLoadingActivities(true);
+    try {
+      const headers = {
+        Authorization: `Bearer ${session?.accessToken}`,
+      };
+
+      const fetchEvents = fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers })
+        .then(res => res.ok ? res.json() : [])
+        .catch(() => []);
+      const fetchReceived = fetch(`https://api.github.com/users/${username}/received_events?per_page=100`, { headers })
+        .then(res => res.ok ? res.json() : [])
+        .catch(() => []);
+      const fetchFollowersGraphQL = fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `
+            query userFollowers($LOGIN: String!) {
+              user(login: $LOGIN) {
+                followers(last: 3) {
+                  nodes {
+                    login
+                    url
+                  }
+                }
+              }
+            }
+          `,
+          variables: {
+            LOGIN: username,
+          },
+        }),
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(json => json?.data?.user?.followers?.nodes || [])
+        .catch(() => []);
+
+      const [rawEvents, rawReceived, rawFollowers] = await Promise.all([
+        fetchEvents,
+        fetchReceived,
+        fetchFollowersGraphQL,
+      ]);
+
+      const mergedEvents = [
+        ...(Array.isArray(rawEvents) ? rawEvents : []),
+        ...(Array.isArray(rawReceived) ? rawReceived : [])
+      ];
+
+      const uniqueEventsMap: { [id: string]: any } = {};
+      mergedEvents.forEach(e => {
+        if (e && e.id) {
+          uniqueEventsMap[e.id] = e;
+        }
+      });
+      const events = Object.values(uniqueEventsMap);
+
+      const userInvolvedIssues = new Set<string>();
+      const userInvolvedPRs = new Set<string>();
+
+      if (Array.isArray(rawEvents)) {
+        rawEvents.forEach((event: any) => {
+          const payload = event.payload || {};
+          const repoName = event.repo?.name;
+          if (!repoName) return;
+
+          if (payload.pull_request?.number) {
+            userInvolvedPRs.add(`${repoName}/${payload.pull_request.number}`);
+          }
+          if (payload.issue?.number) {
+            userInvolvedIssues.add(`${repoName}/${payload.issue.number}`);
+          }
+        });
+      }
+
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+      const activities: any[] = [];
+
+      events.forEach((event: any) => {
+        const eventDate = new Date(event.created_at);
+        if (eventDate < oneDayAgo) return;
+
+        const actor = event.actor?.login;
+        const repoName = event.repo?.name;
+        const payload = event.payload || {};
+
+        const lowerUsername = `@${username}`.toLowerCase();
+        let isMention = false;
+        
+        const checkMentionText = (text: string) => {
+          return text && text.toLowerCase().includes(lowerUsername);
+        };
+
+        if (checkMentionText(payload.comment?.body) || 
+            checkMentionText(payload.issue?.body) || 
+            checkMentionText(payload.issue?.title) || 
+            checkMentionText(payload.pull_request?.body) || 
+            checkMentionText(payload.pull_request?.title) ||
+            checkMentionText(payload.review?.body)) {
+          isMention = true;
+        }
+
+        const prKey = `${repoName}/${payload.pull_request?.number}`;
+        const issueKey = `${repoName}/${payload.issue?.number}`;
+
+        const isUserInvolvedInIssue = 
+          actor === username || 
+          payload.issue?.user?.login === username || 
+          payload.issue?.assignee?.login === username ||
+          (payload.issue?.assignees && payload.issue.assignees.some((a: any) => a.login === username)) ||
+          userInvolvedIssues.has(issueKey) ||
+          isMention;
+
+        const isUserInvolvedInPR = 
+          actor === username || 
+          payload.pull_request?.user?.login === username || 
+          payload.pull_request?.assignee?.login === username ||
+          (payload.pull_request?.assignees && payload.pull_request.assignees.some((a: any) => a.login === username)) ||
+          (payload.pull_request?.requested_reviewers && payload.pull_request.requested_reviewers.some((r: any) => r.login === username)) ||
+          userInvolvedPRs.has(prKey) ||
+          isMention;
+
+        if (isMention) {
+          activities.push({
+            id: `${event.id}-mention`,
+            type: "mention",
+            title: "Mentioned",
+            description: `You were mentioned by ${actor} in ${repoName}`,
+            date: event.created_at,
+            url: payload.comment?.html_url || payload.pull_request?.html_url || payload.issue?.html_url || `https://github.com/${repoName}`
+          });
+        }
+
+        if (event.type === "PullRequestEvent" && payload.action === "review_requested" && payload.requested_reviewer?.login === username) {
+          const prNumber = payload.pull_request?.number;
+          const prTitle = payload.pull_request?.title;
+          const prText = prTitle ? `"${prTitle}"` : `PR #${prNumber}`;
+          activities.push({
+            id: `${event.id}-review-request`,
+            type: "review_request",
+            title: "Review Requested",
+            description: `${actor} requested your review on ${prText}`,
+            date: event.created_at,
+            url: payload.pull_request?.html_url
+          });
+        }
+
+        if (event.type === "PullRequestEvent" && payload.action === "closed" && payload.pull_request?.merged === true) {
+          const isRepoOwnedByUser = repoName && repoName.split("/")[0] === username;
+          if (actor !== username && !isRepoOwnedByUser) return;
+
+          const prNumber = payload.pull_request?.number;
+          const prTitle = payload.pull_request?.title;
+          const prText = prTitle ? `"${prTitle}"` : `PR #${prNumber}`;
+          activities.push({
+            id: `${event.id}-pr-merged`,
+            type: "pr_merged",
+            title: "PR Merged",
+            description: `PR merged: ${prText} in ${repoName}`,
+            date: event.created_at,
+            url: payload.pull_request?.html_url
+          });
+        }
+
+        if (event.type === "PullRequestEvent" && payload.action === "opened") {
+          const isRepoOwnedByUser = repoName && repoName.split("/")[0] === username;
+          if (actor !== username && !isRepoOwnedByUser) return;
+
+          const prNumber = payload.pull_request?.number;
+          const prTitle = payload.pull_request?.title;
+          const prText = prTitle ? `"${prTitle}"` : `PR #${prNumber}`;
+          activities.push({
+            id: `${event.id}-pr-opened`,
+            type: "pr_opened",
+            title: "PR Opened",
+            description: `PR opened: ${prText} in ${repoName}`,
+            date: event.created_at,
+            url: payload.pull_request?.html_url
+          });
+        }
+
+        if (event.type === "PullRequestReviewEvent") {
+          const state = payload.review?.state || "reviewed";
+          const prNumber = payload.pull_request?.number;
+          const prTitle = payload.pull_request?.title;
+          const prText = prTitle ? `PR "${prTitle}"` : `PR #${prNumber}`;
+          activities.push({
+            id: `${event.id}-pr-review`,
+            type: "pr_reviewed",
+            title: "PR Reviewed",
+            description: `${actor} ${state} ${prText} in ${repoName}`,
+            date: event.created_at,
+            url: payload.review?.html_url || payload.pull_request?.html_url
+          });
+        }
+
+        if (event.type === "IssueCommentEvent" && payload.action === "created") {
+          if (!isUserInvolvedInIssue) return;
+          const issueNumber = payload.issue?.number;
+          const issueTitle = payload.issue?.title;
+          const issueText = issueTitle ? `issue/PR "${issueTitle}"` : `issue/PR #${issueNumber}`;
+          activities.push({
+            id: `${event.id}-issue-comment`,
+            type: "comment",
+            title: "New Comment",
+            description: `${actor} commented on ${issueText}`,
+            date: event.created_at,
+            url: payload.comment?.html_url
+          });
+        } else if (event.type === "PullRequestReviewCommentEvent" && payload.action === "created") {
+          if (!isUserInvolvedInPR) return;
+          const prNumber = payload.pull_request?.number;
+          const prTitle = payload.pull_request?.title;
+          const prText = prTitle ? `PR "${prTitle}"` : `PR #${prNumber}`;
+          activities.push({
+            id: `${event.id}-pr-comment`,
+            type: "comment",
+            title: "New Review Comment",
+            description: `${actor} commented on ${prText}`,
+            date: event.created_at,
+            url: payload.comment?.html_url
+          });
+        } else if (event.type === "CommitCommentEvent" && payload.action === "created") {
+          const isRepoOwnedByUser = repoName && repoName.split("/")[0] === username;
+          const isUserInvolvedInCommit = actor === username || isRepoOwnedByUser || isMention;
+          if (!isUserInvolvedInCommit) return;
+
+          activities.push({
+            id: `${event.id}-commit-comment`,
+            type: "comment",
+            title: "New Commit Comment",
+            description: `${actor} commented on a commit in ${repoName}`,
+            date: event.created_at,
+            url: payload.comment?.html_url
+          });
+        }
+
+        if (event.type === "IssuesEvent" && payload.action === "assigned" && payload.assignee?.login === username) {
+          activities.push({
+            id: `${event.id}-issue-assigned`,
+            type: "issue_assigned",
+            title: "Issue Assigned",
+            description: `Assigned to issue: "${payload.issue?.title}" in ${repoName}`,
+            date: event.created_at,
+            url: payload.issue?.html_url
+          });
+        }
+
+        if (event.type === "WatchEvent" && payload.action === "started") {
+          activities.push({
+            id: `${event.id}-star`,
+            type: "star",
+            title: "Repository Starred",
+            description: `${actor} starred your repository ${repoName}`,
+            date: event.created_at,
+            url: `https://github.com/${actor}`
+          });
+        }
+
+        if (event.type === "ForkEvent") {
+          activities.push({
+            id: `${event.id}-fork`,
+            type: "fork",
+            title: "Repository Forked",
+            description: `${actor} forked your repository ${repoName}`,
+            date: event.created_at,
+            url: payload.forkee?.html_url || `https://github.com/${repoName}`
+          });
+        }
+
+        if (event.type === "CreateEvent" && payload.ref_type === "repository") {
+          activities.push({
+            id: `${event.id}-repo-created`,
+            type: "repo_created",
+            title: "Repository Created",
+            description: `Created repository ${repoName}`,
+            date: event.created_at,
+            url: `https://github.com/${repoName}`
+          });
+        }
+
+        if (event.type === "PushEvent") {
+          const commits = payload.commits || [];
+          commits.forEach((c: any) => {
+            activities.push({
+              id: `${event.id}-commit-${c.sha}`,
+              type: "commit",
+              title: "Pushed Commit",
+              description: `Pushed commit: "${c.message}" to ${repoName}`,
+              date: event.created_at,
+              url: `https://github.com/${repoName}/commit/${c.sha}`
+            });
+          });
+        }
+      });
+
+      if (Array.isArray(rawFollowers) && rawFollowers.length > 0) {
+        // last: 3 in GraphQL returns the last 3 items in ascending chronological order.
+        // Reverse them to show the newest follower first.
+        const recentFollowers = [...rawFollowers].reverse();
+        recentFollowers.forEach((follower: any) => {
+          activities.push({
+            id: `follower-${follower.login}`,
+            type: "follower",
+            title: "New Follower",
+            description: "Someone started following you",
+            date: "recently",
+            url: `https://github.com/${username}?tab=followers`
+          });
+        });
+      }
+
+      if (streak > 0) {
+        activities.push({
+          id: `milestone-streak-${streak}`,
+          type: "milestone",
+          title: "Milestone Reached",
+          description: `Maintained a contribution streak of ${streak} ${streak === 1 ? 'day' : 'days'}!`,
+          date: "recently",
+          url: "#"
+        });
+      }
+      
+      const commitCountToday = activities.filter(a => a.type === "commit").length;
+      if (commitCountToday >= 5) {
+        activities.push({
+          id: `milestone-commits-${commitCountToday}`,
+          type: "milestone",
+          title: "Milestone Reached",
+          description: `Supercharged day! Pushed ${commitCountToday} commits in the last 24 hours!`,
+          date: "recently",
+          url: "#"
+        });
+      }
+
+      activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setRecentActivities(activities);
+    } catch (error) {
+      console.error("Error fetching recent activities:", error);
+    } finally {
+      setLoadingActivities(false);
     }
   }
 
@@ -530,6 +883,8 @@ export default function Home() {
               loadingTopRepos={loadingTopRepos}
               contributionData={contributionData}
               loadingContribution={loadingContribution}
+              recentActivities={recentActivities}
+              loadingActivities={loadingActivities}
             />
           )}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs />}
