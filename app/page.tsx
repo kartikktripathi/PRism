@@ -10,6 +10,39 @@ import Organizations from "@/components/pages/Organizations";
 import GitWrapped from "@/components/pages/GitWrapped";
 import Settings from "@/components/pages/Settings";
 
+function calculateStreak(contributions: { count: number; date: string }[]) {
+  if (!contributions || contributions.length === 0) return 0;
+
+  const sorted = [...contributions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  const todayEntry = sorted.find(c => c.date === todayStr);
+  const yesterdayEntry = sorted.find(c => c.date === yesterdayStr);
+
+  let activeIndex = -1;
+
+  if (todayEntry && todayEntry.count > 0) {
+    activeIndex = sorted.indexOf(todayEntry);
+  } else if (yesterdayEntry && yesterdayEntry.count > 0) {
+    activeIndex = sorted.indexOf(yesterdayEntry);
+  } else {
+    return 0;
+  }
+
+  let streak = 0;
+  let i = activeIndex;
+  while (i < sorted.length && sorted[i].count > 0) {
+    streak++;
+    i++;
+  }
+
+  return streak;
+}
+
 export default function Home() {
   const { data: session } = useSession();
   const [prs, setPrs] = useState<any[]>([]);
@@ -20,6 +53,7 @@ export default function Home() {
   const [loadingTopRepos, setLoadingTopRepos] = useState<boolean>(false);
   const [contributionData, setContributionData] = useState<any[]>([]);
   const [loadingContribution, setLoadingContribution] = useState<boolean>(false);
+  const [streak, setStreak] = useState<number>(0);
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -149,64 +183,101 @@ export default function Home() {
     if (!username || !session?.accessToken) return;
     setLoadingContribution(true);
     try {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const tomorrow = new Date();
+      const now = new Date();
+      
+      const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const oneYearAgo = new Date(now);
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+      
+      const twoYearsAgo = new Date(now);
+      twoYearsAgo.setDate(twoYearsAgo.getDate() - 730);
+      
+      const threeYearsAgo = new Date(now);
+      threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
 
-      const res = await fetch("https://api.github.com/graphql", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: `
-            query userInfo($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
-              user(login: $LOGIN) {
-                contributionsCollection(from: $FROM, to: $TO) {
-                  contributionCalendar {
-                    weeks {
-                      contributionDays {
-                        contributionCount
-                        date
+      const fetchYear = (from: Date, to: Date) => {
+        return fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: `
+              query userInfo($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+                user(login: $LOGIN) {
+                  contributionsCollection(from: $FROM, to: $TO) {
+                    contributionCalendar {
+                      weeks {
+                        contributionDays {
+                          contributionCount
+                          date
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-          `,
-          variables: {
-            LOGIN: username,
-            FROM: thirtyDaysAgo.toISOString(),
-            TO: tomorrow.toISOString(),
-          },
-        }),
-      });
+            `,
+            variables: {
+              LOGIN: username,
+              FROM: from.toISOString(),
+              TO: to.toISOString(),
+            },
+          }),
+        }).then(async (res) => {
+          if (!res.ok) {
+            throw new Error(`GraphQL request failed: ${res.statusText}`);
+          }
+          const json = await res.json();
+          if (json.errors) {
+            throw new Error(JSON.stringify(json.errors));
+          }
+          return json;
+        });
+      };
 
-      if (!res.ok) {
-        throw new Error(`GraphQL request failed: ${res.statusText}`);
-      }
+      const [y1, y2, y3] = await Promise.all([
+        fetchYear(oneYearAgo, tomorrow),
+        fetchYear(twoYearsAgo, oneYearAgo),
+        fetchYear(threeYearsAgo, twoYearsAgo),
+      ]);
 
-      const json = await res.json();
-      if (json.errors) {
-        throw new Error(JSON.stringify(json.errors));
-      }
-
-      const weeks = json.data?.user?.contributionsCollection?.contributionCalendar?.weeks || [];
       const contributions: any[] = [];
-      weeks.forEach((week: any) => {
-        week.contributionDays.forEach((day: any) => {
-          contributions.push({
-            count: day.contributionCount,
-            date: day.date,
+      const processWeeks = (weeks: any[]) => {
+        weeks.forEach((week: any) => {
+          week.contributionDays.forEach((day: any) => {
+            contributions.push({
+              count: day.contributionCount,
+              date: day.date,
+            });
           });
         });
+      };
+
+      processWeeks(y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks || []);
+      processWeeks(y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks || []);
+      processWeeks(y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks || []);
+
+      const uniqueContributionsMap: { [date: string]: number } = {};
+      contributions.forEach((c) => {
+        uniqueContributionsMap[c.date] = c.count;
       });
 
+      const uniqueContributions = Object.entries(uniqueContributionsMap).map(([date, count]) => ({
+        date,
+        count,
+      }));
+
+      uniqueContributions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      const streakValue = calculateStreak(uniqueContributions);
+      setStreak(streakValue);
+
       const today = new Date();
-      const past30Days = contributions.filter((c: any) => {
+      const past30Days = uniqueContributions.filter((c: any) => {
         const cDate = new Date(c.date);
         const timeDiff = today.getTime() - cDate.getTime();
         const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
@@ -214,7 +285,6 @@ export default function Home() {
       });
 
       past30Days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
       setContributionData(past30Days);
     } catch (error) {
       console.error("Error fetching contribution calendar:", error);
@@ -389,6 +459,16 @@ export default function Home() {
 
         {/* Right Side: GitHub Avatar & Name */}
         <div className="flex items-center gap-3.5">
+          {streak > 0 && (
+            <div 
+              className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold" 
+              title={`${streak} day contribution streak`}
+            >
+              <span>🔥</span>
+              <span>{streak >= 1000 ? "1000+" : streak}</span>
+            </div>
+          )}
+
           <div className="flex flex-col items-end text-[11px] font-mono leading-none gap-0.5">
             <span className="text-zinc-300 font-sans text-xs font-medium">{session?.user?.name || "Open Sourcerer"}</span>
             <span className="text-zinc-500">{session?.user?.email || "github-auth"}</span>
