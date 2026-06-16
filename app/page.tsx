@@ -170,31 +170,37 @@ export default function Home() {
           const eventDate = new Date(e.created_at);
           if (eventDate >= oneDayAgo) {
             if (e.type === "WatchEvent" && e.payload?.action === "started") {
-              feed.push({
-                id: `event-${e.id}`,
-                type: "star",
-                title: "starred your repository",
-                repo: e.repo.name,
-                actor: {
-                  login: e.actor.login,
-                  avatarUrl: e.actor.avatar_url,
-                },
-                createdAt: e.created_at,
-                url: `https://github.com/${e.repo.name}`,
-              });
+              const repoOwner = e.repo.name.split("/")[0];
+              if (repoOwner.toLowerCase() === username.toLowerCase()) {
+                feed.push({
+                  id: `event-${e.id}`,
+                  type: "star",
+                  title: "starred your repository",
+                  repo: e.repo.name,
+                  actor: {
+                    login: e.actor.login,
+                    avatarUrl: e.actor.avatar_url,
+                  },
+                  createdAt: e.created_at,
+                  url: `https://github.com/${e.repo.name}`,
+                });
+              }
             } else if (e.type === "ForkEvent") {
-              feed.push({
-                id: `event-${e.id}`,
-                type: "fork",
-                title: "forked your repository",
-                repo: e.repo.name,
-                actor: {
-                  login: e.actor.login,
-                  avatarUrl: e.actor.avatar_url,
-                },
-                createdAt: e.created_at,
-                url: e.payload?.forkee?.html_url || `https://github.com/${e.repo.name}`,
-              });
+              const repoOwner = e.repo.name.split("/")[0];
+              if (repoOwner.toLowerCase() === username.toLowerCase()) {
+                feed.push({
+                  id: `event-${e.id}`,
+                  type: "fork",
+                  title: "forked your repository",
+                  repo: e.repo.name,
+                  actor: {
+                    login: e.actor.login,
+                    avatarUrl: e.actor.avatar_url,
+                  },
+                  createdAt: e.created_at,
+                  url: e.payload?.forkee?.html_url || `https://github.com/${e.repo.name}`,
+                });
+              }
             }
           }
         });
