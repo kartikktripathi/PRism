@@ -54,6 +54,8 @@ export default function Home() {
   const [contributionData, setContributionData] = useState<any[]>([]);
   const [loadingContribution, setLoadingContribution] = useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState<boolean>(false);
 
   const [position, setPosition] = useState({
     x: 0,
@@ -106,9 +108,112 @@ export default function Home() {
       fetchRepos();
       fetchRecentCommits();
       fetchContributionCalendar();
+      fetchNotifications();
       console.log(userRepos);
     }
   }, [username]);
+
+  async function fetchNotifications() {
+    if (!username || !session?.accessToken) return;
+    setLoadingNotifications(true);
+    try {
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      const sinceISO = oneDayAgo.toISOString();
+
+      const headers = {
+        Authorization: `Bearer ${session.accessToken}`,
+        Accept: "application/vnd.github+json",
+      };
+
+      // 1. Fetch Inbox Notifications
+      const notifsRes = await fetch(`https://api.github.com/notifications?all=true&since=${sinceISO}`, { headers });
+      const notifs = notifsRes.ok ? await notifsRes.json() : [];
+
+      // 2. Fetch Received Events (stars, forks)
+      const eventsRes = await fetch(`https://api.github.com/users/${username}/received_events?per_page=100`, { headers });
+      const events = eventsRes.ok ? await eventsRes.json() : [];
+
+      // 3. Fetch Followers
+      const followersRes = await fetch(`https://api.github.com/users/${username}/followers?per_page=10`, { headers });
+      const followers = followersRes.ok ? await followersRes.json() : [];
+
+      const feed: any[] = [];
+
+      // Parse Inbox Notifications
+      if (Array.isArray(notifs)) {
+        notifs.forEach((n: any) => {
+          const notifDate = new Date(n.updated_at);
+          if (notifDate >= oneDayAgo) {
+            feed.push({
+              id: `notif-${n.id}`,
+              type: "mention",
+              reason: n.reason,
+              title: n.subject.title,
+              repo: n.repository.full_name,
+              actor: {
+                login: n.repository.owner.login,
+                avatarUrl: n.repository.owner.avatar_url,
+              },
+              createdAt: n.updated_at,
+              url: n.subject.url
+                ? n.subject.url.replace("api.github.com/repos", "github.com").replace("/pulls/", "/pull/")
+                : `https://github.com/${n.repository.full_name}`,
+            });
+          }
+        });
+      }
+
+      // Parse Events (Stars & Forks)
+      if (Array.isArray(events)) {
+        events.forEach((e: any) => {
+          const eventDate = new Date(e.created_at);
+          if (eventDate >= oneDayAgo) {
+            if (e.type === "WatchEvent" && e.payload?.action === "started") {
+              const repoOwner = e.repo.name.split("/")[0];
+              if (repoOwner.toLowerCase() === username.toLowerCase()) {
+                feed.push({
+                  id: `event-${e.id}`,
+                  type: "star",
+                  title: "starred your repository",
+                  repo: e.repo.name,
+                  actor: {
+                    login: e.actor.login,
+                    avatarUrl: e.actor.avatar_url,
+                  },
+                  createdAt: e.created_at,
+                  url: `https://github.com/${e.repo.name}`,
+                });
+              }
+            } else if (e.type === "ForkEvent") {
+              const repoOwner = e.repo.name.split("/")[0];
+              if (repoOwner.toLowerCase() === username.toLowerCase()) {
+                feed.push({
+                  id: `event-${e.id}`,
+                  type: "fork",
+                  title: "forked your repository",
+                  repo: e.repo.name,
+                  actor: {
+                    login: e.actor.login,
+                    avatarUrl: e.actor.avatar_url,
+                  },
+                  createdAt: e.created_at,
+                  url: e.payload?.forkee?.html_url || `https://github.com/${e.repo.name}`,
+                });
+              }
+            }
+          }
+        });
+      }
+
+      feed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setNotifications(feed);
+    } catch (error) {
+      console.error("Error fetching notifications feed:", error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }
 
   async function fetchRecentCommits() {
     if (!username || !session?.accessToken) return;
@@ -533,6 +638,7 @@ export default function Home() {
               loadingTopRepos={loadingTopRepos}
               contributionData={contributionData}
               loadingContribution={loadingContribution}
+              notifications={notifications}
             />
           )}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs />}

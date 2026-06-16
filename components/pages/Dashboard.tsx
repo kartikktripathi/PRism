@@ -1,23 +1,23 @@
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Filler,
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Filler
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Filler
 );
 
 type DashboardProps = {
@@ -29,13 +29,14 @@ type DashboardProps = {
     loadingTopRepos: boolean;
     contributionData: any[];
     loadingContribution: boolean;
+    notifications?: any[];
 }
 
-export default function Dashboard({prs, session, data, repos, topRepos, loadingTopRepos, contributionData, loadingContribution}: DashboardProps) {
-
+export default function Dashboard({ prs, session, data, repos, topRepos, loadingTopRepos, contributionData, loadingContribution, notifications = [] }: DashboardProps) {
+    console.log("notifs:",notifications)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const userReposOwned = repos.filter(repo => repo.owner.login == data.login).filter((repo) => { return new Date(repo.created_at) >= thirtyDaysAgo;})
+    const userReposOwned = repos.filter(repo => repo.owner.login == data.login).filter((repo) => { return new Date(repo.created_at) >= thirtyDaysAgo; })
 
     const newPRs = prs.filter((pr) => {
         return new Date(pr.created_at) >= thirtyDaysAgo;
@@ -171,16 +172,16 @@ export default function Dashboard({prs, session, data, repos, topRepos, loadingT
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {stats.map((stat) => (
                     <div
-                    key={stat.title}
-                    className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4"
+                        key={stat.title}
+                        className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4"
                     >
-                    <p className="text-xs text-zinc-500">
-                        {stat.title}
-                    </p>
+                        <p className="text-xs text-zinc-500">
+                            {stat.title}
+                        </p>
 
-                    <p className="text-2xl font-semibold text-white mt-2">
-                        {stat.value}
-                    </p>
+                        <p className="text-2xl font-semibold text-white mt-2">
+                            {stat.value}
+                        </p>
                     </div>
                 ))}
             </div>
