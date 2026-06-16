@@ -200,23 +200,6 @@ export default function Home() {
         });
       }
 
-      // Parse Followers (No date from API, so treat as recent)
-      if (Array.isArray(followers)) {
-        followers.forEach((f: any) => {
-          feed.push({
-            id: `follower-${f.id}`,
-            type: "follow",
-            title: "is now following you",
-            actor: {
-              login: f.login,
-              avatarUrl: f.avatar_url,
-            },
-            createdAt: new Date().toISOString(),
-            url: f.html_url,
-          });
-        });
-      }
-
       feed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setNotifications(feed);
     } catch (error) {
