@@ -138,6 +138,10 @@ export default function Home() {
       const followersRes = await fetch(`https://api.github.com/users/${username}/followers?per_page=10`, { headers });
       const followers = followersRes.ok ? await followersRes.json() : [];
 
+      // 4. Fetch User's Own Events (for repo creation, etc.)
+      const userEventsRes = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers });
+      const userEvents = userEventsRes.ok ? await userEventsRes.json() : [];
+
       const feed: any[] = [];
 
       // Parse Inbox Notifications
