@@ -144,10 +144,10 @@ export default function Home() {
       if (Array.isArray(notifs)) {
         notifs.forEach((n: any) => {
           const notifDate = new Date(n.updated_at);
-          if (notifDate >= oneDayAgo && n.reason == "mention") {
+          if (notifDate >= oneDayAgo && (n.reason == "mention" || n.reason == "review_requested")) {
             feed.push({
               id: `notif-${n.id}`,
-              type: "mention",
+              type: n.reason === "review_requested" ? "review_requested" : "mention",
               reason: n.reason,
               title: n.subject.title,
               repo: n.repository.full_name,
