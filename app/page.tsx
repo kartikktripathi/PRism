@@ -118,7 +118,7 @@ export default function Home() {
     setLoadingNotifications(true);
     try {
       const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      oneDayAgo.setDate(oneDayAgo.getDate() - 7);
       const sinceISO = oneDayAgo.toISOString();
 
       const headers = {
@@ -144,7 +144,7 @@ export default function Home() {
       if (Array.isArray(notifs)) {
         notifs.forEach((n: any) => {
           const notifDate = new Date(n.updated_at);
-          if (notifDate >= oneDayAgo) {
+          if (notifDate >= oneDayAgo && n.reason == "mention") {
             feed.push({
               id: `notif-${n.id}`,
               type: "mention",
