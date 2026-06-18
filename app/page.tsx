@@ -151,6 +151,14 @@ export default function Home() {
       const mergedPRsData = mergedPRsRes.ok ? await mergedPRsRes.json() : null;
       const mergedPRs = mergedPRsData?.items || [];
 
+      // 6. Fetch User's Opened PRs
+      const openedPRsRes = await fetch(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`,
+        { headers }
+      );
+      const openedPRsData = openedPRsRes.ok ? await openedPRsRes.json() : null;
+      const openedPRs = openedPRsData?.items || [];
+
       const feed: any[] = [];
 
       // Parse Inbox Notifications
@@ -237,6 +245,29 @@ export default function Home() {
                 avatarUrl: `https://github.com/${owner}.png`,
               },
               createdAt: prMergedAt,
+              url: pr.html_url,
+            });
+          }
+        });
+      }
+
+      // Parse Opened PRs
+      if (Array.isArray(openedPRs)) {
+        openedPRs.forEach((pr: any) => {
+          const prCreatedAt = pr.created_at;
+          const prCreatedDate = new Date(prCreatedAt);
+          if (prCreatedDate >= oneDayAgo) {
+            const repoFullName = pr.repository_url.replace("https://api.github.com/repos/", "");
+            feed.push({
+              id: `opened-${pr.id}`,
+              type: "opened",
+              title: pr.title,
+              repo: repoFullName,
+              actor: {
+                login: pr.user.login,
+                avatarUrl: pr.user.avatar_url,
+              },
+              createdAt: prCreatedAt,
               url: pr.html_url,
             });
           }
