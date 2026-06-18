@@ -142,6 +142,15 @@ export default function Home() {
       const userEventsRes = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers });
       const userEvents = userEventsRes.ok ? await userEventsRes.json() : [];
 
+      // 5. Fetch User's Merged PRs
+      const sinceDateOnly = sinceISO.split("T")[0];
+      const mergedPRsRes = await fetch(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`,
+        { headers }
+      );
+      const mergedPRsData = mergedPRsRes.ok ? await mergedPRsRes.json() : null;
+      const mergedPRs = mergedPRsData?.items || [];
+
       const feed: any[] = [];
 
       // Parse Inbox Notifications
@@ -206,6 +215,30 @@ export default function Home() {
                 });
               }
             }
+          }
+        });
+      }
+
+      // Parse Merged PRs
+      if (Array.isArray(mergedPRs)) {
+        mergedPRs.forEach((pr: any) => {
+          const prMergedAt = pr.pull_request?.merged_at || pr.closed_at || pr.updated_at;
+          const prMergedDate = new Date(prMergedAt);
+          if (prMergedDate >= oneDayAgo) {
+            const repoFullName = pr.repository_url.replace("https://api.github.com/repos/", "");
+            const owner = repoFullName.split("/")[0];
+            feed.push({
+              id: `merged-${pr.id}`,
+              type: "merged",
+              title: pr.title,
+              repo: repoFullName,
+              actor: {
+                login: owner,
+                avatarUrl: `https://github.com/${owner}.png`,
+              },
+              createdAt: prMergedAt,
+              url: pr.html_url,
+            });
           }
         });
       }
