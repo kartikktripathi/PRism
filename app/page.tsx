@@ -411,16 +411,16 @@ export default function Home() {
     setLoadingContribution(true);
     try {
       const now = new Date();
-      
+
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      
+
       const oneYearAgo = new Date(now);
       oneYearAgo.setDate(oneYearAgo.getDate() - 365);
-      
+
       const twoYearsAgo = new Date(now);
       twoYearsAgo.setDate(twoYearsAgo.getDate() - 730);
-      
+
       const threeYearsAgo = new Date(now);
       threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
 
@@ -689,8 +689,8 @@ export default function Home() {
         {/* Right Side: GitHub Avatar & Name */}
         <div className="flex items-center gap-3.5">
           {streak > 0 && (
-            <div 
-              className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold" 
+            <div
+              className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
               title={`${streak} day contribution streak`}
             >
               <span>🔥</span>
@@ -711,7 +711,7 @@ export default function Home() {
             </div>
           )}
 
-          <button 
+          <button
             onClick={() => signOut()}
             className="p-1.5 rounded border border-zinc-800 bg-zinc-900/10 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer ml-1"
             title="Sign out"
@@ -734,11 +734,10 @@ export default function Home() {
                 <button
                   key={tab}
                   onClick={() => handleTabChange(tab)}
-                  className={`w-full flex items-center px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono ${
-                    isActive
+                  className={`w-full flex items-center px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono ${isActive
                       ? "bg-zinc-900/60 border border-zinc-800/60 text-white font-medium"
                       : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/10 border border-transparent"
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
