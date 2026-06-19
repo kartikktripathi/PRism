@@ -163,26 +163,79 @@ export default function Home() {
 
       // Parse Inbox Notifications
       if (Array.isArray(notifs)) {
-        notifs.forEach((n: any) => {
+        const notifPromises = notifs.map(async (n: any) => {
           const notifDate = new Date(n.updated_at);
-          if (notifDate >= oneDayAgo && (n.reason == "mention" || n.reason == "review_requested")) {
-            feed.push({
-              id: `notif-${n.id}`,
-              type: n.reason === "review_requested" ? "review_requested" : "mention",
-              reason: n.reason,
-              title: n.subject.title,
-              repo: n.repository.full_name,
-              actor: {
-                login: n.repository.owner.login,
-                avatarUrl: n.repository.owner.avatar_url,
-              },
-              createdAt: n.updated_at,
-              url: n.subject.url
-                ? n.subject.url.replace("api.github.com/repos", "github.com").replace("/pulls/", "/pull/")
-                : `https://github.com/${n.repository.full_name}`,
-            });
+          const allowedReasons = ["mention", "review_requested", "author", "comment", "subscribed"];
+          if (notifDate < oneDayAgo || !allowedReasons.includes(n.reason)) {
+            return null;
           }
+
+          // Default actor is the repository owner (fallback)
+          let actor = {
+            login: n.repository.owner.login,
+            avatarUrl: n.repository.owner.avatar_url,
+          };
+          let type = n.reason === "review_requested" ? "review_requested" : "mention";
+          let actionText = n.reason === "review_requested" ? "requested your review on" : "mentioned you in";
+          let url = n.subject.url
+            ? n.subject.url.replace("api.github.com/repos", "github.com").replace("/pulls/", "/pull/")
+            : `https://github.com/${n.repository.full_name}`;
+
+          if (n.reason === "author" || n.reason === "comment" || n.reason === "subscribed") {
+            type = "comment";
+            actionText = "commented on your pull request";
+          }
+
+          // Try to fetch the latest comment details to get the actual actor and type
+          if (n.subject.latest_comment_url) {
+            try {
+              const commentRes = await fetch(n.subject.latest_comment_url, { headers });
+              if (commentRes.ok) {
+                const commentData = await commentRes.json();
+                if (commentData.user) {
+                  // Skip if the user commented/reviewed their own thread
+                  if (commentData.user.login.toLowerCase() === username.toLowerCase()) {
+                    return null;
+                  }
+                  actor = {
+                    login: commentData.user.login,
+                    avatarUrl: commentData.user.avatar_url,
+                  };
+                }
+                if (commentData.html_url) {
+                  url = commentData.html_url;
+                  if (url.includes("#pullrequestreview")) {
+                    type = "review";
+                    actionText = "reviewed your pull request";
+                  } else if (url.includes("#discussion_r")) {
+                    type = "comment";
+                    actionText = "commented on your pull request";
+                  } else if (url.includes("#issuecomment")) {
+                    type = "comment";
+                    actionText = "commented on your pull request";
+                  }
+                }
+              }
+            } catch (e) {
+              console.error("Error fetching latest comment details:", e);
+            }
+          }
+
+          return {
+            id: `notif-${n.id}`,
+            type,
+            reason: n.reason,
+            title: n.subject.title,
+            actionText,
+            repo: n.repository.full_name,
+            actor,
+            createdAt: n.updated_at,
+            url,
+          };
         });
+
+        const parsedNotifs = (await Promise.all(notifPromises)).filter(Boolean);
+        feed.push(...parsedNotifs);
       }
 
       // Parse Events (Stars & Forks)
