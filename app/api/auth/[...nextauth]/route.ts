@@ -8,10 +8,10 @@ const handler = NextAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "read:user user:email repo notifications"
-        }
-      }
-    })
+          scope: "read:user user:email repo notifications",
+        },
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, account }) {

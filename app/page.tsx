@@ -13,15 +13,17 @@ import Settings from "@/components/pages/Settings";
 function calculateStreak(contributions: { count: number; date: string }[]) {
   if (!contributions || contributions.length === 0) return 0;
 
-  const sorted = [...contributions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sorted = [...contributions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split("T")[0];
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-  const todayEntry = sorted.find(c => c.date === todayStr);
-  const yesterdayEntry = sorted.find(c => c.date === yesterdayStr);
+  const todayEntry = sorted.find((c) => c.date === todayStr);
+  const yesterdayEntry = sorted.find((c) => c.date === yesterdayStr);
 
   let activeIndex = -1;
 
@@ -52,16 +54,18 @@ export default function Home() {
   const [topRepos, setTopRepos] = useState<any[]>([]);
   const [loadingTopRepos, setLoadingTopRepos] = useState<boolean>(false);
   const [contributionData, setContributionData] = useState<any[]>([]);
-  const [loadingContribution, setLoadingContribution] = useState<boolean>(false);
+  const [loadingContribution, setLoadingContribution] =
+    useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [loadingNotifications, setLoadingNotifications] = useState<boolean>(false);
+  const [loadingNotifications, setLoadingNotifications] =
+    useState<boolean>(false);
 
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
   });
-  const [selectedTab, setSelectedTab] = useState('dashboard');
+  const [selectedTab, setSelectedTab] = useState("dashboard");
 
   const [dragging, setDragging] = useState(false);
 
@@ -77,7 +81,7 @@ export default function Home() {
   useEffect(() => {
     if (session) {
       fetchUser();
-    };
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
         signIn("github");
@@ -94,7 +98,7 @@ export default function Home() {
         headers: {
           Authorization: `Bearer ${session?.accessToken}`,
         },
-      }
+      },
     );
 
     const data = await res.json();
@@ -127,26 +131,38 @@ export default function Home() {
       };
 
       // 1. Fetch Inbox Notifications
-      const notifsRes = await fetch(`https://api.github.com/notifications?all=true&since=${sinceISO}`, { headers });
+      const notifsRes = await fetch(
+        `https://api.github.com/notifications?all=true&since=${sinceISO}`,
+        { headers },
+      );
       const notifs = notifsRes.ok ? await notifsRes.json() : [];
 
       // 2. Fetch Received Events (stars, forks)
-      const eventsRes = await fetch(`https://api.github.com/users/${username}/received_events?per_page=100`, { headers });
+      const eventsRes = await fetch(
+        `https://api.github.com/users/${username}/received_events?per_page=100`,
+        { headers },
+      );
       const events = eventsRes.ok ? await eventsRes.json() : [];
 
       // 3. Fetch Followers
-      const followersRes = await fetch(`https://api.github.com/users/${username}/followers?per_page=10`, { headers });
+      const followersRes = await fetch(
+        `https://api.github.com/users/${username}/followers?per_page=10`,
+        { headers },
+      );
       const followers = followersRes.ok ? await followersRes.json() : [];
 
       // 4. Fetch User's Own Events (for repo creation, etc.)
-      const userEventsRes = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers });
+      const userEventsRes = await fetch(
+        `https://api.github.com/users/${username}/events?per_page=100`,
+        { headers },
+      );
       const userEvents = userEventsRes.ok ? await userEventsRes.json() : [];
 
       // 5. Fetch User's Merged PRs
       const sinceDateOnly = sinceISO.split("T")[0];
       const mergedPRsRes = await fetch(
         `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`,
-        { headers }
+        { headers },
       );
       const mergedPRsData = mergedPRsRes.ok ? await mergedPRsRes.json() : null;
       const mergedPRs = mergedPRsData?.items || [];
@@ -154,7 +170,7 @@ export default function Home() {
       // 6. Fetch User's Opened PRs
       const openedPRsRes = await fetch(
         `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`,
-        { headers }
+        { headers },
       );
       const openedPRsData = openedPRsRes.ok ? await openedPRsRes.json() : null;
       const openedPRs = openedPRsData?.items || [];
@@ -163,26 +179,107 @@ export default function Home() {
 
       // Parse Inbox Notifications
       if (Array.isArray(notifs)) {
-        notifs.forEach((n: any) => {
+        const notifPromises = notifs.map(async (n: any) => {
           const notifDate = new Date(n.updated_at);
-          if (notifDate >= oneDayAgo && (n.reason == "mention" || n.reason == "review_requested")) {
-            feed.push({
-              id: `notif-${n.id}`,
-              type: n.reason === "review_requested" ? "review_requested" : "mention",
-              reason: n.reason,
-              title: n.subject.title,
-              repo: n.repository.full_name,
-              actor: {
-                login: n.repository.owner.login,
-                avatarUrl: n.repository.owner.avatar_url,
-              },
-              createdAt: n.updated_at,
-              url: n.subject.url
-                ? n.subject.url.replace("api.github.com/repos", "github.com").replace("/pulls/", "/pull/")
-                : `https://github.com/${n.repository.full_name}`,
-            });
+          const allowedReasons = [
+            "mention",
+            "review_requested",
+            "author",
+            "comment",
+            "subscribed",
+            "assign",
+          ];
+          if (notifDate < oneDayAgo || !allowedReasons.includes(n.reason)) {
+            return null;
           }
+
+          // Default actor is the repository owner (fallback)
+          let actor = {
+            login: n.repository.owner.login,
+            avatarUrl: n.repository.owner.avatar_url,
+          };
+          let type =
+            n.reason === "review_requested"
+              ? "review_requested"
+              : n.reason === "assign"
+                ? "assign"
+                : "mention";
+          let actionText =
+            n.reason === "review_requested"
+              ? "requested your review on"
+              : n.reason === "assign"
+                ? "assigned you to"
+                : "mentioned you in";
+          let url = n.subject.url
+            ? n.subject.url
+                .replace("api.github.com/repos", "github.com")
+                .replace("/pulls/", "/pull/")
+            : `https://github.com/${n.repository.full_name}`;
+
+          if (
+            n.reason === "author" ||
+            n.reason === "comment" ||
+            n.reason === "subscribed"
+          ) {
+            type = "comment";
+            actionText = "commented on your pull request";
+          }
+
+          // Try to fetch the latest comment details to get the actual actor and type
+          if (n.subject.latest_comment_url) {
+            try {
+              const commentRes = await fetch(n.subject.latest_comment_url, {
+                headers,
+              });
+              if (commentRes.ok) {
+                const commentData = await commentRes.json();
+                if (commentData.user) {
+                  // Skip if the user commented/reviewed their own thread
+                  if (
+                    commentData.user.login.toLowerCase() ===
+                    username.toLowerCase()
+                  ) {
+                    return null;
+                  }
+                  actor = {
+                    login: commentData.user.login,
+                    avatarUrl: commentData.user.avatar_url,
+                  };
+                }
+                if (commentData.html_url) {
+                  url = commentData.html_url;
+                  if (url.includes("#pullrequestreview")) {
+                    type = "review";
+                    actionText = "reviewed your pull request";
+                  } else if (url.includes("#discussion_r")) {
+                    type = "comment";
+                    actionText = "commented on your pull request";
+                  } else if (url.includes("#issuecomment")) {
+                    type = "comment";
+                    actionText = "commented on your pull request";
+                  }
+                }
+              }
+            } catch (e) {
+              console.error("Error fetching latest comment details:", e);
+            }
+          }
+
+          return {
+            id: `notif-${n.id}`,
+            type,
+            reason: n.reason,
+            title: n.subject.title,
+            actionText,
+            repo: n.repository.full_name,
+            actor,
+            createdAt: n.updated_at,
+            url,
+          };
         });
+
+        const parsedNotifs = (await Promise.all(notifPromises)).filter(Boolean);
+        feed.push(...parsedNotifs);
       }
 
       // Parse Events (Stars & Forks)
@@ -219,7 +316,9 @@ export default function Home() {
                     avatarUrl: e.actor.avatar_url,
                   },
                   createdAt: e.created_at,
-                  url: e.payload?.forkee?.html_url || `https://github.com/${e.repo.name}`,
+                  url:
+                    e.payload?.forkee?.html_url ||
+                    `https://github.com/${e.repo.name}`,
                 });
               }
             }
@@ -230,10 +329,14 @@ export default function Home() {
       // Parse Merged PRs
       if (Array.isArray(mergedPRs)) {
         mergedPRs.forEach((pr: any) => {
-          const prMergedAt = pr.pull_request?.merged_at || pr.closed_at || pr.updated_at;
+          const prMergedAt =
+            pr.pull_request?.merged_at || pr.closed_at || pr.updated_at;
           const prMergedDate = new Date(prMergedAt);
           if (prMergedDate >= oneDayAgo) {
-            const repoFullName = pr.repository_url.replace("https://api.github.com/repos/", "");
+            const repoFullName = pr.repository_url.replace(
+              "https://api.github.com/repos/",
+              "",
+            );
             const owner = repoFullName.split("/")[0];
             feed.push({
               id: `merged-${pr.id}`,
@@ -257,7 +360,10 @@ export default function Home() {
           const prCreatedAt = pr.created_at;
           const prCreatedDate = new Date(prCreatedAt);
           if (prCreatedDate >= oneDayAgo) {
-            const repoFullName = pr.repository_url.replace("https://api.github.com/repos/", "");
+            const repoFullName = pr.repository_url.replace(
+              "https://api.github.com/repos/",
+              "",
+            );
             feed.push({
               id: `opened-${pr.id}`,
               type: "opened",
@@ -274,7 +380,10 @@ export default function Home() {
         });
       }
 
-      feed.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      feed.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
       setNotifications(feed);
     } catch (error) {
       console.error("Error fetching notifications feed:", error);
@@ -287,67 +396,73 @@ export default function Home() {
     if (!username || !session?.accessToken) return;
     setLoadingTopRepos(true);
     try {
-      const sevenDaysAgo = new Date();
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const sevenDaysAgo = new Date(now);
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const dateString = sevenDaysAgo.toISOString().split("T")[0];
 
-      let page = 1;
-      let allCommits: any[] = [];
-      let hasNextPage = true;
-      const maxPages = 5; // Capped at 5 pages because I hate it when APIs die lol.
-
-      while (hasNextPage && page <= maxPages) {
-        const res = await fetch(
-          `https://api.github.com/search/commits?q=author:${username}+committer-date:>=${dateString}&per_page=100&page=${page}`,
-          {
-            headers: {
-              Accept: "application/vnd.github+json",
-              Authorization: `Bearer ${session?.accessToken}`,
-            },
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch commits page ${page}: ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        const items = data.items || [];
-        allCommits = [...allCommits, ...items];
-
-        if (items.length < 100 || allCommits.length >= data.total_count) {
-          hasNextPage = false;
-        } else {
-          page++;
-        }
-      }
-
-      const repoCounts: {
-        [key: string]: { name: string; fullName: string; url: string; count: number };
-      } = {};
-
-      allCommits.forEach((item: any) => {
-        const repo = item.repository;
-        if (!repo) return;
-        const fullName = repo.full_name;
-        if (!repoCounts[fullName]) {
-          repoCounts[fullName] = {
-            name: repo.name,
-            fullName: repo.full_name,
-            url: repo.html_url,
-            count: 0,
-          };
-        }
-        repoCounts[fullName].count += 1;
+      const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `
+            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+              user(login: $LOGIN) {
+                contributionsCollection(from: $FROM, to: $TO) {
+                  commitContributionsByRepository(maxRepositories: 25) {
+                    repository {
+                      name
+                      nameWithOwner
+                      url
+                    }
+                    contributions {
+                      totalCount
+                    }
+                  }
+                }
+              }
+            }
+          `,
+          variables: {
+            LOGIN: username,
+            FROM: sevenDaysAgo.toISOString(),
+            TO: tomorrow.toISOString(),
+          },
+        }),
       });
 
-      const sorted = Object.values(repoCounts)
-        .sort((a, b) => b.count - a.count)
+      if (!res.ok) {
+        throw new Error(`GraphQL request failed: ${res.statusText}`);
+      }
+
+      const json = await res.json();
+      if (json.errors) {
+        throw new Error(JSON.stringify(json.errors));
+      }
+
+      const reposList =
+        json.data?.user?.contributionsCollection
+          ?.commitContributionsByRepository || [];
+      const repoCounts = reposList.map((item: any) => ({
+        name: item.repository.name,
+        fullName: item.repository.nameWithOwner,
+        url: item.repository.url,
+        count: item.contributions.totalCount,
+      }));
+
+      // Sort by commit count descending and take the top 3
+      const sorted = repoCounts
+        .sort((a: any, b: any) => b.count - a.count)
         .slice(0, 3);
 
       setTopRepos(sorted);
     } catch (error) {
-      console.error("Error fetching commits:", error);
+      console.error("Error fetching top repos from GraphQL:", error);
     } finally {
       setLoadingTopRepos(false);
     }
@@ -358,16 +473,16 @@ export default function Home() {
     setLoadingContribution(true);
     try {
       const now = new Date();
-      
+
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      
+
       const oneYearAgo = new Date(now);
       oneYearAgo.setDate(oneYearAgo.getDate() - 365);
-      
+
       const twoYearsAgo = new Date(now);
       twoYearsAgo.setDate(twoYearsAgo.getDate() - 730);
-      
+
       const threeYearsAgo = new Date(now);
       threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
 
@@ -431,21 +546,34 @@ export default function Home() {
         });
       };
 
-      processWeeks(y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks || []);
-      processWeeks(y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks || []);
-      processWeeks(y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks || []);
+      processWeeks(
+        y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
+          [],
+      );
+      processWeeks(
+        y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
+          [],
+      );
+      processWeeks(
+        y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
+          [],
+      );
 
       const uniqueContributionsMap: { [date: string]: number } = {};
       contributions.forEach((c) => {
         uniqueContributionsMap[c.date] = c.count;
       });
 
-      const uniqueContributions = Object.entries(uniqueContributionsMap).map(([date, count]) => ({
-        date,
-        count,
-      }));
+      const uniqueContributions = Object.entries(uniqueContributionsMap).map(
+        ([date, count]) => ({
+          date,
+          count,
+        }),
+      );
 
-      uniqueContributions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      uniqueContributions.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
 
       const streakValue = calculateStreak(uniqueContributions);
       setStreak(streakValue);
@@ -458,7 +586,9 @@ export default function Home() {
         return diffDays >= 0 && diffDays <= 30;
       });
 
-      past30Days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      past30Days.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
       setContributionData(past30Days);
     } catch (error) {
       console.error("Error fetching contribution calendar:", error);
@@ -466,8 +596,6 @@ export default function Home() {
       setLoadingContribution(false);
     }
   }
-
-
 
   async function fetchUser() {
     const res = await fetch("https://api.github.com/user", {
@@ -494,7 +622,7 @@ export default function Home() {
         headers: {
           Authorization: `Bearer ${session?.accessToken}`,
         },
-      }
+      },
     );
 
     const data = await res.json();
@@ -545,17 +673,20 @@ export default function Home() {
             waveAmplitude={0.1}
             showGrid={false}
           />
-
         </div>
 
-        <div className="w-full max-w-lg relative z-10" style={{
-          left: position.x,
-          top: position.y,
-        }}>
-
+        <div
+          className="w-full max-w-lg relative z-10"
+          style={{
+            left: position.x,
+            top: position.y,
+          }}
+        >
           <div className="rounded-lg bg-zinc-950/70 backdrop-blur-md shadow-2xl overflow-hidden">
-
-            <div onMouseDown={handleMouseDown} className="cursor-move flex items-center justify-between px-4 py-3 border-b border-zinc-800/60 bg-zinc-900/20">
+            <div
+              onMouseDown={handleMouseDown}
+              className="cursor-move flex items-center justify-between px-4 py-3 border-b border-zinc-800/60 bg-zinc-900/20"
+            >
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-red-500 cursor-pointer" />
                 <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-yellow-500 cursor-pointer" />
@@ -568,14 +699,20 @@ export default function Home() {
             </div>
 
             <div className="p-6 md:p-8 space-y-6">
-
               <div className="space-y-2 text-center flex flex-col items-center">
-                <img src="/logo.png" className="w-48 h-24 object-contain" alt="PRism Logo" />
+                <img
+                  src="/logo.png"
+                  className="w-48 h-24 object-contain"
+                  alt="PRism Logo"
+                />
                 <h1 className="text-base text-zinc-200 font-semibold tracking-wide font-sans">
-                  <span className="text-emerald-500 font-bold">❯</span> PRism — An Open Sourcerer's Playground
+                  <span className="text-emerald-500 font-bold">❯</span> PRism —
+                  An Open Sourcerer's Playground
                 </h1>
                 <p className="text-xs text-zinc-500 leading-relaxed font-sans">
-                  A simple dashboard to track, review, and merge pull requests. No bloat, no complex tracking. Just your repo queue in one spot.
+                  A simple dashboard to track, review, and merge pull requests.
+                  No bloat, no complex tracking. Just your repo queue in one
+                  spot.
                 </p>
               </div>
 
@@ -585,14 +722,26 @@ export default function Home() {
                   className="group relative w-full flex items-center justify-between rounded-md border border-zinc-800 bg-zinc-900/30 hover:bg-white hover:text-black hover:border-white p-3.5 transition-all duration-150 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+                    <svg
+                      className="w-4 h-4 fill-current"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z"
+                      />
                     </svg>
-                    <span className="text-xs font-semibold tracking-wide font-mono">Authenticate with GitHub</span>
+                    <span className="text-xs font-semibold tracking-wide font-mono">
+                      Authenticate with GitHub
+                    </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-zinc-500 group-hover:text-black">
                     <span className="text-[10px] font-mono">Enter</span>
-                    <span className="px-1 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-300 text-[9px] font-mono">⏎</span>
+                    <span className="px-1 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-300 text-[9px] font-mono">
+                      ⏎
+                    </span>
                   </div>
                 </button>
               </div>
@@ -606,7 +755,6 @@ export default function Home() {
                   <span>press [Enter] anywhere to continue</span>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -615,12 +763,12 @@ export default function Home() {
   }
 
   const tabs = [
-    'Dashboard',
-    'Issues & PRs',
-    'Reviews and Comments',
-    'Organizations',
-    'GitWrapped',
-    'Settings'
+    "Dashboard",
+    "Issues & PRs",
+    "Reviews and Comments",
+    "Organizations",
+    "GitWrapped",
+    "Settings",
   ];
 
   return (
@@ -629,15 +777,19 @@ export default function Home() {
       <header className="h-14 border-b border-zinc-800/60 bg-zinc-950/20 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
         {/* Left Side: PRism Logo */}
         <div className="flex items-center gap-3">
-          <span className="font-mono text-sm tracking-wider font-semibold text-white">PRism</span>
-          <span className="px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900/40 text-[9px] font-mono text-zinc-500">v0.1.0</span>
+          <span className="font-mono text-sm tracking-wider font-semibold text-white">
+            PRism
+          </span>
+          <span className="px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900/40 text-[9px] font-mono text-zinc-500">
+            v0.1.0
+          </span>
         </div>
 
         {/* Right Side: GitHub Avatar & Name */}
         <div className="flex items-center gap-3.5">
           {streak > 0 && (
-            <div 
-              className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold" 
+            <div
+              className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
               title={`${streak} day contribution streak`}
             >
               <span>🔥</span>
@@ -646,25 +798,43 @@ export default function Home() {
           )}
 
           <div className="flex flex-col items-end text-[11px] font-mono leading-none gap-0.5">
-            <span className="text-zinc-300 font-sans text-xs font-medium">{session?.user?.name || "Open Sourcerer"}</span>
-            <span className="text-zinc-500">{session?.user?.email || "github-auth"}</span>
+            <span className="text-zinc-300 font-sans text-xs font-medium">
+              {session?.user?.name || "Open Sourcerer"}
+            </span>
+            <span className="text-zinc-500">
+              {session?.user?.email || "github-auth"}
+            </span>
           </div>
 
           {session?.user?.image ? (
-            <img src={session.user.image} className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 object-cover" alt="avatar" />
+            <img
+              src={session.user.image}
+              className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
+              alt="avatar"
+            />
           ) : (
             <div className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center text-xs font-mono text-zinc-400">
               {session?.user?.name?.[0] || "U"}
             </div>
           )}
 
-          <button 
+          <button
             onClick={() => signOut()}
             className="p-1.5 rounded border border-zinc-800 bg-zinc-900/10 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer ml-1"
             title="Sign out"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1" />
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1"
+              />
             </svg>
           </button>
         </div>
@@ -676,7 +846,9 @@ export default function Home() {
         <aside className="w-60 border-r border-zinc-800/60 bg-zinc-950/10 py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
           <nav className="space-y-1">
             {tabs.map((tab) => {
-              const isActive = selectedTab === tab || (selectedTab === 'dashboard' && tab === 'Dashboard');
+              const isActive =
+                selectedTab === tab ||
+                (selectedTab === "dashboard" && tab === "Dashboard");
               return (
                 <button
                   key={tab}

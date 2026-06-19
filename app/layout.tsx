@@ -4,7 +4,8 @@ import { Geist, Geist_Mono, DM_Sans } from "next/font/google";
 
 export const metadata = {
   title: "PRism",
-  description: "An Open Sourcerer's Playground to track, review, and merge pull requests.",
+  description:
+    "An Open Sourcerer's Playground to track, review, and merge pull requests.",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -33,7 +34,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${dmSans.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
