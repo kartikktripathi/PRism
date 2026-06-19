@@ -296,6 +296,73 @@ export default function Dashboard({ prs, session, data, repos, topRepos, loading
                         </p>
                     </div>
                 </div>
+
+                {notifications.length === 0 ? (
+                    <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
+                        <p className="text-xs text-zinc-500 font-mono">
+                            No recent notifications.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-3">
+                        {notifications.map((notif: any) => (
+                            <div
+                                key={notif.id}
+                                className="flex items-start justify-between p-4 rounded-lg border border-zinc-850 bg-zinc-950/20 hover:bg-zinc-900/10 transition-colors duration-150 text-xs font-mono"
+                            >
+                                <div className="flex items-center gap-3">
+                                    {notif.actor?.avatarUrl && (
+                                        <img
+                                            src={notif.actor.avatarUrl}
+                                            className="w-6 h-6 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
+                                            alt={notif.actor.login}
+                                        />
+                                    )}
+                                    <div className="space-y-0.5">
+                                        <div className="text-zinc-300">
+                                            <span className="font-semibold text-zinc-200">{notif.actor?.login || "Someone"}</span>{" "}
+                                            <span className="text-zinc-500">
+                                                {notif.type === "star" || notif.type === "fork"
+                                                    ? notif.title
+                                                    : notif.actionText || notif.type}
+                                            </span>{" "}
+                                            {notif.type !== "star" && notif.type !== "fork" ? (
+                                                <a
+                                                    href={notif.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-emerald-500 hover:underline hover:text-emerald-400 transition-colors font-medium"
+                                                >
+                                                    {notif.title}
+                                                </a>
+                                            ) : (
+                                                <a
+                                                    href={notif.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-emerald-500 hover:underline hover:text-emerald-400 transition-colors font-medium"
+                                                >
+                                                    {notif.repo}
+                                                </a>
+                                            )}
+                                        </div>
+                                        {notif.type !== "star" && notif.type !== "fork" && (
+                                            <span className="text-[10px] text-zinc-600 block">in {notif.repo}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <span className="text-[10px] text-zinc-600 whitespace-nowrap ml-4">
+                                    {new Date(notif.createdAt).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
