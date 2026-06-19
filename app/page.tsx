@@ -165,7 +165,7 @@ export default function Home() {
       if (Array.isArray(notifs)) {
         const notifPromises = notifs.map(async (n: any) => {
           const notifDate = new Date(n.updated_at);
-          const allowedReasons = ["mention", "review_requested", "author", "comment", "subscribed"];
+          const allowedReasons = ["mention", "review_requested", "author", "comment", "subscribed", "assign"];
           if (notifDate < oneDayAgo || !allowedReasons.includes(n.reason)) {
             return null;
           }
@@ -175,8 +175,12 @@ export default function Home() {
             login: n.repository.owner.login,
             avatarUrl: n.repository.owner.avatar_url,
           };
-          let type = n.reason === "review_requested" ? "review_requested" : "mention";
-          let actionText = n.reason === "review_requested" ? "requested your review on" : "mentioned you in";
+          let type = n.reason === "review_requested" ? "review_requested" : n.reason === "assign" ? "assign" : "mention";
+          let actionText = n.reason === "review_requested"
+            ? "requested your review on"
+            : n.reason === "assign"
+            ? "assigned you to"
+            : "mentioned you in";
           let url = n.subject.url
             ? n.subject.url.replace("api.github.com/repos", "github.com").replace("/pulls/", "/pull/")
             : `https://github.com/${n.repository.full_name}`;
@@ -340,67 +344,71 @@ export default function Home() {
     if (!username || !session?.accessToken) return;
     setLoadingTopRepos(true);
     try {
-      const sevenDaysAgo = new Date();
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const sevenDaysAgo = new Date(now);
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const dateString = sevenDaysAgo.toISOString().split("T")[0];
 
-      let page = 1;
-      let allCommits: any[] = [];
-      let hasNextPage = true;
-      const maxPages = 5; // Capped at 5 pages because I hate it when APIs die lol.
-
-      while (hasNextPage && page <= maxPages) {
-        const res = await fetch(
-          `https://api.github.com/search/commits?q=author:${username}+committer-date:>=${dateString}&per_page=100&page=${page}`,
-          {
-            headers: {
-              Accept: "application/vnd.github+json",
-              Authorization: `Bearer ${session?.accessToken}`,
-            },
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch commits page ${page}: ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        const items = data.items || [];
-        allCommits = [...allCommits, ...items];
-
-        if (items.length < 100 || allCommits.length >= data.total_count) {
-          hasNextPage = false;
-        } else {
-          page++;
-        }
-      }
-
-      const repoCounts: {
-        [key: string]: { name: string; fullName: string; url: string; count: number };
-      } = {};
-
-      allCommits.forEach((item: any) => {
-        const repo = item.repository;
-        if (!repo) return;
-        const fullName = repo.full_name;
-        if (!repoCounts[fullName]) {
-          repoCounts[fullName] = {
-            name: repo.name,
-            fullName: repo.full_name,
-            url: repo.html_url,
-            count: 0,
-          };
-        }
-        repoCounts[fullName].count += 1;
+      const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `
+            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+              user(login: $LOGIN) {
+                contributionsCollection(from: $FROM, to: $TO) {
+                  commitContributionsByRepository(maxRepositories: 25) {
+                    repository {
+                      name
+                      nameWithOwner
+                      url
+                    }
+                    contributions {
+                      totalCount
+                    }
+                  }
+                }
+              }
+            }
+          `,
+          variables: {
+            LOGIN: username,
+            FROM: sevenDaysAgo.toISOString(),
+            TO: tomorrow.toISOString(),
+          },
+        }),
       });
 
-      const sorted = Object.values(repoCounts)
-        .sort((a, b) => b.count - a.count)
+      if (!res.ok) {
+        throw new Error(`GraphQL request failed: ${res.statusText}`);
+      }
+
+      const json = await res.json();
+      if (json.errors) {
+        throw new Error(JSON.stringify(json.errors));
+      }
+
+      const reposList = json.data?.user?.contributionsCollection?.commitContributionsByRepository || [];
+      const repoCounts = reposList.map((item: any) => ({
+        name: item.repository.name,
+        fullName: item.repository.nameWithOwner,
+        url: item.repository.url,
+        count: item.contributions.totalCount,
+      }));
+
+      // Sort by commit count descending and take the top 3
+      const sorted = repoCounts
+        .sort((a: any, b: any) => b.count - a.count)
         .slice(0, 3);
 
       setTopRepos(sorted);
     } catch (error) {
-      console.error("Error fetching commits:", error);
+      console.error("Error fetching top repos from GraphQL:", error);
     } finally {
       setLoadingTopRepos(false);
     }
