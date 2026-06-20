@@ -65,7 +65,7 @@ export default function Home() {
     x: 0,
     y: 0,
   });
-  const [selectedTab, setSelectedTab] = useState("dashboard");
+  const [selectedTab, setSelectedTab] = useState("Dashboard");
 
   const [dragging, setDragging] = useState(false);
 
@@ -846,9 +846,7 @@ export default function Home() {
         <aside className="w-60 border-r border-zinc-800/60 bg-zinc-950/10 py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
           <nav className="space-y-1">
             {tabs.map((tab) => {
-              const isActive =
-                selectedTab === tab ||
-                (selectedTab === "dashboard" && tab === "Dashboard");
+              const isActive = selectedTab === tab;
               return (
                 <button
                   key={tab}
@@ -881,7 +879,7 @@ export default function Home() {
               notifications={notifications}
             />
           )}
-          {selectedTab === "Issues & PRs" && <IssuesAndPRs />}
+          {selectedTab === "Issues & PRs" && <IssuesAndPRs session={session} username={username} />}
           {selectedTab === "Reviews and Comments" && <ReviewsAndComments />}
           {selectedTab === "Organizations" && <Organizations />}
           {selectedTab === "GitWrapped" && <GitWrapped />}
