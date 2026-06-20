@@ -707,7 +707,7 @@ export default function Home() {
                 />
                 <h1 className="text-base text-zinc-200 font-semibold tracking-wide font-sans">
                   <span className="text-emerald-500 font-bold">❯</span> PRism —
-                  An Open Sourcerer's Playground
+                  An Open Sourcerer&apos;s Playground
                 </h1>
                 <p className="text-xs text-zinc-500 leading-relaxed font-sans">
                   A simple dashboard to track, review, and merge pull requests.
@@ -879,7 +879,7 @@ export default function Home() {
               notifications={notifications}
             />
           )}
-          {selectedTab === "Issues & PRs" && <IssuesAndPRs />}
+          {selectedTab === "Issues & PRs" && <IssuesAndPRs session={session} username={username} />}
           {selectedTab === "Reviews and Comments" && <ReviewsAndComments />}
           {selectedTab === "Organizations" && <Organizations />}
           {selectedTab === "GitWrapped" && <GitWrapped />}
