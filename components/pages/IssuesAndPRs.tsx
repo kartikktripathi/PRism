@@ -35,11 +35,17 @@ interface IssueOrPR {
   assignee: GitHubUser | null;
   assignees: GitHubUser[];
   repository_url: string;
+  pull_request?: {
+    url: string;
+    html_url: string;
+    merged_at?: string | null;
+  };
   // Custom flags added during mapping
   isIssue: boolean;
   isCreated: boolean;
   isAssigned: boolean;
   isMentioned: boolean;
+  isReviewRequested: boolean;
 }
 
 interface GitHubRawItem {
@@ -56,6 +62,11 @@ interface GitHubRawItem {
   assignee: GitHubUser | null;
   assignees: GitHubUser[];
   repository_url: string;
+  pull_request?: {
+    url: string;
+    html_url: string;
+    merged_at?: string | null;
+  };
 }
 
 export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
@@ -66,15 +77,16 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
 
   // Filters and sorting states
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">("all");
-  const [roleFilter, setRoleFilter] = useState<"all" | "created" | "assigned">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "issues" | "prs">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed" | "merged">("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | "created" | "assigned" | "review-requested">("all");
 
-  // Fetch issues from GitHub API
+  // Fetch issues & PRs from GitHub API
   const fetchIssuesAndPRs = useCallback(async () => {
     await Promise.resolve();
 
     if (!username || !session?.accessToken) {
-      setError("Please authenticate with GitHub to load issues.");
+      setError("Please authenticate with GitHub to load issues and PRs.");
       setLoading(false);
       return;
     }
@@ -87,16 +99,32 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     };
 
     try {
+      // 1. Issues involving user
       const issuesUrl = `https://api.github.com/search/issues?q=is:issue+involves:${username}&per_page=100`;
-      const res = await fetch(issuesUrl, { headers });
+      // 2. PRs involving user
+      const prsUrl = `https://api.github.com/search/issues?q=is:pr+involves:${username}&per_page=100`;
+      // 3. PRs requesting user's review
+      const reviewsUrl = `https://api.github.com/search/issues?q=is:pr+review-requested:${username}&per_page=100`;
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch issues from GitHub.");
+      const [issuesRes, prsRes, reviewsRes] = await Promise.all([
+        fetch(issuesUrl, { headers }),
+        fetch(prsUrl, { headers }),
+        fetch(reviewsUrl, { headers }),
+      ]);
+
+      if (!issuesRes.ok || !prsRes.ok || !reviewsRes.ok) {
+        throw new Error("Failed to fetch issues and PRs. GitHub search API limit reached or token expired.");
       }
 
-      const issuesData = await res.json();
-      const rawIssues: GitHubRawItem[] = issuesData.items || [];
+      const issuesData = await issuesRes.json();
+      const prsData = await prsRes.json();
+      const reviewsData = await reviewsRes.json();
 
+      const rawIssues: GitHubRawItem[] = issuesData.items || [];
+      const rawPRs: GitHubRawItem[] = prsData.items || [];
+      const rawReviews: GitHubRawItem[] = reviewsData.items || [];
+
+      // Map raw issues
       const mappedIssues: IssueOrPR[] = rawIssues.map((item: GitHubRawItem) => {
         const isCreated = item.user?.login?.toLowerCase() === usernameLower;
         const isAssigned =
@@ -108,10 +136,55 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
           isCreated,
           isAssigned,
           isMentioned: !isCreated && !isAssigned,
+          isReviewRequested: false,
         };
       });
 
-      setItems(mappedIssues);
+      // Map raw PRs
+      const prMap = new Map<number, IssueOrPR>();
+
+      rawPRs.forEach((item: GitHubRawItem) => {
+        const isCreated = item.user?.login?.toLowerCase() === usernameLower;
+        const isAssigned =
+          item.assignees?.some((a: GitHubUser) => a.login?.toLowerCase() === usernameLower) ||
+          item.assignee?.login?.toLowerCase() === usernameLower;
+        prMap.set(item.id, {
+          ...item,
+          isIssue: false,
+          isCreated,
+          isAssigned,
+          isMentioned: !isCreated && !isAssigned,
+          isReviewRequested: false,
+        });
+      });
+
+      // Map reviews and merge to avoid duplicates
+      rawReviews.forEach((item: GitHubRawItem) => {
+        const isCreated = item.user?.login?.toLowerCase() === usernameLower;
+        const isAssigned =
+          item.assignees?.some((a: GitHubUser) => a.login?.toLowerCase() === usernameLower) ||
+          item.assignee?.login?.toLowerCase() === usernameLower;
+
+        if (prMap.has(item.id)) {
+          const existing = prMap.get(item.id)!;
+          prMap.set(item.id, {
+            ...existing,
+            isReviewRequested: true,
+          });
+        } else {
+          prMap.set(item.id, {
+            ...item,
+            isIssue: false,
+            isCreated,
+            isAssigned,
+            isMentioned: !isCreated && !isAssigned,
+            isReviewRequested: true,
+          });
+        }
+      });
+
+      const mergedPRs = Array.from(prMap.values());
+      setItems([...mappedIssues, ...mergedPRs]);
     } catch (err: unknown) {
       console.error(err);
       const errMsg = err instanceof Error ? err.message : "Something went wrong while loading issues.";
@@ -181,15 +254,21 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
   };
 
   const counts = useMemo(() => {
+    const totalIssues = items.filter((item) => item.isIssue);
+    const totalPRs = items.filter((item) => !item.isIssue);
+
     return {
-      openIssues: items.filter((item) => item.state === "open").length,
+      openIssues: totalIssues.filter((item) => item.state === "open").length,
+      openPRs: totalPRs.filter((item) => item.state === "open" && !item.pull_request?.merged_at).length,
       assigned: items.filter((item) => item.state === "open" && item.isAssigned).length,
+      reviewsRequested: totalPRs.filter((item) => item.state === "open" && item.isReviewRequested).length,
     };
   }, [items]);
 
   const filteredItems = useMemo(() => {
     let result = [...items];
 
+    // 1. Text Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
@@ -200,23 +279,36 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       );
     }
 
-    if (statusFilter === "open") {
-      result = result.filter((item) => item.state === "open");
-    } else if (statusFilter === "closed") {
-      result = result.filter((item) => item.state === "closed");
+    // 2. Type Tab Filter
+    if (activeTab === "issues") {
+      result = result.filter((item) => item.isIssue);
+    } else if (activeTab === "prs") {
+      result = result.filter((item) => !item.isIssue);
     }
 
+    // 3. Status Filter
+    if (statusFilter === "open") {
+      result = result.filter((item) => item.state === "open" && !item.pull_request?.merged_at);
+    } else if (statusFilter === "closed") {
+      result = result.filter((item) => item.state === "closed" && !item.pull_request?.merged_at);
+    } else if (statusFilter === "merged") {
+      result = result.filter((item) => !item.isIssue && item.pull_request?.merged_at);
+    }
+
+    // 4. Role Filter
     if (roleFilter === "created") {
       result = result.filter((item) => item.isCreated);
     } else if (roleFilter === "assigned") {
       result = result.filter((item) => item.isAssigned);
+    } else if (roleFilter === "review-requested") {
+      result = result.filter((item) => !item.isIssue && item.isReviewRequested);
     }
 
-    // Default newest first
+    // Default sorting (newest first)
     result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return result;
-  }, [items, searchQuery, statusFilter, roleFilter]);
+  }, [items, searchQuery, activeTab, statusFilter, roleFilter]);
 
   const SkeletonCard = () => (
     <div className="border border-zinc-900/60 bg-zinc-950/20 rounded-lg p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-pulse">
@@ -245,9 +337,9 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       {/* Header and Sync Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">Issues</h1>
+          <h1 className="text-3xl font-semibold text-white tracking-wide">Issues & Pull Requests</h1>
           <p className="text-xs text-zinc-500 mt-2 font-mono">
-            Track conversations and assignments from your active repositories.
+            Track conversations, code review requests, and assignments from your active repositories.
           </p>
         </div>
         <button
@@ -269,11 +361,17 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       </div>
 
       {/* Summary Widgets */}
-      <div className="grid grid-cols-2 gap-4 max-w-xl">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
           <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">Open Issues</p>
           <p className="text-2xl font-bold text-white mt-1.5 font-mono">
             {loading ? "..." : counts.openIssues}
+          </p>
+        </div>
+        <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
+          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">Open PRs</p>
+          <p className="text-2xl font-bold text-white mt-1.5 font-mono">
+            {loading ? "..." : counts.openPRs}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
@@ -282,13 +380,56 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
             {loading ? "..." : counts.assigned}
           </p>
         </div>
+        <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
+          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">Review Requests</p>
+          <p className="text-2xl font-bold text-purple-400 mt-1.5 font-mono">
+            {loading ? "..." : counts.reviewsRequested}
+          </p>
+        </div>
       </div>
 
       {/* Filter and Control Bar */}
       <div className="space-y-4 border-t border-zinc-900/60 pt-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          {/* Main Tabs */}
+          <div className="flex border-b border-zinc-900/60 pb-px gap-1.5">
+            {(["all", "issues", "prs"] as const).map((tab) => {
+              const isActive = activeTab === tab;
+              const countText =
+                tab === "all"
+                  ? items.length
+                  : tab === "issues"
+                    ? items.filter((i) => i.isIssue).length
+                    : items.filter((i) => !i.isIssue).length;
+
+              return (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    // Reset sub-filters if incompatible
+                    if (tab === "issues") {
+                      if (statusFilter === "merged") setStatusFilter("all");
+                      if (roleFilter === "review-requested") setRoleFilter("all");
+                    }
+                  }}
+                  className={`px-3 py-2 text-xs rounded-t font-mono transition-all border-b-2 cursor-pointer capitalize ${
+                    isActive
+                      ? "border-emerald-500 text-white font-medium bg-zinc-900/30"
+                      : "border-transparent text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  {tab === "prs" ? "Pull Requests" : tab}{" "}
+                  <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-normal text-zinc-500">
+                    {loading ? "..." : countText}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Search Field */}
-          <div className="relative w-full sm:max-w-md">
+          <div className="relative w-full xl:max-w-md">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-600">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -314,45 +455,49 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
           </div>
         </div>
 
-        {/* Sub-Filters */}
+        {/* Sub-Filters and Sorters */}
         <div className="flex flex-wrap items-center gap-4 bg-zinc-950/15 border border-zinc-900/60 p-3.5 rounded-lg text-xs font-mono">
           {/* Status Filter */}
           <div className="flex items-center gap-2">
             <span className="text-zinc-600 text-[11px]">Status:</span>
             <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
-              {(["all", "open", "closed"] as const).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
-                    statusFilter === status
-                      ? "bg-zinc-900 text-emerald-400 font-medium"
-                      : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
+              {(["all", "open", "closed", ...(activeTab !== "issues" ? (["merged"] as const) : [])] as const).map(
+                (status) => (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
+                      statusFilter === status
+                        ? "bg-zinc-900 text-emerald-400 font-medium"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ),
+              )}
             </div>
           </div>
 
-          {/* Relation Filter */}
+          {/* Role Filter */}
           <div className="flex items-center gap-2">
             <span className="text-zinc-600 text-[11px]">Relation:</span>
             <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
-              {(["all", "created", "assigned"] as const).map((role) => (
-                <button
-                  key={role}
-                  onClick={() => setRoleFilter(role)}
-                  className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
-                    roleFilter === role
-                      ? "bg-zinc-900 text-emerald-400 font-medium"
-                      : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
+              {(["all", "created", "assigned", ...(activeTab !== "issues" ? (["review-requested"] as const) : [])] as const).map(
+                (role) => (
+                  <button
+                    key={role}
+                    onClick={() => setRoleFilter(role)}
+                    className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
+                      roleFilter === role
+                        ? "bg-zinc-900 text-emerald-400 font-medium"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    {role === "review-requested" ? "review req." : role}
+                  </button>
+                ),
+              )}
             </div>
           </div>
         </div>
@@ -380,12 +525,14 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
               <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-xs text-zinc-500">No issues match the active filters.</p>
+              <p className="text-xs text-zinc-500">No items match the active filters.</p>
             </div>
           ) : (
             filteredItems.map((item) => {
               const repoName = getRepoName(item.repository_url);
-              const isOpen = item.state === "open";
+              const isPR = !item.isIssue;
+              const isMerged = isPR && !!item.pull_request?.merged_at;
+              const isOpen = item.state === "open" && !isMerged;
 
               return (
                 <div
@@ -395,7 +542,32 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                   {/* Left Side: Status Icon, Title, and Meta */}
                   <div className="flex items-start gap-3.5 min-w-0">
                     <span className="mt-1 flex-shrink-0">
-                      {isOpen ? (
+                      {isPR ? (
+                        isMerged ? (
+                          <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <circle cx="6" cy="18" r="2.5" />
+                            <circle cx="18" cy="18" r="2.5" />
+                            <circle cx="12" cy="6" r="2.5" />
+                            <path d="M12 8.5V13a3 3 0 0 1-3 3h-.5m0 0L6 18.5M8.5 16l-2-2.5" />
+                            <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
+                          </svg>
+                        ) : isOpen ? (
+                          <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <circle cx="6" cy="18" r="2.5" />
+                            <circle cx="6" cy="6" r="2.5" />
+                            <circle cx="18" cy="6" r="2.5" />
+                            <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <circle cx="6" cy="18" r="2.5" />
+                            <circle cx="6" cy="6" r="2.5" />
+                            <circle cx="18" cy="6" r="2.5" />
+                            <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
+                            <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+                          </svg>
+                        )
+                      ) : isOpen ? (
                         <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="12" r="10" />
                           <line x1="12" y1="8" x2="12" y2="12" />
@@ -417,6 +589,11 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                         <span className="text-[11px] font-mono text-zinc-600">
                           #{item.number}
                         </span>
+                        {item.isReviewRequested && (
+                          <span className="text-[9px] bg-purple-950/40 border border-purple-800/40 text-purple-300 font-mono px-1.5 py-0.5 rounded-full">
+                            Review Requested
+                          </span>
+                        )}
                         {item.isAssigned && (
                           <span className="text-[9px] bg-amber-950/40 border border-amber-800/40 text-amber-400 font-mono px-1.5 py-0.5 rounded-full">
                             Assigned
