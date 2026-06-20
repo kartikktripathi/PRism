@@ -80,9 +80,11 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
   const [activeTab, setActiveTab] = useState<"all" | "issues" | "prs">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed" | "merged">("all");
   const [roleFilter, setRoleFilter] = useState<"all" | "created" | "assigned" | "review-requested">("all");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "comments" | "updated">("newest");
 
   // Fetch issues & PRs from GitHub API
   const fetchIssuesAndPRs = useCallback(async () => {
+    // Force execution into a microtask to avoid synchronous state changes during layout/rendering
     await Promise.resolve();
 
     if (!username || !session?.accessToken) {
@@ -209,22 +211,25 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     await fetchIssuesAndPRs();
   };
 
+  // Extract repo name from repository_url
   const getRepoName = (repoUrl: string) => {
     return repoUrl.replace("https://api.github.com/repos/", "");
   };
 
+  // Dynamic color palette generator for labels
   const getLabelStyles = (hexColor: string) => {
     const hex = hexColor.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16) || 0;
     const g = parseInt(hex.substring(2, 4), 16) || 0;
     const b = parseInt(hex.substring(4, 6), 16) || 0;
 
+    // Calculate YIQ luminance for contrast
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
     const isDarkColor = yiq < 75;
 
     let textColor = `#${hex}`;
     if (isDarkColor) {
-      textColor = "#e4e4e7";
+      textColor = "#e4e4e7"; // zinc-200 for better visibility on dark backgrounds
     }
 
     return {
@@ -234,6 +239,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     };
   };
 
+  // Formatted date generator (e.g., "2 hours ago" or "Jun 18, 2026")
   const formatRelativeTime = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -253,6 +259,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     }
   };
 
+  // Calculate dynamic counts based on currently loaded items
   const counts = useMemo(() => {
     const totalIssues = items.filter((item) => item.isIssue);
     const totalPRs = items.filter((item) => !item.isIssue);
@@ -265,7 +272,8 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     };
   }, [items]);
 
-  const filteredItems = useMemo(() => {
+  // Filtering and Sorting Process
+  const filteredAndSortedItems = useMemo(() => {
     let result = [...items];
 
     // 1. Text Search Query
@@ -304,12 +312,24 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       result = result.filter((item) => !item.isIssue && item.isReviewRequested);
     }
 
-    // Default sorting (newest first)
-    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    // 5. Sorting
+    result.sort((a, b) => {
+      if (sortBy === "newest") {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      } else if (sortBy === "oldest") {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      } else if (sortBy === "comments") {
+        return b.comments - a.comments;
+      } else if (sortBy === "updated") {
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      }
+      return 0;
+    });
 
     return result;
-  }, [items, searchQuery, activeTab, statusFilter, roleFilter]);
+  }, [items, searchQuery, activeTab, statusFilter, roleFilter, sortBy]);
 
+  // Loading Skeleton Component
   const SkeletonCard = () => (
     <div className="border border-zinc-900/60 bg-zinc-950/20 rounded-lg p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-pulse">
       <div className="flex items-start gap-3.5 min-w-0 flex-1">
@@ -456,49 +476,66 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
         </div>
 
         {/* Sub-Filters and Sorters */}
-        <div className="flex flex-wrap items-center gap-4 bg-zinc-950/15 border border-zinc-900/60 p-3.5 rounded-lg text-xs font-mono">
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-600 text-[11px]">Status:</span>
-            <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
-              {(["all", "open", "closed", ...(activeTab !== "issues" ? (["merged"] as const) : [])] as const).map(
-                (status) => (
-                  <button
-                    key={status}
-                    onClick={() => setStatusFilter(status)}
-                    className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
-                      statusFilter === status
-                        ? "bg-zinc-900 text-emerald-400 font-medium"
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    {status}
-                  </button>
-                ),
-              )}
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-zinc-950/15 border border-zinc-900/60 p-3.5 rounded-lg text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Status Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-600 text-[11px]">Status:</span>
+              <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
+                {(["all", "open", "closed", ...(activeTab !== "issues" ? (["merged"] as const) : [])] as const).map(
+                  (status) => (
+                    <button
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
+                        statusFilter === status
+                          ? "bg-zinc-900 text-emerald-400 font-medium"
+                          : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
+
+            {/* Role Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-600 text-[11px]">Relation:</span>
+              <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
+                {(["all", "created", "assigned", ...(activeTab !== "issues" ? (["review-requested"] as const) : [])] as const).map(
+                  (role) => (
+                    <button
+                      key={role}
+                      onClick={() => setRoleFilter(role)}
+                      className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
+                        roleFilter === role
+                          ? "bg-zinc-900 text-emerald-400 font-medium"
+                          : "text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      {role === "review-requested" ? "review req." : role}
+                    </button>
+                  ),
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Role Filter */}
+          {/* Sorter Selection */}
           <div className="flex items-center gap-2">
-            <span className="text-zinc-600 text-[11px]">Relation:</span>
-            <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
-              {(["all", "created", "assigned", ...(activeTab !== "issues" ? (["review-requested"] as const) : [])] as const).map(
-                (role) => (
-                  <button
-                    key={role}
-                    onClick={() => setRoleFilter(role)}
-                    className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
-                      roleFilter === role
-                        ? "bg-zinc-900 text-emerald-400 font-medium"
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    {role === "review-requested" ? "review req." : role}
-                  </button>
-                ),
-              )}
-            </div>
+            <span className="text-zinc-600 text-[11px]">Sort By:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "newest" | "oldest" | "comments" | "updated")}
+              className="bg-zinc-950 border border-zinc-850 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-1 px-2 text-[11px] cursor-pointer font-mono"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="comments">Most Commented</option>
+              <option value="updated">Recently Updated</option>
+            </select>
           </div>
         </div>
       </div>
@@ -520,15 +557,28 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
         <div className="space-y-3.5">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : filteredItems.length === 0 ? (
+          ) : filteredAndSortedItems.length === 0 ? (
             <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-12 text-center font-mono">
               <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-xs text-zinc-500">No items match the active filters.</p>
+              <p className="text-xs text-zinc-500">No issues or pull requests match the active filters.</p>
+              {(searchQuery || statusFilter !== "all" || roleFilter !== "all" || activeTab !== "all") && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                    setRoleFilter("all");
+                    setActiveTab("all");
+                  }}
+                  className="mt-3.5 text-[10px] text-emerald-500 hover:text-emerald-400 hover:underline cursor-pointer transition-colors"
+                >
+                  Clear Filters & Search
+                </button>
+              )}
             </div>
           ) : (
-            filteredItems.map((item) => {
+            filteredAndSortedItems.map((item) => {
               const repoName = getRepoName(item.repository_url);
               const isPR = !item.isIssue;
               const isMerged = isPR && !!item.pull_request?.merged_at;
@@ -544,6 +594,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                     <span className="mt-1 flex-shrink-0">
                       {isPR ? (
                         isMerged ? (
+                          // Merged PR - Purple
                           <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <circle cx="6" cy="18" r="2.5" />
                             <circle cx="18" cy="18" r="2.5" />
@@ -552,6 +603,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                             <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
                           </svg>
                         ) : isOpen ? (
+                          // Open PR - Green
                           <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <circle cx="6" cy="18" r="2.5" />
                             <circle cx="6" cy="6" r="2.5" />
@@ -559,6 +611,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                             <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
                           </svg>
                         ) : (
+                          // Closed PR - Red
                           <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                             <circle cx="6" cy="18" r="2.5" />
                             <circle cx="6" cy="6" r="2.5" />
@@ -568,12 +621,14 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                           </svg>
                         )
                       ) : isOpen ? (
+                        // Open Issue - Green
                         <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="12" r="10" />
                           <line x1="12" y1="8" x2="12" y2="12" />
                           <circle cx="12" cy="16" r="0.8" fill="currentColor" />
                         </svg>
                       ) : (
+                        // Closed Issue - Purple/Gray
                         <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                           <circle cx="12" cy="12" r="10" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
