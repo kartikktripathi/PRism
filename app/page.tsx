@@ -880,7 +880,7 @@ export default function Home() {
             />
           )}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs session={session} username={username} />}
-          {selectedTab === "Reviews and Comments" && <ReviewsAndComments />}
+          {selectedTab === "Reviews and Comments" && <ReviewsAndComments session={session} username={username} />}
           {selectedTab === "Organizations" && <Organizations />}
           {selectedTab === "GitWrapped" && <GitWrapped />}
           {selectedTab === "Settings" && <Settings />}
