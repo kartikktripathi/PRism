@@ -44,6 +44,7 @@ interface PendingReviewPR {
 export default function ReviewsAndComments({ session, username }: ReviewsAndCommentsProps) {
   const [pendingPrs, setPendingPrs] = useState<PendingReviewPR[]>([]);
   const [commentedPrs, setCommentedPrs] = useState<PendingReviewPR[]>([]);
+  const [reviewedPrs, setReviewedPrs] = useState<PendingReviewPR[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -66,21 +67,25 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
     try {
       const pendingUrl = `https://api.github.com/search/issues?q=is:pr+is:open+review-requested:${username}+-reviewed-by:${username}&per_page=100`;
       const commentedUrl = `https://api.github.com/search/issues?q=is:pr+commenter:${username}&per_page=100`;
+      const reviewedUrl = `https://api.github.com/search/issues?q=is:pr+reviewed-by:${username}&per_page=100`;
 
-      const [pendingRes, commentedRes] = await Promise.all([
+      const [pendingRes, commentedRes, reviewedRes] = await Promise.all([
         fetch(pendingUrl, { headers }),
         fetch(commentedUrl, { headers }),
+        fetch(reviewedUrl, { headers }),
       ]);
 
-      if (!pendingRes.ok || !commentedRes.ok) {
-        throw new Error("Failed to fetch reviews and commented PRs from GitHub.");
+      if (!pendingRes.ok || !commentedRes.ok || !reviewedRes.ok) {
+        throw new Error("Failed to fetch reviews and comments from GitHub.");
       }
 
       const pendingData = await pendingRes.json();
       const commentedData = await commentedRes.json();
+      const reviewedData = await reviewedRes.json();
 
       setPendingPrs(pendingData.items || []);
       setCommentedPrs(commentedData.items || []);
+      setReviewedPrs(reviewedData.items || []);
     } catch (err: unknown) {
       console.error(err);
       const errMsg = err instanceof Error ? err.message : "Something went wrong while loading reviews and comments.";
@@ -268,6 +273,168 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                             </span>
                             <span className="text-[9px] bg-amber-950/40 border border-amber-800/40 text-amber-400 font-mono px-1.5 py-0.5 rounded-full">
                               Pending Review
+                            </span>
+                          </div>
+
+                          <a
+                            href={item.html_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block text-xs font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors duration-150 leading-relaxed font-sans pr-4"
+                          >
+                            {item.title}
+                          </a>
+
+                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                            <span className="text-[10px] font-mono text-zinc-600">
+                              by <span className="text-zinc-500 font-medium">{item.user?.login}</span>
+                            </span>
+                            <span className="text-zinc-700 text-[10px] font-mono">•</span>
+                            <span className="text-[10px] font-mono text-zinc-600" title={new Date(item.created_at).toLocaleString()}>
+                              opened {formatRelativeTime(item.created_at)}
+                            </span>
+                            {item.labels && item.labels.length > 0 && (
+                              <>
+                                <span className="text-zinc-700 text-[10px] font-mono">•</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {item.labels.slice(0, 5).map((label) => {
+                                    const styles = getLabelStyles(label.color);
+                                    return (
+                                      <span
+                                        key={label.id}
+                                        style={styles}
+                                        className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
+                                        title={label.description}
+                                      >
+                                        {label.name}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Side: Comments and Assignees */}
+                      <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
+                        {item.comments > 0 && (
+                          <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                            <span>{item.comments}</span>
+                          </div>
+                        )}
+
+                        {item.assignees && item.assignees.length > 0 && (
+                          <div className="flex -space-x-1.5 overflow-hidden">
+                            {item.assignees.slice(0, 3).map((assignee) => (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                key={assignee.login}
+                                src={assignee.avatar_url}
+                                className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
+                                alt={assignee.login}
+                                title={`Assigned to ${assignee.login}`}
+                              />
+                            ))}
+                            {item.assignees.length > 3 && (
+                              <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
+                                +{item.assignees.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Recently Reviewed Section */}
+          <div className="border-t border-zinc-900/60 pt-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg font-semibold text-zinc-200">Recently Reviewed</h2>
+              {!loading && reviewedPrs.length > 0 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-mono text-zinc-400">
+                  {reviewedPrs.length} total
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-zinc-500 font-mono">
+              Pull requests you have reviewed and submitted feedback on.
+            </p>
+
+            <div className="space-y-3.5">
+              {loading ? (
+                Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)
+              ) : reviewedPrs.length === 0 ? (
+                <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
+                  <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                  </svg>
+                  <p className="text-xs text-zinc-500">You haven&apos;t reviewed any pull requests recently.</p>
+                </div>
+              ) : (
+                reviewedPrs.map((item) => {
+                  const repoName = getRepoName(item.repository_url);
+                  const isMerged = !!item.pull_request?.merged_at;
+                  const isOpen = item.state === "open" && !isMerged;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="group relative flex flex-col md:flex-row md:items-center justify-between border border-zinc-900 hover:border-zinc-800 bg-zinc-950/20 hover:bg-zinc-900/10 p-4.5 rounded-lg gap-4 transition-all duration-200"
+                    >
+                      {/* Left Side: Status Icon, Title, and Meta */}
+                      <div className="flex items-start gap-3.5 min-w-0">
+                        <span className="mt-1 flex-shrink-0">
+                          {isMerged ? (
+                            <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <circle cx="6" cy="18" r="2.5" />
+                              <circle cx="18" cy="18" r="2.5" />
+                              <circle cx="12" cy="6" r="2.5" />
+                              <path d="M12 8.5V13a3 3 0 0 1-3 3h-.5m0 0L6 18.5M8.5 16l-2-2.5" />
+                              <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
+                            </svg>
+                          ) : isOpen ? (
+                            <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <circle cx="6" cy="18" r="2.5" />
+                              <circle cx="6" cy="6" r="2.5" />
+                              <circle cx="18" cy="6" r="2.5" />
+                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <circle cx="6" cy="18" r="2.5" />
+                              <circle cx="6" cy="6" r="2.5" />
+                              <circle cx="18" cy="6" r="2.5" />
+                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
+                              <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+                            </svg>
+                          )}
+                        </span>
+
+                        <div className="space-y-1.5 min-w-0">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                              {repoName}
+                            </span>
+                            <span className="text-[11px] font-mono text-zinc-600">
+                              #{item.number}
+                            </span>
+                            <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
+                              isMerged 
+                                ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
+                                : isOpen
+                                  ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
+                                  : "bg-red-950/40 border border-red-800/40 text-red-400"
+                            }`}>
+                              {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
                             </span>
                           </div>
 
