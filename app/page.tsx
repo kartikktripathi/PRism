@@ -7,7 +7,7 @@ import Dashboard from "@/components/pages/Dashboard";
 import IssuesAndPRs from "@/components/pages/IssuesAndPRs";
 import ReviewsAndComments from "@/components/pages/ReviewsAndComments";
 import Organizations from "@/components/pages/Organizations";
-import GitWrapped from "@/components/pages/GitWrapped";
+import GitWrapped from "@/components/pages/GitStats";
 import Settings from "@/components/pages/Settings";
 
 function calculateStreak(contributions: { count: number; date: string }[]) {
