@@ -7,7 +7,7 @@ import Dashboard from "@/components/pages/Dashboard";
 import IssuesAndPRs from "@/components/pages/IssuesAndPRs";
 import ReviewsAndComments from "@/components/pages/ReviewsAndComments";
 import Organizations from "@/components/pages/Organizations";
-import GitWrapped from "@/components/pages/GitWrapped";
+import GitWrapped from "@/components/pages/GitStats";
 import Settings from "@/components/pages/Settings";
 
 function calculateStreak(contributions: { count: number; date: string }[]) {
@@ -881,7 +881,7 @@ export default function Home() {
           )}
           {selectedTab === "Issues & PRs" && <IssuesAndPRs session={session} username={username} />}
           {selectedTab === "Reviews and Comments" && <ReviewsAndComments session={session} username={username} />}
-          {selectedTab === "Organizations" && <Organizations />}
+          {selectedTab === "Organizations" && <Organizations session={session} username={username} />}
           {selectedTab === "GitWrapped" && <GitWrapped />}
           {selectedTab === "Settings" && <Settings />}
         </main>
