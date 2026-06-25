@@ -882,7 +882,7 @@ export default function Home() {
           {selectedTab === "Issues & PRs" && <IssuesAndPRs session={session} username={username} />}
           {selectedTab === "Reviews and Comments" && <ReviewsAndComments session={session} username={username} />}
           {selectedTab === "Organizations" && <Organizations session={session} username={username} />}
-          {selectedTab === "GitWrapped" && <GitWrapped />}
+          {selectedTab === "GitWrapped" && <GitWrapped session={session} username={username} />}
           {selectedTab === "Settings" && <Settings />}
         </main>
       </div>
