@@ -1,4 +1,13 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+
+interface GitStatsProps {
+  session: {
+    accessToken?: string;
+  } | null;
+  username: string | null;
+}
 
 interface MonthlyStat {
   month: string;
@@ -9,104 +18,28 @@ interface MonthlyStat {
   reviews: number;
 }
 
-const mockStats: MonthlyStat[] = [
-  {
-    month: "June 2026",
-    commits: 142,
-    repositories: 8,
-    pullRequests: 15,
-    issues: 4,
-    reviews: 24,
-  },
-  {
-    month: "May 2026",
-    commits: 118,
-    repositories: 6,
-    pullRequests: 12,
-    issues: 5,
-    reviews: 18,
-  },
-  {
-    month: "April 2026",
-    commits: 165,
-    repositories: 9,
-    pullRequests: 19,
-    issues: 8,
-    reviews: 32,
-  },
-  {
-    month: "March 2026",
-    commits: 94,
-    repositories: 5,
-    pullRequests: 8,
-    issues: 3,
-    reviews: 14,
-  },
-  {
-    month: "February 2026",
-    commits: 130,
-    repositories: 7,
-    pullRequests: 14,
-    issues: 6,
-    reviews: 21,
-  },
-  {
-    month: "January 2026",
-    commits: 152,
-    repositories: 8,
-    pullRequests: 17,
-    issues: 5,
-    reviews: 27,
-  },
-  {
-    month: "December 2025",
-    commits: 88,
-    repositories: 4,
-    pullRequests: 7,
-    issues: 2,
-    reviews: 11,
-  },
-  {
-    month: "November 2025",
-    commits: 125,
-    repositories: 6,
-    pullRequests: 11,
-    issues: 4,
-    reviews: 19,
-  },
-  {
-    month: "October 2025",
-    commits: 147,
-    repositories: 8,
-    pullRequests: 16,
-    issues: 7,
-    reviews: 25,
-  },
-  {
-    month: "September 2025",
-    commits: 104,
-    repositories: 5,
-    pullRequests: 9,
-    issues: 3,
-    reviews: 15,
-  },
-  {
-    month: "August 2025",
-    commits: 112,
-    repositories: 6,
-    pullRequests: 10,
-    issues: 5,
-    reviews: 16,
-  },
-  {
-    month: "July 2025",
-    commits: 135,
-    repositories: 7,
-    pullRequests: 13,
-    issues: 6,
-    reviews: 22,
-  },
-];
+function getPastMonths(count: number = 6) {
+  const months = [];
+  const now = new Date();
+  
+  for (let i = 0; i < count; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    
+    const from = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+    const to = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59));
+    
+    const label = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    
+    months.push({
+      label,
+      from: from.toISOString(),
+      to: to.toISOString()
+    });
+  }
+  return months;
+}
 
 function MonthlyStatCard({ stat }: { stat: MonthlyStat }) {
   return (
@@ -189,23 +122,185 @@ function MonthlyStatCard({ stat }: { stat: MonthlyStat }) {
   );
 }
 
-export default function GitWrapped() {
+function SkeletonCard() {
+  return (
+    <div className="rounded-lg border border-zinc-800 bg-zinc-950/20 p-5 flex flex-col animate-pulse">
+      <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60">
+        <div className="h-5 bg-zinc-800 rounded w-1/3" />
+        <div className="h-4 w-4 bg-zinc-800 rounded-full" />
+      </div>
+      <div className="space-y-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex justify-between items-center">
+            <div className="flex items-center gap-2 w-1/2">
+              <div className="w-4 h-4 bg-zinc-800 rounded-full animate-pulse" />
+              <div className="h-3 bg-zinc-800 rounded w-2/3 animate-pulse" />
+            </div>
+            <div className="h-3 bg-zinc-800 rounded w-1/6 animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function GitWrapped({ session, username }: GitStatsProps) {
+  const [stats, setStats] = useState<MonthlyStat[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  const fetchMonthlyStats = useCallback(async () => {
+    if (!username || !session?.accessToken) {
+      setError("Please authenticate with GitHub to load your Git stats.");
+      setLoading(false);
+      return;
+    }
+
+    setError(null);
+    try {
+      const months = getPastMonths(6);
+      const queryFields = months
+        .map((m, idx) => `
+          month_${idx}: contributionsCollection(from: "${m.from}", to: "${m.to}") {
+            totalCommitContributions
+            totalPullRequestContributions
+            totalIssueContributions
+            totalPullRequestReviewContributions
+            commitContributionsByRepository(maxRepositories: 100) {
+              repository {
+                nameWithOwner
+              }
+            }
+          }
+        `)
+        .join("\n");
+
+      const queryStr = `
+        query userMonthlyStats($LOGIN: String!) {
+          user(login: $LOGIN) {
+            ${queryFields}
+          }
+        }
+      `;
+
+      const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: queryStr,
+          variables: {
+            LOGIN: username,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`GraphQL request failed: ${res.statusText}`);
+      }
+
+      const json = await res.json();
+      if (json.errors) {
+        throw new Error(json.errors[0]?.message || "GitHub GraphQL error");
+      }
+
+      const userObj = json.data?.user;
+      if (!userObj) {
+        throw new Error("User data not found in response.");
+      }
+
+      const parsedStats: MonthlyStat[] = months.map((m, idx) => {
+        const monthData = userObj[`month_${idx}`];
+        return {
+          month: m.label,
+          commits: monthData?.totalCommitContributions || 0,
+          repositories: monthData?.commitContributionsByRepository?.length || 0,
+          pullRequests: monthData?.totalPullRequestContributions || 0,
+          issues: monthData?.totalIssueContributions || 0,
+          reviews: monthData?.totalPullRequestReviewContributions || 0,
+        };
+      });
+
+      setStats(parsedStats);
+    } catch (err: unknown) {
+      console.error("Error fetching monthly stats:", err);
+      const errMsg = err instanceof Error ? err.message : "Something went wrong while loading Git stats.";
+      setError(errMsg);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [username, session]);
+
+  useEffect(() => {
+    if (username && session) {
+      fetchMonthlyStats();
+    }
+  }, [username, session, fetchMonthlyStats]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchMonthlyStats();
+  };
+
   return (
     <div className="space-y-8 select-none">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-semibold text-white tracking-wide">Git Stats</h1>
-        <p className="text-xs text-zinc-500 mt-2 font-mono">
-          Monthly breakdown of your GitHub contributions and activity.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold text-white tracking-wide">Git Stats</h1>
+          <p className="text-xs text-zinc-500 mt-2 font-mono">
+            Monthly breakdown of your GitHub contributions and activity.
+          </p>
+        </div>
+        
+        {username && session && (
+          <button
+            onClick={handleRefresh}
+            disabled={loading || isRefreshing}
+            className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
+          >
+            <svg
+              className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3" />
+            </svg>
+            {isRefreshing ? "Refreshing..." : "Sync GitHub"}
+          </button>
+        )}
       </div>
 
-      {/* Grid containing the Monthly Card components */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockStats.map((stat) => (
-          <MonthlyStatCard key={stat.month} stat={stat} />
-        ))}
-      </div>
+      {/* Error state */}
+      {error && (
+        <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-5 text-center space-y-3 font-mono text-xs text-red-400">
+          <p>{error}</p>
+          <button
+            onClick={handleRefresh}
+            className="border border-red-900/30 bg-red-950/20 hover:bg-red-950/30 px-4 py-2 rounded text-red-300 font-semibold cursor-pointer transition-colors"
+          >
+            Retry Fetch
+          </button>
+        </div>
+      )}
+
+      {/* Grid container */}
+      {!error && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading
+            ? Array.from({ length: 6 }).map((_, idx) => <SkeletonCard key={idx} />)
+            : stats?.map((stat) => (
+                <MonthlyStatCard key={stat.month} stat={stat} />
+              ))
+          }
+        </div>
+      )}
     </div>
   );
 }
