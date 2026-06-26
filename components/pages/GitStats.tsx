@@ -19,6 +19,20 @@ interface MonthlyStat {
   commitHistory: number[];
 }
 
+interface TimeStats {
+  day: number;
+  afternoon: number;
+  evening: number;
+  night: number;
+  percentages: {
+    day: number;
+    afternoon: number;
+    evening: number;
+    night: number;
+  };
+  persona: string;
+}
+
 function getPastMonths(count: number = 6) {
   const months = [];
   const now = new Date();
@@ -211,6 +225,8 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [timeStats, setTimeStats] = useState<TimeStats | null>(null);
+  const [loadingTimeStats, setLoadingTimeStats] = useState<boolean>(false);
 
   const fetchMonthlyStats = useCallback(async () => {
     if (!username || !session?.accessToken) {
@@ -327,6 +343,122 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     }
   }, [username, session]);
 
+  const fetchTimeStats = useCallback(async (monthLabel: string) => {
+    if (!username || !session?.accessToken) return;
+
+    setLoadingTimeStats(true);
+    setTimeStats(null);
+
+    try {
+      const selectedMonthMeta = getPastMonths(6).find((m) => m.label === monthLabel);
+      if (!selectedMonthMeta) {
+        setLoadingTimeStats(false);
+        return;
+      }
+
+      const fromStr = selectedMonthMeta.from.substring(0, 10);
+      const toStr = selectedMonthMeta.to.substring(0, 10);
+
+      const headers = {
+        Authorization: `Bearer ${session.accessToken}`,
+        Accept: "application/vnd.github+json",
+      };
+
+      const commitUrl = `https://api.github.com/search/commits?q=author:${username}+committer-date:${fromStr}..${toStr}&per_page=100`;
+      const issueUrl = `https://api.github.com/search/issues?q=author:${username}+created:${fromStr}..${toStr}&per_page=100`;
+
+      const [commitRes, issueRes] = await Promise.all([
+        fetch(commitUrl, { headers }),
+        fetch(issueUrl, { headers }),
+      ]);
+
+      const commitData = commitRes.ok ? await commitRes.json() : { items: [] };
+      const issueData = issueRes.ok ? await issueRes.json() : { items: [] };
+
+      let day = 0;
+      let afternoon = 0;
+      let evening = 0;
+      let night = 0;
+
+      const processDate = (dateString: string) => {
+        if (!dateString) return;
+        const date = new Date(dateString);
+        const hour = date.getHours();
+
+        if (hour >= 5 && hour < 12) {
+          day++;
+        } else if (hour >= 12 && hour < 17) {
+          afternoon++;
+        } else if (hour >= 17 && hour < 21) {
+          evening++;
+        } else {
+          night++;
+        }
+      };
+
+      if (Array.isArray(commitData.items)) {
+        commitData.items.forEach((item: any) => {
+          if (item.commit?.committer?.date) {
+            processDate(item.commit.committer.date);
+          }
+        });
+      }
+
+      if (Array.isArray(issueData.items)) {
+        issueData.items.forEach((item: any) => {
+          if (item.created_at) {
+            processDate(item.created_at);
+          }
+        });
+      }
+
+      const total = day + afternoon + evening + night;
+      const percentages = {
+        day: total > 0 ? Math.round((day / total) * 100) : 0,
+        afternoon: total > 0 ? Math.round((afternoon / total) * 100) : 0,
+        evening: total > 0 ? Math.round((evening / total) * 100) : 0,
+        night: total > 0 ? Math.round((night / total) * 100) : 0,
+      };
+
+      const maxVal = Math.max(day, afternoon, evening, night);
+      let persona = "Nocturnal Developer";
+      if (total > 0) {
+        if (maxVal === day) {
+          persona = "Early-Bird Engineer";
+        } else if (maxVal === afternoon) {
+          persona = "Post-Lunch Programmer";
+        } else if (maxVal === evening) {
+          persona = "Shadow Scripter";
+        } else if (maxVal === night) {
+          persona = "Nocturnal Developer";
+        }
+      } else {
+        persona = "Silent Achiever";
+      }
+
+      setTimeStats({
+        day,
+        afternoon,
+        evening,
+        night,
+        percentages,
+        persona,
+      });
+    } catch (err) {
+      console.error("Error fetching time stats:", err);
+    } finally {
+      setLoadingTimeStats(false);
+    }
+  }, [username, session]);
+
+  useEffect(() => {
+    if (selectedMonth) {
+      fetchTimeStats(selectedMonth);
+    } else {
+      setTimeStats(null);
+    }
+  }, [selectedMonth, fetchTimeStats]);
+
   useEffect(() => {
     if (username && session) {
       fetchMonthlyStats();
@@ -367,6 +499,135 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
               <div>
                 Pull requests opened: <span className="text-purple-400 font-bold font-sans text-base">{selectedStat.pullRequests}</span>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Developer Persona & Contribution Time Analyzer */}
+        <div className="rounded-lg border border-zinc-850 bg-zinc-950/40 p-6 space-y-6 max-w-lg">
+          <div className="flex flex-col gap-1.5 border-b border-zinc-900/60 pb-4">
+            <h3 className="text-lg font-semibold text-white font-sans tracking-wide">
+              Developer Persona
+            </h3>
+            <p className="text-xs text-zinc-500 font-mono">
+              Analyzing timezone-adjusted contribution hours for {selectedMonth}.
+            </p>
+          </div>
+
+          {loadingTimeStats ? (
+            <div className="flex items-center gap-2 font-mono text-xs text-zinc-500 py-6">
+              <svg className="animate-spin h-4 w-4 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Analyzing contribution times...</span>
+            </div>
+          ) : timeStats ? (
+            <div className="space-y-6">
+              {/* Persona Tag */}
+              <div className="flex flex-col gap-2">
+                <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
+                  Result
+                </div>
+                <div className="flex">
+                  <div className={`px-4 py-2.5 rounded border font-mono text-xs font-semibold flex items-center gap-2 select-none shadow-lg ${
+                    timeStats.persona === "Early-Bird Engineer"
+                      ? "bg-amber-950/20 border-amber-500/30 text-amber-400 shadow-amber-500/5"
+                      : timeStats.persona === "Post-Lunch Programmer"
+                        ? "bg-orange-950/20 border-orange-500/30 text-orange-400 shadow-orange-500/5"
+                        : timeStats.persona === "Shadow Scripter"
+                          ? "bg-purple-950/20 border-purple-500/30 text-purple-400 shadow-purple-500/5"
+                          : timeStats.persona === "Nocturnal Developer"
+                            ? "bg-indigo-950/20 border-indigo-500/30 text-indigo-400 shadow-indigo-500/5"
+                            : "bg-zinc-900 border-zinc-800 text-zinc-300"
+                  }`}>
+                    <span>you are a/an</span>
+                    <span className="underline decoration-2 underline-offset-4 decoration-current">{timeStats.persona}</span>
+                    <span>
+                      {timeStats.persona === "Early-Bird Engineer" && "☀️"}
+                      {timeStats.persona === "Post-Lunch Programmer" && "☕"}
+                      {timeStats.persona === "Shadow Scripter" && "🌆"}
+                      {timeStats.persona === "Nocturnal Developer" && "🌙"}
+                      {timeStats.persona === "Silent Achiever" && "🤫"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Bars Breakdown */}
+              <div className="space-y-4 font-mono text-xs">
+                <div className="text-xs text-zinc-500 uppercase tracking-wider">
+                  Time-of-day breakdown
+                </div>
+
+                {/* Day */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Day (5am - 12pm)</span>
+                    <span className="font-semibold text-zinc-200">
+                      {timeStats.percentages.day}% <span className="text-[10px] text-zinc-500">({timeStats.day})</span>
+                    </span>
+                  </div>
+                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                    <div
+                      style={{ width: `${timeStats.percentages.day}%` }}
+                      className="h-full bg-amber-500 transition-all duration-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Afternoon */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Afternoon (12pm - 5pm)</span>
+                    <span className="font-semibold text-zinc-200">
+                      {timeStats.percentages.afternoon}% <span className="text-[10px] text-zinc-500">({timeStats.afternoon})</span>
+                    </span>
+                  </div>
+                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                    <div
+                      style={{ width: `${timeStats.percentages.afternoon}%` }}
+                      className="h-full bg-orange-500 transition-all duration-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Evening */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Evening (5pm - 9pm)</span>
+                    <span className="font-semibold text-zinc-200">
+                      {timeStats.percentages.evening}% <span className="text-[10px] text-zinc-500">({timeStats.evening})</span>
+                    </span>
+                  </div>
+                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                    <div
+                      style={{ width: `${timeStats.percentages.evening}%` }}
+                      className="h-full bg-purple-500 transition-all duration-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Night */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Night (9pm - 5am)</span>
+                    <span className="font-semibold text-zinc-200">
+                      {timeStats.percentages.night}% <span className="text-[10px] text-zinc-500">({timeStats.night})</span>
+                    </span>
+                  </div>
+                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                    <div
+                      style={{ width: `${timeStats.percentages.night}%` }}
+                      className="h-full bg-indigo-500 transition-all duration-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-xs text-zinc-500 font-mono py-6">
+              Could not determine contribution activity times for this month.
             </div>
           )}
         </div>
