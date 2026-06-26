@@ -471,6 +471,39 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
   };
 
   const selectedStat = stats?.find((s) => s.month === selectedMonth);
+  const selectedIdx = stats && selectedMonth ? stats.findIndex((s) => s.month === selectedMonth) : -1;
+  const prevStat = stats && selectedIdx !== -1 && selectedIdx + 1 < stats.length ? stats[selectedIdx + 1] : null;
+
+  let currentTotal = 0;
+  let prevTotal = 0;
+  let diffPercent = 0;
+  let diffType: "more" | "less" | "equal" | "none" = "none";
+
+  if (selectedStat) {
+    currentTotal = selectedStat.commits + selectedStat.pullRequests + selectedStat.issues + selectedStat.reviews;
+    if (prevStat) {
+      prevTotal = prevStat.commits + prevStat.pullRequests + prevStat.issues + prevStat.reviews;
+      if (prevTotal === 0) {
+        if (currentTotal > 0) {
+          diffPercent = 100;
+          diffType = "more";
+        } else {
+          diffPercent = 0;
+          diffType = "equal";
+        }
+      } else {
+        const rawDiff = ((currentTotal - prevTotal) / prevTotal) * 100;
+        diffPercent = Math.abs(Math.round(rawDiff));
+        if (rawDiff > 0) {
+          diffType = "more";
+        } else if (rawDiff < 0) {
+          diffType = "less";
+        } else {
+          diffType = "equal";
+        }
+      }
+    }
+  }
 
   if (selectedMonth) {
     return (
@@ -499,6 +532,25 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
               <div>
                 Pull requests opened: <span className="text-purple-400 font-bold font-sans text-base">{selectedStat.pullRequests}</span>
               </div>
+              {prevStat && (
+                <div className="text-xs mt-1.5 text-zinc-500 font-sans">
+                  {diffType === "more" && (
+                    <span>
+                      📈 <span className="text-emerald-400 font-semibold">{diffPercent}% more</span> contributions than last month ({currentTotal} vs {prevTotal})
+                    </span>
+                  )}
+                  {diffType === "less" && (
+                    <span>
+                      📉 <span className="text-rose-400 font-semibold">{diffPercent}% less</span> contributions than last month ({currentTotal} vs {prevTotal})
+                    </span>
+                  )}
+                  {diffType === "equal" && (
+                    <span>
+                      📊 <span className="text-zinc-300 font-semibold">Equal</span> contributions as last month ({currentTotal})
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
