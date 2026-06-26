@@ -505,6 +505,26 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     }
   }
 
+  let mostActiveDayText = "";
+  if (selectedStat && selectedStat.commitHistory && selectedStat.commitHistory.length > 0 && selectedMonth) {
+    const maxVal = Math.max(...selectedStat.commitHistory);
+    if (maxVal > 0) {
+      const dayIdx = selectedStat.commitHistory.indexOf(maxVal);
+      const monthName = selectedMonth.split(" ")[0];
+      const dayNum = dayIdx + 1;
+      const j = dayNum % 10;
+      const k = dayNum % 100;
+      let suffix = "th";
+      if (j === 1 && k !== 11) suffix = "st";
+      else if (j === 2 && k !== 12) suffix = "nd";
+      else if (j === 3 && k !== 13) suffix = "rd";
+
+      mostActiveDayText = `${monthName} ${dayNum}${suffix} (${maxVal} contributions)`;
+    } else {
+      mostActiveDayText = "No active contributions";
+    }
+  }
+
   if (selectedMonth) {
     return (
       <div className="space-y-8 select-none font-mono">
@@ -549,6 +569,11 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       📊 <span className="text-zinc-300 font-semibold">Equal</span> contributions as last month ({currentTotal})
                     </span>
                   )}
+                </div>
+              )}
+              {mostActiveDayText && (
+                <div className="text-xs text-zinc-500 font-sans mt-0.5">
+                  ⭐ Most active day: <span className="text-amber-400 font-semibold">{mostActiveDayText}</span>
                 </div>
               )}
             </div>
