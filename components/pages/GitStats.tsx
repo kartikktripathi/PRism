@@ -18,6 +18,7 @@ interface MonthlyStat {
   reviews: number;
   commitHistory: number[];
   mostUsedLanguage: string;
+  reposCreated: number;
 }
 
 interface TimeStats {
@@ -246,6 +247,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
             totalPullRequestContributions
             totalIssueContributions
             totalPullRequestReviewContributions
+            totalRepositoryContributions
             commitContributionsByRepository(maxRepositories: 100) {
               contributions {
                 totalCount
@@ -380,6 +382,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           reviews: monthData?.totalPullRequestReviewContributions || 0,
           commitHistory: history,
           mostUsedLanguage,
+          reposCreated: monthData?.totalRepositoryContributions || 0,
         };
       });
 
@@ -599,6 +602,9 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
             <div className="space-y-1.5 text-sm text-zinc-400 font-mono">
               <div>
                 Repositories worked on: <span className="text-emerald-400 font-bold font-sans text-base">{selectedStat.repositories}</span>
+              </div>
+              <div>
+                Repositories created: <span className="text-teal-400 font-bold font-sans text-base">{selectedStat.reposCreated}</span>
               </div>
               <div>
                 Pull requests opened: <span className="text-purple-400 font-bold font-sans text-base">{selectedStat.pullRequests}</span>
