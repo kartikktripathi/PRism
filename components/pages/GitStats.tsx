@@ -41,9 +41,14 @@ function getPastMonths(count: number = 6) {
   return months;
 }
 
-function MonthlyStatCard({ stat }: { stat: MonthlyStat }) {
+function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () => void }) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-5 flex flex-col font-sans">
+    <div
+      onClick={onClick}
+      className={`rounded-lg border border-zinc-800 bg-zinc-950/30 p-5 flex flex-col font-sans transition-all duration-200 ${
+        onClick ? "cursor-pointer hover:border-zinc-700 hover:bg-zinc-900/50 hover:scale-[1.01] active:scale-[0.99]" : ""
+      }`}
+    >
       {/* Card Header with Month Heading and subtle icon */}
       <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60">
         <h3 className="text-lg font-semibold text-white tracking-wide">
@@ -149,6 +154,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   const fetchMonthlyStats = useCallback(async () => {
     if (!username || !session?.accessToken) {
@@ -246,6 +252,30 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     await fetchMonthlyStats();
   };
 
+  if (selectedMonth) {
+    return (
+      <div className="space-y-8 select-none font-mono">
+        <div>
+          <button
+            onClick={() => setSelectedMonth(null)}
+            className="flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Git Stats
+          </button>
+        </div>
+
+        <div>
+          <h1 className="text-3xl font-semibold text-white tracking-wide font-sans">
+            {selectedMonth}
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 select-none">
       {/* Page Header */}
@@ -296,7 +326,11 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           {loading
             ? Array.from({ length: 6 }).map((_, idx) => <SkeletonCard key={idx} />)
             : stats?.map((stat) => (
-                <MonthlyStatCard key={stat.month} stat={stat} />
+                <MonthlyStatCard
+                  key={stat.month}
+                  stat={stat}
+                  onClick={() => setSelectedMonth(stat.month)}
+                />
               ))
           }
         </div>
