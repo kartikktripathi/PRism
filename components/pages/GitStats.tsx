@@ -338,6 +338,8 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     await fetchMonthlyStats();
   };
 
+  const selectedStat = stats?.find((s) => s.month === selectedMonth);
+
   if (selectedMonth) {
     return (
       <div className="space-y-8 select-none font-mono">
@@ -353,10 +355,20 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           </button>
         </div>
 
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-semibold text-white tracking-wide font-sans">
             {selectedMonth}
           </h1>
+          {selectedStat !== undefined && (
+            <div className="space-y-1.5 text-sm text-zinc-400 font-mono">
+              <div>
+                Repositories worked on: <span className="text-emerald-400 font-bold font-sans text-base">{selectedStat.repositories}</span>
+              </div>
+              <div>
+                Pull requests opened: <span className="text-purple-400 font-bold font-sans text-base">{selectedStat.pullRequests}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
