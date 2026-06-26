@@ -17,6 +17,7 @@ interface MonthlyStat {
   issues: number;
   reviews: number;
   commitHistory: number[];
+  mostUsedLanguage: string;
 }
 
 interface TimeStats {
@@ -246,8 +247,25 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
             totalIssueContributions
             totalPullRequestReviewContributions
             commitContributionsByRepository(maxRepositories: 100) {
+              contributions {
+                totalCount
+              }
               repository {
                 nameWithOwner
+                primaryLanguage {
+                  name
+                }
+              }
+            }
+            pullRequestReviewContributionsByRepository(maxRepositories: 100) {
+              contributions {
+                totalCount
+              }
+              repository {
+                nameWithOwner
+                primaryLanguage {
+                  name
+                }
               }
             }
             contributionCalendar {
@@ -321,6 +339,38 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
         dayEntries.sort((a, b) => a.date.localeCompare(b.date));
         const history = dayEntries.map((e) => e.count);
 
+        // Calculate language scores based on commits and reviews in repositories
+        const languageScores: { [name: string]: number } = {};
+
+        if (monthData?.commitContributionsByRepository) {
+          monthData.commitContributionsByRepository.forEach((c: any) => {
+            const lang = c.repository?.primaryLanguage?.name;
+            const count = c.contributions?.totalCount || 0;
+            if (lang && count > 0) {
+              languageScores[lang] = (languageScores[lang] || 0) + count;
+            }
+          });
+        }
+
+        if (monthData?.pullRequestReviewContributionsByRepository) {
+          monthData.pullRequestReviewContributionsByRepository.forEach((r: any) => {
+            const lang = r.repository?.primaryLanguage?.name;
+            const count = r.contributions?.totalCount || 0;
+            if (lang && count > 0) {
+              languageScores[lang] = (languageScores[lang] || 0) + count;
+            }
+          });
+        }
+
+        let mostUsedLanguage = "N/A";
+        let maxScore = 0;
+        Object.entries(languageScores).forEach(([lang, score]) => {
+          if (score > maxScore) {
+            maxScore = score;
+            mostUsedLanguage = lang;
+          }
+        });
+
         return {
           month: m.label,
           commits: monthData?.totalCommitContributions || 0,
@@ -329,6 +379,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           issues: monthData?.totalIssueContributions || 0,
           reviews: monthData?.totalPullRequestReviewContributions || 0,
           commitHistory: history,
+          mostUsedLanguage,
         };
       });
 
@@ -551,6 +602,9 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
               </div>
               <div>
                 Pull requests opened: <span className="text-purple-400 font-bold font-sans text-base">{selectedStat.pullRequests}</span>
+              </div>
+              <div>
+                Most used language: <span className="text-sky-400 font-bold font-sans text-base">{selectedStat.mostUsedLanguage}</span>
               </div>
               {prevStat && (
                 <div className="text-xs mt-1.5 text-zinc-500 font-sans">
