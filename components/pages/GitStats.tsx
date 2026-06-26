@@ -16,6 +16,7 @@ interface MonthlyStat {
   pullRequests: number;
   issues: number;
   reviews: number;
+  commitHistory: number[];
 }
 
 function getPastMonths(count: number = 6) {
@@ -39,6 +40,50 @@ function getPastMonths(count: number = 6) {
     });
   }
   return months;
+}
+
+function MiniBarChart({ data }: { data: number[] }) {
+  const activityData = data && data.length > 0 ? data : Array.from({ length: 30 }, () => 0);
+  const maxVal = Math.max(...activityData, 1);
+  const totalActivity = activityData.reduce((a, b) => a + b, 0);
+
+  return (
+    <div className="mt-4 pt-3.5 border-t border-zinc-900/60">
+      <div className="text-[10px] text-zinc-500 mb-2 font-mono flex justify-between select-none">
+        <span>Daily Activity</span>
+        <span>{totalActivity} contributions</span>
+      </div>
+      <div className="h-10 flex items-end gap-[3px] w-full">
+        {activityData.map((activity, idx) => {
+          const heightPercent = (activity / maxVal) * 100;
+          return (
+            <div
+              key={idx}
+              className="group relative flex-1 h-full flex items-end cursor-default"
+            >
+              {/* Bar */}
+              <div
+                style={{ height: `${Math.max(heightPercent, activity > 0 ? 15 : 5)}%` }}
+                className={`w-full rounded-[1px] transition-all duration-150 ${
+                  activity > 0
+                    ? "bg-emerald-500/80 group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                    : "bg-zinc-800/40"
+                }`}
+              />
+              
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+                <div className="bg-zinc-950 border border-zinc-800 text-zinc-300 text-[9px] font-mono py-0.5 px-1.5 rounded shadow-2xl whitespace-nowrap">
+                  Day {idx + 1}: {activity} {activity === 1 ? "contribution" : "contributions"}
+                </div>
+                <div className="w-1 h-1 bg-zinc-950 border-r border-b border-zinc-800 rotate-45 -mt-[3px]" />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () => void }) {
@@ -123,6 +168,8 @@ function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () =>
           <span className="font-bold text-amber-400">{stat.reviews}</span>
         </div>
       </div>
+
+      <MiniBarChart data={stat.commitHistory} />
     </div>
   );
 }
@@ -144,6 +191,15 @@ function SkeletonCard() {
             <div className="h-3 bg-zinc-800 rounded w-1/6 animate-pulse" />
           </div>
         ))}
+      </div>
+
+      <div className="mt-4 pt-3.5 border-t border-zinc-900/60 flex flex-col gap-2">
+        <div className="h-3 bg-zinc-800 rounded w-1/4 animate-pulse" />
+        <div className="h-10 flex items-end gap-[3px] w-full">
+          {Array.from({ length: 30 }).map((_, idx) => (
+            <div key={idx} className="bg-zinc-800/20 rounded-[1px] flex-1 h-2 animate-pulse" />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -176,6 +232,14 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
             commitContributionsByRepository(maxRepositories: 100) {
               repository {
                 nameWithOwner
+              }
+            }
+            contributionCalendar {
+              weeks {
+                contributionDays {
+                  contributionCount
+                  date
+                }
               }
             }
           }
@@ -220,6 +284,27 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
 
       const parsedStats: MonthlyStat[] = months.map((m, idx) => {
         const monthData = userObj[`month_${idx}`];
+        
+        // Extract commit counts per day
+        const dayEntries: { date: string; count: number }[] = [];
+        if (monthData?.contributionCalendar?.weeks) {
+          const targetPrefix = m.from.substring(0, 7); // e.g. "2026-06"
+          monthData.contributionCalendar.weeks.forEach((week: any) => {
+            if (week.contributionDays) {
+              week.contributionDays.forEach((day: any) => {
+                if (day.date && day.date.startsWith(targetPrefix)) {
+                  dayEntries.push({
+                    date: day.date,
+                    count: day.contributionCount || 0
+                  });
+                }
+              });
+            }
+          });
+        }
+        dayEntries.sort((a, b) => a.date.localeCompare(b.date));
+        const history = dayEntries.map((e) => e.count);
+
         return {
           month: m.label,
           commits: monthData?.totalCommitContributions || 0,
@@ -227,6 +312,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           pullRequests: monthData?.totalPullRequestContributions || 0,
           issues: monthData?.totalIssueContributions || 0,
           reviews: monthData?.totalPullRequestReviewContributions || 0,
+          commitHistory: history,
         };
       });
 
