@@ -41,7 +41,10 @@ interface PendingReviewPR {
   };
 }
 
-export default function ReviewsAndComments({ session, username }: ReviewsAndCommentsProps) {
+export default function ReviewsAndComments({
+  session,
+  username,
+}: ReviewsAndCommentsProps) {
   const [pendingPrs, setPendingPrs] = useState<PendingReviewPR[]>([]);
   const [commentedPrs, setCommentedPrs] = useState<PendingReviewPR[]>([]);
   const [reviewedPrs, setReviewedPrs] = useState<PendingReviewPR[]>([]);
@@ -88,7 +91,10 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
       setReviewedPrs(reviewedData.items || []);
     } catch (err: unknown) {
       console.error(err);
-      const errMsg = err instanceof Error ? err.message : "Something went wrong while loading reviews and comments.";
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while loading reviews and comments.";
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -150,7 +156,11 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
     } else if (diffDays < 30) {
       return `${diffDays}d ago`;
     } else {
-      return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      return date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
     }
   };
 
@@ -181,7 +191,9 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
       {/* Header and Sync Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">Reviews & Comments</h1>
+          <h1 className="text-3xl font-semibold text-white tracking-wide">
+            Reviews & Comments
+          </h1>
           <p className="text-xs text-zinc-500 mt-2 font-mono">
             Manage incoming code reviews and actions assigned directly to you.
           </p>
@@ -198,7 +210,11 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
             stroke="currentColor"
             strokeWidth="2"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
+            />
           </svg>
           {isRefreshing ? "Refreshing..." : "Sync GitHub"}
         </button>
@@ -221,7 +237,9 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
           {/* Review Requests Section */}
           <div className="border-t border-zinc-900/60 pt-6 space-y-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-zinc-200">Awaiting Your Review</h2>
+              <h2 className="text-lg font-semibold text-zinc-200">
+                Awaiting Your Review
+              </h2>
               {!loading && pendingPrs.length > 0 && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 border border-amber-800/40 font-mono text-amber-400">
                   {pendingPrs.length} pending
@@ -229,18 +247,34 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
               )}
             </div>
             <p className="text-xs text-zinc-500 font-mono">
-              Pull requests where your review has been requested, and you have not submitted it yet.
+              Pull requests where your review has been requested, and you have
+              not submitted it yet.
             </p>
 
             <div className="space-y-3.5">
               {loading ? (
-                Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)
+                Array.from({ length: 2 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))
               ) : pendingPrs.length === 0 ? (
                 <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
-                  <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                  <svg
+                    className="w-8 h-8 text-zinc-700 mx-auto mb-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12l2 2 4-4"
+                    />
                   </svg>
-                  <p className="text-xs text-zinc-500">You are all caught up! No pull requests are awaiting your review.</p>
+                  <p className="text-xs text-zinc-500">
+                    You are all caught up! No pull requests are awaiting your
+                    review.
+                  </p>
                 </div>
               ) : (
                 pendingPrs.map((item) => {
@@ -255,7 +289,13 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                       <div className="flex items-start gap-3.5 min-w-0">
                         <span className="mt-1 flex-shrink-0">
                           {/* Open PR - Green */}
-                          <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <svg
+                            className="w-4 h-4 text-emerald-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
                             <circle cx="6" cy="18" r="2.5" />
                             <circle cx="6" cy="6" r="2.5" />
                             <circle cx="18" cy="6" r="2.5" />
@@ -287,15 +327,25 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
 
                           <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                             <span className="text-[10px] font-mono text-zinc-600">
-                              by <span className="text-zinc-500 font-medium">{item.user?.login}</span>
+                              by{" "}
+                              <span className="text-zinc-500 font-medium">
+                                {item.user?.login}
+                              </span>
                             </span>
-                            <span className="text-zinc-700 text-[10px] font-mono">•</span>
-                            <span className="text-[10px] font-mono text-zinc-600" title={new Date(item.created_at).toLocaleString()}>
+                            <span className="text-zinc-700 text-[10px] font-mono">
+                              •
+                            </span>
+                            <span
+                              className="text-[10px] font-mono text-zinc-600"
+                              title={new Date(item.created_at).toLocaleString()}
+                            >
                               opened {formatRelativeTime(item.created_at)}
                             </span>
                             {item.labels && item.labels.length > 0 && (
                               <>
-                                <span className="text-zinc-700 text-[10px] font-mono">•</span>
+                                <span className="text-zinc-700 text-[10px] font-mono">
+                                  •
+                                </span>
                                 <div className="flex flex-wrap gap-1">
                                   {item.labels.slice(0, 5).map((label) => {
                                     const styles = getLabelStyles(label.color);
@@ -321,8 +371,18 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                       <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
                         {item.comments > 0 && (
                           <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                              />
                             </svg>
                             <span>{item.comments}</span>
                           </div>
@@ -358,7 +418,9 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
           {/* Recently Reviewed Section */}
           <div className="border-t border-zinc-900/60 pt-6 space-y-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-zinc-200">Recently Reviewed</h2>
+              <h2 className="text-lg font-semibold text-zinc-200">
+                Recently Reviewed
+              </h2>
               {!loading && reviewedPrs.length > 0 && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-mono text-zinc-400">
                   {reviewedPrs.length} total
@@ -371,13 +433,27 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
 
             <div className="space-y-3.5">
               {loading ? (
-                Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)
+                Array.from({ length: 2 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))
               ) : reviewedPrs.length === 0 ? (
                 <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
-                  <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                  <svg
+                    className="w-8 h-8 text-zinc-700 mx-auto mb-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12l2 2 4-4"
+                    />
                   </svg>
-                  <p className="text-xs text-zinc-500">You haven&apos;t reviewed any pull requests recently.</p>
+                  <p className="text-xs text-zinc-500">
+                    You haven&apos;t reviewed any pull requests recently.
+                  </p>
                 </div>
               ) : (
                 reviewedPrs.map((item) => {
@@ -394,7 +470,13 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                       <div className="flex items-start gap-3.5 min-w-0">
                         <span className="mt-1 flex-shrink-0">
                           {isMerged ? (
-                            <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              className="w-4 h-4 text-purple-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <circle cx="6" cy="18" r="2.5" />
                               <circle cx="18" cy="18" r="2.5" />
                               <circle cx="12" cy="6" r="2.5" />
@@ -402,19 +484,38 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                               <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
                             </svg>
                           ) : isOpen ? (
-                            <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              className="w-4 h-4 text-emerald-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <circle cx="6" cy="18" r="2.5" />
                               <circle cx="6" cy="6" r="2.5" />
                               <circle cx="18" cy="6" r="2.5" />
                               <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
                             </svg>
                           ) : (
-                            <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              className="w-4 h-4 text-rose-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <circle cx="6" cy="18" r="2.5" />
                               <circle cx="6" cy="6" r="2.5" />
                               <circle cx="18" cy="6" r="2.5" />
                               <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                              <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+                              <line
+                                x1="4"
+                                y1="4"
+                                x2="20"
+                                y2="20"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                              />
                             </svg>
                           )}
                         </span>
@@ -427,13 +528,15 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                             <span className="text-[11px] font-mono text-zinc-600">
                               #{item.number}
                             </span>
-                            <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
-                              isMerged 
-                                ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
-                                : isOpen
-                                  ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
-                                  : "bg-red-950/40 border border-red-800/40 text-red-400"
-                            }`}>
+                            <span
+                              className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
+                                isMerged
+                                  ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
+                                  : isOpen
+                                    ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
+                                    : "bg-red-950/40 border border-red-800/40 text-red-400"
+                              }`}
+                            >
                               {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
                             </span>
                           </div>
@@ -449,15 +552,25 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
 
                           <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                             <span className="text-[10px] font-mono text-zinc-600">
-                              by <span className="text-zinc-500 font-medium">{item.user?.login}</span>
+                              by{" "}
+                              <span className="text-zinc-500 font-medium">
+                                {item.user?.login}
+                              </span>
                             </span>
-                            <span className="text-zinc-700 text-[10px] font-mono">•</span>
-                            <span className="text-[10px] font-mono text-zinc-600" title={new Date(item.created_at).toLocaleString()}>
+                            <span className="text-zinc-700 text-[10px] font-mono">
+                              •
+                            </span>
+                            <span
+                              className="text-[10px] font-mono text-zinc-600"
+                              title={new Date(item.created_at).toLocaleString()}
+                            >
                               opened {formatRelativeTime(item.created_at)}
                             </span>
                             {item.labels && item.labels.length > 0 && (
                               <>
-                                <span className="text-zinc-700 text-[10px] font-mono">•</span>
+                                <span className="text-zinc-700 text-[10px] font-mono">
+                                  •
+                                </span>
                                 <div className="flex flex-wrap gap-1">
                                   {item.labels.slice(0, 5).map((label) => {
                                     const styles = getLabelStyles(label.color);
@@ -483,8 +596,18 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                       <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
                         {item.comments > 0 && (
                           <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                              />
                             </svg>
                             <span>{item.comments}</span>
                           </div>
@@ -520,7 +643,9 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
           {/* Commented PRs Section */}
           <div className="border-t border-zinc-900/60 pt-6 space-y-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-zinc-200">Commented Pull Requests</h2>
+              <h2 className="text-lg font-semibold text-zinc-200">
+                Commented Pull Requests
+              </h2>
               {!loading && commentedPrs.length > 0 && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-mono text-zinc-400">
                   {commentedPrs.length} total
@@ -533,13 +658,27 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
 
             <div className="space-y-3.5">
               {loading ? (
-                Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)
+                Array.from({ length: 2 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))
               ) : commentedPrs.length === 0 ? (
                 <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
-                  <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <svg
+                    className="w-8 h-8 text-zinc-700 mx-auto mb-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    />
                   </svg>
-                  <p className="text-xs text-zinc-500">You haven&apos;t commented on any pull requests yet.</p>
+                  <p className="text-xs text-zinc-500">
+                    You haven&apos;t commented on any pull requests yet.
+                  </p>
                 </div>
               ) : (
                 commentedPrs.map((item) => {
@@ -557,7 +696,13 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                         <span className="mt-1 flex-shrink-0">
                           {isMerged ? (
                             // Merged PR - Purple
-                            <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              className="w-4 h-4 text-purple-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <circle cx="6" cy="18" r="2.5" />
                               <circle cx="18" cy="18" r="2.5" />
                               <circle cx="12" cy="6" r="2.5" />
@@ -566,7 +711,13 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                             </svg>
                           ) : isOpen ? (
                             // Open PR - Green
-                            <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              className="w-4 h-4 text-emerald-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <circle cx="6" cy="18" r="2.5" />
                               <circle cx="6" cy="6" r="2.5" />
                               <circle cx="18" cy="6" r="2.5" />
@@ -574,12 +725,25 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                             </svg>
                           ) : (
                             // Closed PR - Red
-                            <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              className="w-4 h-4 text-rose-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <circle cx="6" cy="18" r="2.5" />
                               <circle cx="6" cy="6" r="2.5" />
                               <circle cx="18" cy="6" r="2.5" />
                               <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                              <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+                              <line
+                                x1="4"
+                                y1="4"
+                                x2="20"
+                                y2="20"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                              />
                             </svg>
                           )}
                         </span>
@@ -592,13 +756,15 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                             <span className="text-[11px] font-mono text-zinc-600">
                               #{item.number}
                             </span>
-                            <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
-                              isMerged 
-                                ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
-                                : isOpen
-                                  ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
-                                  : "bg-red-950/40 border border-red-800/40 text-red-400"
-                            }`}>
+                            <span
+                              className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
+                                isMerged
+                                  ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
+                                  : isOpen
+                                    ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
+                                    : "bg-red-950/40 border border-red-800/40 text-red-400"
+                              }`}
+                            >
                               {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
                             </span>
                           </div>
@@ -614,15 +780,25 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
 
                           <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                             <span className="text-[10px] font-mono text-zinc-600">
-                              by <span className="text-zinc-500 font-medium">{item.user?.login}</span>
+                              by{" "}
+                              <span className="text-zinc-500 font-medium">
+                                {item.user?.login}
+                              </span>
                             </span>
-                            <span className="text-zinc-700 text-[10px] font-mono">•</span>
-                            <span className="text-[10px] font-mono text-zinc-600" title={new Date(item.created_at).toLocaleString()}>
+                            <span className="text-zinc-700 text-[10px] font-mono">
+                              •
+                            </span>
+                            <span
+                              className="text-[10px] font-mono text-zinc-600"
+                              title={new Date(item.created_at).toLocaleString()}
+                            >
                               opened {formatRelativeTime(item.created_at)}
                             </span>
                             {item.labels && item.labels.length > 0 && (
                               <>
-                                <span className="text-zinc-700 text-[10px] font-mono">•</span>
+                                <span className="text-zinc-700 text-[10px] font-mono">
+                                  •
+                                </span>
                                 <div className="flex flex-wrap gap-1">
                                   {item.labels.slice(0, 5).map((label) => {
                                     const styles = getLabelStyles(label.color);
@@ -648,8 +824,18 @@ export default function ReviewsAndComments({ session, username }: ReviewsAndComm
                       <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
                         {item.comments > 0 && (
                           <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            <svg
+                              className="w-3.5 h-3.5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                              />
                             </svg>
                             <span>{item.comments}</span>
                           </div>

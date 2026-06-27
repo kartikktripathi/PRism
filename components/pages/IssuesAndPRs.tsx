@@ -78,9 +78,15 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
   // Filters and sorting states
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "issues" | "prs">("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed" | "merged">("all");
-  const [roleFilter, setRoleFilter] = useState<"all" | "created" | "assigned" | "review-requested">("all");
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "comments" | "updated">("newest");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "open" | "closed" | "merged"
+  >("all");
+  const [roleFilter, setRoleFilter] = useState<
+    "all" | "created" | "assigned" | "review-requested"
+  >("all");
+  const [sortBy, setSortBy] = useState<
+    "newest" | "oldest" | "comments" | "updated"
+  >("newest");
 
   // Fetch issues & PRs from GitHub API
   const fetchIssuesAndPRs = useCallback(async () => {
@@ -115,7 +121,9 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       ]);
 
       if (!issuesRes.ok || !prsRes.ok || !reviewsRes.ok) {
-        throw new Error("Failed to fetch issues and PRs. GitHub search API limit reached or token expired.");
+        throw new Error(
+          "Failed to fetch issues and PRs. GitHub search API limit reached or token expired.",
+        );
       }
 
       const issuesData = await issuesRes.json();
@@ -130,8 +138,9 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       const mappedIssues: IssueOrPR[] = rawIssues.map((item: GitHubRawItem) => {
         const isCreated = item.user?.login?.toLowerCase() === usernameLower;
         const isAssigned =
-          item.assignees?.some((a: GitHubUser) => a.login?.toLowerCase() === usernameLower) ||
-          item.assignee?.login?.toLowerCase() === usernameLower;
+          item.assignees?.some(
+            (a: GitHubUser) => a.login?.toLowerCase() === usernameLower,
+          ) || item.assignee?.login?.toLowerCase() === usernameLower;
         return {
           ...item,
           isIssue: true,
@@ -148,8 +157,9 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       rawPRs.forEach((item: GitHubRawItem) => {
         const isCreated = item.user?.login?.toLowerCase() === usernameLower;
         const isAssigned =
-          item.assignees?.some((a: GitHubUser) => a.login?.toLowerCase() === usernameLower) ||
-          item.assignee?.login?.toLowerCase() === usernameLower;
+          item.assignees?.some(
+            (a: GitHubUser) => a.login?.toLowerCase() === usernameLower,
+          ) || item.assignee?.login?.toLowerCase() === usernameLower;
         prMap.set(item.id, {
           ...item,
           isIssue: false,
@@ -164,8 +174,9 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       rawReviews.forEach((item: GitHubRawItem) => {
         const isCreated = item.user?.login?.toLowerCase() === usernameLower;
         const isAssigned =
-          item.assignees?.some((a: GitHubUser) => a.login?.toLowerCase() === usernameLower) ||
-          item.assignee?.login?.toLowerCase() === usernameLower;
+          item.assignees?.some(
+            (a: GitHubUser) => a.login?.toLowerCase() === usernameLower,
+          ) || item.assignee?.login?.toLowerCase() === usernameLower;
 
         if (prMap.has(item.id)) {
           const existing = prMap.get(item.id)!;
@@ -189,7 +200,10 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       setItems([...mappedIssues, ...mergedPRs]);
     } catch (err: unknown) {
       console.error(err);
-      const errMsg = err instanceof Error ? err.message : "Something went wrong while loading issues.";
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while loading issues.";
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -255,7 +269,11 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     } else if (diffDays < 30) {
       return `${diffDays}d ago`;
     } else {
-      return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+      return date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
     }
   };
 
@@ -266,9 +284,14 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
 
     return {
       openIssues: totalIssues.filter((item) => item.state === "open").length,
-      openPRs: totalPRs.filter((item) => item.state === "open" && !item.pull_request?.merged_at).length,
-      assigned: items.filter((item) => item.state === "open" && item.isAssigned).length,
-      reviewsRequested: totalPRs.filter((item) => item.state === "open" && item.isReviewRequested).length,
+      openPRs: totalPRs.filter(
+        (item) => item.state === "open" && !item.pull_request?.merged_at,
+      ).length,
+      assigned: items.filter((item) => item.state === "open" && item.isAssigned)
+        .length,
+      reviewsRequested: totalPRs.filter(
+        (item) => item.state === "open" && item.isReviewRequested,
+      ).length,
     };
   }, [items]);
 
@@ -296,11 +319,17 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
 
     // 3. Status Filter
     if (statusFilter === "open") {
-      result = result.filter((item) => item.state === "open" && !item.pull_request?.merged_at);
+      result = result.filter(
+        (item) => item.state === "open" && !item.pull_request?.merged_at,
+      );
     } else if (statusFilter === "closed") {
-      result = result.filter((item) => item.state === "closed" && !item.pull_request?.merged_at);
+      result = result.filter(
+        (item) => item.state === "closed" && !item.pull_request?.merged_at,
+      );
     } else if (statusFilter === "merged") {
-      result = result.filter((item) => !item.isIssue && item.pull_request?.merged_at);
+      result = result.filter(
+        (item) => !item.isIssue && item.pull_request?.merged_at,
+      );
     }
 
     // 4. Role Filter
@@ -315,13 +344,19 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     // 5. Sorting
     result.sort((a, b) => {
       if (sortBy === "newest") {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return (
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
       } else if (sortBy === "oldest") {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return (
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
       } else if (sortBy === "comments") {
         return b.comments - a.comments;
       } else if (sortBy === "updated") {
-        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        return (
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
       }
       return 0;
     });
@@ -357,9 +392,12 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       {/* Header and Sync Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">Issues & Pull Requests</h1>
+          <h1 className="text-3xl font-semibold text-white tracking-wide">
+            Issues & Pull Requests
+          </h1>
           <p className="text-xs text-zinc-500 mt-2 font-mono">
-            Track conversations, code review requests, and assignments from your active repositories.
+            Track conversations, code review requests, and assignments from your
+            active repositories.
           </p>
         </div>
         <button
@@ -374,7 +412,11 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
             stroke="currentColor"
             strokeWidth="2"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
+            />
           </svg>
           {isRefreshing ? "Refreshing..." : "Sync GitHub"}
         </button>
@@ -383,25 +425,33 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       {/* Summary Widgets */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
-          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">Open Issues</p>
+          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">
+            Open Issues
+          </p>
           <p className="text-2xl font-bold text-white mt-1.5 font-mono">
             {loading ? "..." : counts.openIssues}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
-          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">Open PRs</p>
+          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">
+            Open PRs
+          </p>
           <p className="text-2xl font-bold text-white mt-1.5 font-mono">
             {loading ? "..." : counts.openPRs}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
-          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">Assigned to Me</p>
+          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">
+            Assigned to Me
+          </p>
           <p className="text-2xl font-bold text-amber-500 mt-1.5 font-mono">
             {loading ? "..." : counts.assigned}
           </p>
         </div>
         <div className="rounded-lg border border-zinc-850 bg-zinc-950/20 p-4">
-          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">Review Requests</p>
+          <p className="text-[10px] uppercase font-mono tracking-wider text-zinc-500">
+            Review Requests
+          </p>
           <p className="text-2xl font-bold text-purple-400 mt-1.5 font-mono">
             {loading ? "..." : counts.reviewsRequested}
           </p>
@@ -430,7 +480,8 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                     // Reset sub-filters if incompatible
                     if (tab === "issues") {
                       if (statusFilter === "merged") setStatusFilter("all");
-                      if (roleFilter === "review-requested") setRoleFilter("all");
+                      if (roleFilter === "review-requested")
+                        setRoleFilter("all");
                     }
                   }}
                   className={`px-3 py-2 text-xs rounded-t font-mono transition-all border-b-2 cursor-pointer capitalize ${
@@ -451,8 +502,18 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
           {/* Search Field */}
           <div className="relative w-full xl:max-w-md">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-600">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </span>
             <input
@@ -467,8 +528,18 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                 onClick={() => setSearchQuery("")}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-600 hover:text-zinc-400 cursor-pointer"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             )}
@@ -482,21 +553,26 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
             <div className="flex items-center gap-2">
               <span className="text-zinc-600 text-[11px]">Status:</span>
               <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
-                {(["all", "open", "closed", ...(activeTab !== "issues" ? (["merged"] as const) : [])] as const).map(
-                  (status) => (
-                    <button
-                      key={status}
-                      onClick={() => setStatusFilter(status)}
-                      className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
-                        statusFilter === status
-                          ? "bg-zinc-900 text-emerald-400 font-medium"
-                          : "text-zinc-500 hover:text-zinc-300"
-                      }`}
-                    >
-                      {status}
-                    </button>
-                  ),
-                )}
+                {(
+                  [
+                    "all",
+                    "open",
+                    "closed",
+                    ...(activeTab !== "issues" ? (["merged"] as const) : []),
+                  ] as const
+                ).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
+                      statusFilter === status
+                        ? "bg-zinc-900 text-emerald-400 font-medium"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -504,21 +580,28 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
             <div className="flex items-center gap-2">
               <span className="text-zinc-600 text-[11px]">Relation:</span>
               <div className="flex rounded border border-zinc-850 overflow-hidden bg-zinc-900/10">
-                {(["all", "created", "assigned", ...(activeTab !== "issues" ? (["review-requested"] as const) : [])] as const).map(
-                  (role) => (
-                    <button
-                      key={role}
-                      onClick={() => setRoleFilter(role)}
-                      className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
-                        roleFilter === role
-                          ? "bg-zinc-900 text-emerald-400 font-medium"
-                          : "text-zinc-500 hover:text-zinc-300"
-                      }`}
-                    >
-                      {role === "review-requested" ? "review req." : role}
-                    </button>
-                  ),
-                )}
+                {(
+                  [
+                    "all",
+                    "created",
+                    "assigned",
+                    ...(activeTab !== "issues"
+                      ? (["review-requested"] as const)
+                      : []),
+                  ] as const
+                ).map((role) => (
+                  <button
+                    key={role}
+                    onClick={() => setRoleFilter(role)}
+                    className={`px-2.5 py-1 text-[10px] capitalize transition-colors cursor-pointer border-r border-zinc-850 last:border-0 ${
+                      roleFilter === role
+                        ? "bg-zinc-900 text-emerald-400 font-medium"
+                        : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    {role === "review-requested" ? "review req." : role}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -528,7 +611,15 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
             <span className="text-zinc-600 text-[11px]">Sort By:</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "newest" | "oldest" | "comments" | "updated")}
+              onChange={(e) =>
+                setSortBy(
+                  e.target.value as
+                    | "newest"
+                    | "oldest"
+                    | "comments"
+                    | "updated",
+                )
+              }
               className="bg-zinc-950 border border-zinc-850 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-1 px-2 text-[11px] cursor-pointer font-mono"
             >
               <option value="newest">Newest First</option>
@@ -559,11 +650,26 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
             Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
           ) : filteredAndSortedItems.length === 0 ? (
             <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-12 text-center font-mono">
-              <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-8 h-8 text-zinc-700 mx-auto mb-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
-              <p className="text-xs text-zinc-500">No issues or pull requests match the active filters.</p>
-              {(searchQuery || statusFilter !== "all" || roleFilter !== "all" || activeTab !== "all") && (
+              <p className="text-xs text-zinc-500">
+                No issues or pull requests match the active filters.
+              </p>
+              {(searchQuery ||
+                statusFilter !== "all" ||
+                roleFilter !== "all" ||
+                activeTab !== "all") && (
                 <button
                   onClick={() => {
                     setSearchQuery("");
@@ -595,7 +701,13 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                       {isPR ? (
                         isMerged ? (
                           // Merged PR - Purple
-                          <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <svg
+                            className="w-4 h-4 text-purple-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
                             <circle cx="6" cy="18" r="2.5" />
                             <circle cx="18" cy="18" r="2.5" />
                             <circle cx="12" cy="6" r="2.5" />
@@ -604,7 +716,13 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                           </svg>
                         ) : isOpen ? (
                           // Open PR - Green
-                          <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <svg
+                            className="w-4 h-4 text-emerald-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
                             <circle cx="6" cy="18" r="2.5" />
                             <circle cx="6" cy="6" r="2.5" />
                             <circle cx="18" cy="6" r="2.5" />
@@ -612,26 +730,55 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                           </svg>
                         ) : (
                           // Closed PR - Red
-                          <svg className="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <svg
+                            className="w-4 h-4 text-rose-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
                             <circle cx="6" cy="18" r="2.5" />
                             <circle cx="6" cy="6" r="2.5" />
                             <circle cx="18" cy="6" r="2.5" />
                             <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                            <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="1.5" />
+                            <line
+                              x1="4"
+                              y1="4"
+                              x2="20"
+                              y2="20"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                            />
                           </svg>
                         )
                       ) : isOpen ? (
                         // Open Issue - Green
-                        <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          className="w-4 h-4 text-emerald-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <circle cx="12" cy="12" r="10" />
                           <line x1="12" y1="8" x2="12" y2="12" />
                           <circle cx="12" cy="16" r="0.8" fill="currentColor" />
                         </svg>
                       ) : (
                         // Closed Issue - Purple/Gray
-                        <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          className="w-4 h-4 text-purple-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <circle cx="12" cy="12" r="10" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12l2 2 4-4"
+                          />
                         </svg>
                       )}
                     </span>
@@ -667,15 +814,25 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
 
                       <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                         <span className="text-[10px] font-mono text-zinc-600">
-                          by <span className="text-zinc-500 font-medium">{item.user?.login}</span>
+                          by{" "}
+                          <span className="text-zinc-500 font-medium">
+                            {item.user?.login}
+                          </span>
                         </span>
-                        <span className="text-zinc-700 text-[10px] font-mono">•</span>
-                        <span className="text-[10px] font-mono text-zinc-600" title={new Date(item.created_at).toLocaleString()}>
+                        <span className="text-zinc-700 text-[10px] font-mono">
+                          •
+                        </span>
+                        <span
+                          className="text-[10px] font-mono text-zinc-600"
+                          title={new Date(item.created_at).toLocaleString()}
+                        >
                           opened {formatRelativeTime(item.created_at)}
                         </span>
                         {item.labels && item.labels.length > 0 && (
                           <>
-                            <span className="text-zinc-700 text-[10px] font-mono">•</span>
+                            <span className="text-zinc-700 text-[10px] font-mono">
+                              •
+                            </span>
                             <div className="flex flex-wrap gap-1">
                               {item.labels.slice(0, 5).map((label) => {
                                 const styles = getLabelStyles(label.color);
@@ -702,8 +859,18 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                     {/* Comments Indicator */}
                     {item.comments > 0 && (
                       <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                          />
                         </svg>
                         <span>{item.comments}</span>
                       </div>
