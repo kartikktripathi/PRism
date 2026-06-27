@@ -23,7 +23,10 @@ interface OrganizationData {
   reposCount: number;
 }
 
-export default function Organizations({ session, username }: OrganizationsProps) {
+export default function Organizations({
+  session,
+  username,
+}: OrganizationsProps) {
   const [orgs, setOrgs] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +34,15 @@ export default function Organizations({ session, username }: OrganizationsProps)
 
   // Filter and Sorting state
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"total" | "commits" | "prs" | "issues" | "reviews" | "comments" | "alphabetical">("total");
+  const [sortBy, setSortBy] = useState<
+    | "total"
+    | "commits"
+    | "prs"
+    | "issues"
+    | "reviews"
+    | "comments"
+    | "alphabetical"
+  >("total");
   const [filterActiveOnly, setFilterActiveOnly] = useState<boolean>(false);
 
   const fetchOrganizationsData = useCallback(async () => {
@@ -153,15 +164,21 @@ export default function Organizations({ session, username }: OrganizationsProps)
       ]);
 
       if (!graphqlRes.ok) {
-        throw new Error("Failed to fetch contribution details from GitHub GraphQL API.");
+        throw new Error(
+          "Failed to fetch contribution details from GitHub GraphQL API.",
+        );
       }
       if (!restRes.ok) {
-        throw new Error("Failed to fetch comment activity from GitHub Search API.");
+        throw new Error(
+          "Failed to fetch comment activity from GitHub Search API.",
+        );
       }
 
       const graphqlData = await graphqlRes.json();
       if (graphqlData.errors) {
-        throw new Error(graphqlData.errors[0]?.message || "GraphQL error occurred.");
+        throw new Error(
+          graphqlData.errors[0]?.message || "GraphQL error occurred.",
+        );
       }
 
       const restData = await restRes.json();
@@ -171,9 +188,17 @@ export default function Organizations({ session, username }: OrganizationsProps)
       const commentedItems = restData.items || [];
 
       // Map of organization login (lowercase) to organization statistics
-      const orgsMap = new Map<string, OrganizationData & { reposSet: Set<string> }>();
+      const orgsMap = new Map<
+        string,
+        OrganizationData & { reposSet: Set<string> }
+      >();
 
-      const getOrCreateOrg = (login: string, name?: string, avatarUrl?: string, description?: string) => {
+      const getOrCreateOrg = (
+        login: string,
+        name?: string,
+        avatarUrl?: string,
+        description?: string,
+      ) => {
         const key = login.toLowerCase();
         let org = orgsMap.get(key);
         if (!org) {
@@ -202,44 +227,52 @@ export default function Organizations({ session, username }: OrganizationsProps)
       });
 
       // Parse Commit Contributions
-      (collections.commitContributionsByRepository || []).forEach((item: any) => {
-        const owner = item.repository?.owner;
-        if (owner && owner.__typename === "Organization") {
-          const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
-          org.commits += item.contributions?.totalCount || 0;
-          org.reposSet.add(item.repository.nameWithOwner);
-        }
-      });
+      (collections.commitContributionsByRepository || []).forEach(
+        (item: any) => {
+          const owner = item.repository?.owner;
+          if (owner && owner.__typename === "Organization") {
+            const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
+            org.commits += item.contributions?.totalCount || 0;
+            org.reposSet.add(item.repository.nameWithOwner);
+          }
+        },
+      );
 
       // Parse Issue Contributions
-      (collections.issueContributionsByRepository || []).forEach((item: any) => {
-        const owner = item.repository?.owner;
-        if (owner && owner.__typename === "Organization") {
-          const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
-          org.issues += item.contributions?.totalCount || 0;
-          org.reposSet.add(item.repository.nameWithOwner);
-        }
-      });
+      (collections.issueContributionsByRepository || []).forEach(
+        (item: any) => {
+          const owner = item.repository?.owner;
+          if (owner && owner.__typename === "Organization") {
+            const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
+            org.issues += item.contributions?.totalCount || 0;
+            org.reposSet.add(item.repository.nameWithOwner);
+          }
+        },
+      );
 
       // Parse Pull Request Contributions
-      (collections.pullRequestContributionsByRepository || []).forEach((item: any) => {
-        const owner = item.repository?.owner;
-        if (owner && owner.__typename === "Organization") {
-          const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
-          org.pullRequests += item.contributions?.totalCount || 0;
-          org.reposSet.add(item.repository.nameWithOwner);
-        }
-      });
+      (collections.pullRequestContributionsByRepository || []).forEach(
+        (item: any) => {
+          const owner = item.repository?.owner;
+          if (owner && owner.__typename === "Organization") {
+            const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
+            org.pullRequests += item.contributions?.totalCount || 0;
+            org.reposSet.add(item.repository.nameWithOwner);
+          }
+        },
+      );
 
       // Parse Pull Request Review Contributions
-      (collections.pullRequestReviewContributionsByRepository || []).forEach((item: any) => {
-        const owner = item.repository?.owner;
-        if (owner && owner.__typename === "Organization") {
-          const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
-          org.reviews += item.contributions?.totalCount || 0;
-          org.reposSet.add(item.repository.nameWithOwner);
-        }
-      });
+      (collections.pullRequestReviewContributionsByRepository || []).forEach(
+        (item: any) => {
+          const owner = item.repository?.owner;
+          if (owner && owner.__typename === "Organization") {
+            const org = getOrCreateOrg(owner.login, undefined, owner.avatarUrl);
+            org.reviews += item.contributions?.totalCount || 0;
+            org.reposSet.add(item.repository.nameWithOwner);
+          }
+        },
+      );
 
       // Parse Comment activity from issues/PRs search
       commentedItems.forEach((item: any) => {
@@ -249,7 +282,7 @@ export default function Organizations({ session, username }: OrganizationsProps)
           const path = parts[1];
           const owner = path.split("/")[0];
           const key = owner.toLowerCase();
-          
+
           // Increment comments count if this organization is in our map
           const org = orgsMap.get(key);
           if (org) {
@@ -260,8 +293,15 @@ export default function Organizations({ session, username }: OrganizationsProps)
       });
 
       // Convert map to array and calculate total contributions and repos count
-      const finalOrgsList: OrganizationData[] = Array.from(orgsMap.values()).map((org) => {
-        const totalContributions = org.commits + org.issues + org.pullRequests + org.reviews + org.comments;
+      const finalOrgsList: OrganizationData[] = Array.from(
+        orgsMap.values(),
+      ).map((org) => {
+        const totalContributions =
+          org.commits +
+          org.issues +
+          org.pullRequests +
+          org.reviews +
+          org.comments;
         return {
           login: org.login,
           name: org.name,
@@ -280,7 +320,10 @@ export default function Organizations({ session, username }: OrganizationsProps)
       setOrgs(finalOrgsList);
     } catch (err: unknown) {
       console.error(err);
-      const errMsg = err instanceof Error ? err.message : "Something went wrong while loading organizations.";
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while loading organizations.";
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -313,7 +356,7 @@ export default function Organizations({ session, username }: OrganizationsProps)
         (o) =>
           o.name.toLowerCase().includes(q) ||
           o.login.toLowerCase().includes(q) ||
-          o.description.toLowerCase().includes(q)
+          o.description.toLowerCase().includes(q),
       );
     }
 
@@ -358,7 +401,10 @@ export default function Organizations({ session, username }: OrganizationsProps)
       </div>
       <div className="grid grid-cols-3 gap-2.5">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-10 bg-zinc-900 border border-zinc-900 rounded p-2" />
+          <div
+            key={i}
+            className="h-10 bg-zinc-900 border border-zinc-900 rounded p-2"
+          />
         ))}
       </div>
       <div className="h-2 bg-zinc-900 rounded-full w-full" />
@@ -370,9 +416,12 @@ export default function Organizations({ session, username }: OrganizationsProps)
       {/* Header and Sync Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">Organizations</h1>
+          <h1 className="text-3xl font-semibold text-white tracking-wide">
+            Organizations
+          </h1>
           <p className="text-xs text-zinc-500 mt-2 font-mono">
-            Track and analyze your contributions (commits, PRs, issues, reviews, comments) in organization codebases in the past year.
+            Track and analyze your contributions (commits, PRs, issues, reviews,
+            comments) in organization codebases in the past year.
           </p>
         </div>
         <button
@@ -387,7 +436,11 @@ export default function Organizations({ session, username }: OrganizationsProps)
             stroke="currentColor"
             strokeWidth="2"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
+            />
           </svg>
           {isRefreshing ? "Refreshing..." : "Sync GitHub"}
         </button>
@@ -400,8 +453,18 @@ export default function Organizations({ session, username }: OrganizationsProps)
             {/* Search Input */}
             <div className="relative w-full sm:w-80">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-600">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </span>
               <input
@@ -416,8 +479,18 @@ export default function Organizations({ session, username }: OrganizationsProps)
                   onClick={() => setSearchQuery("")}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-600 hover:text-zinc-400 cursor-pointer"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               )}
@@ -432,8 +505,13 @@ export default function Organizations({ session, username }: OrganizationsProps)
                   : "bg-zinc-900/10 border-zinc-850 hover:border-zinc-800 text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${filterActiveOnly ? "bg-emerald-400" : "bg-zinc-600"}`} />
-              <span>Active Only ({orgs.filter((o) => o.totalContributions > 0).length})</span>
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${filterActiveOnly ? "bg-emerald-400" : "bg-zinc-600"}`}
+              />
+              <span>
+                Active Only (
+                {orgs.filter((o) => o.totalContributions > 0).length})
+              </span>
             </button>
           </div>
 
@@ -474,14 +552,28 @@ export default function Organizations({ session, username }: OrganizationsProps)
         <>
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+              {Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
             </div>
           ) : filteredAndSortedOrgs.length === 0 ? (
             <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-12 text-center font-mono">
-              <svg className="w-8 h-8 text-zinc-700 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-8 h-8 text-zinc-700 mx-auto mb-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
-              <p className="text-xs text-zinc-500">No organizations match the active filters or search term.</p>
+              <p className="text-xs text-zinc-500">
+                No organizations match the active filters or search term.
+              </p>
               {(searchQuery || filterActiveOnly) && (
                 <button
                   onClick={() => {
@@ -504,7 +596,8 @@ export default function Organizations({ session, username }: OrganizationsProps)
                 const pctPrs = total > 0 ? (org.pullRequests / total) * 100 : 0;
                 const pctIssues = total > 0 ? (org.issues / total) * 100 : 0;
                 const pctReviews = total > 0 ? (org.reviews / total) * 100 : 0;
-                const pctComments = total > 0 ? (org.comments / total) * 100 : 0;
+                const pctComments =
+                  total > 0 ? (org.comments / total) * 100 : 0;
 
                 return (
                   <a
@@ -547,28 +640,52 @@ export default function Organizations({ session, username }: OrganizationsProps)
                     {/* Stats Grid */}
                     <div className="grid grid-cols-3 gap-2 text-center font-mono">
                       <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">Commits</p>
-                        <p className="text-sm font-bold text-zinc-300 mt-1">{org.commits}</p>
+                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                          Commits
+                        </p>
+                        <p className="text-sm font-bold text-zinc-300 mt-1">
+                          {org.commits}
+                        </p>
                       </div>
                       <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">PRs</p>
-                        <p className="text-sm font-bold text-emerald-500 mt-1">{org.pullRequests}</p>
+                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                          PRs
+                        </p>
+                        <p className="text-sm font-bold text-emerald-500 mt-1">
+                          {org.pullRequests}
+                        </p>
                       </div>
                       <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">Issues</p>
-                        <p className="text-sm font-bold text-amber-500 mt-1">{org.issues}</p>
+                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                          Issues
+                        </p>
+                        <p className="text-sm font-bold text-amber-500 mt-1">
+                          {org.issues}
+                        </p>
                       </div>
                       <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">Reviews</p>
-                        <p className="text-sm font-bold text-purple-400 mt-1">{org.reviews}</p>
+                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                          Reviews
+                        </p>
+                        <p className="text-sm font-bold text-purple-400 mt-1">
+                          {org.reviews}
+                        </p>
                       </div>
                       <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">Comments</p>
-                        <p className="text-sm font-bold text-blue-400 mt-1">{org.comments}</p>
+                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                          Comments
+                        </p>
+                        <p className="text-sm font-bold text-blue-400 mt-1">
+                          {org.comments}
+                        </p>
                       </div>
                       <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded bg-zinc-900/20">
-                        <p className="text-[9px] uppercase tracking-wider text-emerald-500/80 font-bold">Total</p>
-                        <p className="text-sm font-bold text-emerald-400 mt-1">{total}</p>
+                        <p className="text-[9px] uppercase tracking-wider text-emerald-500/80 font-bold">
+                          Total
+                        </p>
+                        <p className="text-sm font-bold text-emerald-400 mt-1">
+                          {total}
+                        </p>
                       </div>
                     </div>
 
@@ -578,13 +695,17 @@ export default function Organizations({ session, username }: OrganizationsProps)
                         <span>Contribution Breakdown</span>
                         {org.reposCount > 0 && (
                           <span>
-                            {org.reposCount} active {org.reposCount === 1 ? "repo" : "repos"}
+                            {org.reposCount} active{" "}
+                            {org.reposCount === 1 ? "repo" : "repos"}
                           </span>
                         )}
                       </div>
                       <div className="w-full h-1.5 rounded-full overflow-hidden bg-zinc-900 flex">
                         {total === 0 ? (
-                          <div className="w-full h-full bg-zinc-800/40 rounded-full" title="No contributions in past year" />
+                          <div
+                            className="w-full h-full bg-zinc-800/40 rounded-full"
+                            title="No contributions in past year"
+                          />
                         ) : (
                           <>
                             {org.commits > 0 && (
@@ -625,33 +746,38 @@ export default function Organizations({ session, username }: OrganizationsProps)
                           </>
                         )}
                       </div>
-                      
+
                       {/* Segment legends (only visible on cards with contributions) */}
                       {total > 0 && (
                         <div className="flex flex-wrap gap-x-3 gap-y-1 text-[8.5px] font-mono text-zinc-600">
                           {org.commits > 0 && (
                             <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" /> Commits ({Math.round(pctCommits)}%)
+                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />{" "}
+                              Commits ({Math.round(pctCommits)}%)
                             </span>
                           )}
                           {org.pullRequests > 0 && (
                             <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> PRs ({Math.round(pctPrs)}%)
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
+                              PRs ({Math.round(pctPrs)}%)
                             </span>
                           )}
                           {org.issues > 0 && (
                             <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Issues ({Math.round(pctIssues)}%)
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />{" "}
+                              Issues ({Math.round(pctIssues)}%)
                             </span>
                           )}
                           {org.reviews > 0 && (
                             <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Reviews ({Math.round(pctReviews)}%)
+                              <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />{" "}
+                              Reviews ({Math.round(pctReviews)}%)
                             </span>
                           )}
                           {org.comments > 0 && (
                             <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Comments ({Math.round(pctComments)}%)
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />{" "}
+                              Comments ({Math.round(pctComments)}%)
                             </span>
                           )}
                         </div>

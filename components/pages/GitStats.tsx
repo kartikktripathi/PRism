@@ -38,28 +38,32 @@ interface TimeStats {
 function getPastMonths(count: number = 6) {
   const months = [];
   const now = new Date();
-  
+
   for (let i = 0; i < count; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const year = d.getFullYear();
     const month = d.getMonth();
-    
+
     const from = new Date(Date.UTC(year, month, 1, 0, 0, 0));
     const to = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59));
-    
-    const label = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-    
+
+    const label = d.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+
     months.push({
       label,
       from: from.toISOString(),
-      to: to.toISOString()
+      to: to.toISOString(),
     });
   }
   return months;
 }
 
 function MiniBarChart({ data }: { data: number[] }) {
-  const activityData = data && data.length > 0 ? data : Array.from({ length: 30 }, () => 0);
+  const activityData =
+    data && data.length > 0 ? data : Array.from({ length: 30 }, () => 0);
   const maxVal = Math.max(...activityData, 1);
   const totalActivity = activityData.reduce((a, b) => a + b, 0);
 
@@ -79,18 +83,21 @@ function MiniBarChart({ data }: { data: number[] }) {
             >
               {/* Bar */}
               <div
-                style={{ height: `${Math.max(heightPercent, activity > 0 ? 15 : 5)}%` }}
+                style={{
+                  height: `${Math.max(heightPercent, activity > 0 ? 15 : 5)}%`,
+                }}
                 className={`w-full rounded-[1px] transition-all duration-150 ${
                   activity > 0
                     ? "bg-emerald-500/80 group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.5)]"
                     : "bg-zinc-800/40"
                 }`}
               />
-              
+
               {/* Tooltip */}
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
                 <div className="bg-zinc-950 border border-zinc-800 text-zinc-300 text-[9px] font-mono py-0.5 px-1.5 rounded shadow-2xl whitespace-nowrap">
-                  Day {idx + 1}: {activity} {activity === 1 ? "contribution" : "contributions"}
+                  Day {idx + 1}: {activity}{" "}
+                  {activity === 1 ? "contribution" : "contributions"}
                 </div>
                 <div className="w-1 h-1 bg-zinc-950 border-r border-b border-zinc-800 rotate-45 -mt-[3px]" />
               </div>
@@ -102,12 +109,20 @@ function MiniBarChart({ data }: { data: number[] }) {
   );
 }
 
-function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () => void }) {
+function MonthlyStatCard({
+  stat,
+  onClick,
+}: {
+  stat: MonthlyStat;
+  onClick?: () => void;
+}) {
   return (
     <div
       onClick={onClick}
       className={`rounded-lg border border-zinc-800 bg-zinc-950/30 p-5 flex flex-col font-sans transition-all duration-200 ${
-        onClick ? "cursor-pointer hover:border-zinc-700 hover:bg-zinc-900/50 hover:scale-[1.01] active:scale-[0.99]" : ""
+        onClick
+          ? "cursor-pointer hover:border-zinc-700 hover:bg-zinc-900/50 hover:scale-[1.01] active:scale-[0.99]"
+          : ""
       }`}
     >
       {/* Card Header with Month Heading and subtle icon */}
@@ -115,8 +130,18 @@ function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () =>
         <h3 className="text-lg font-semibold text-white tracking-wide">
           {stat.month}
         </h3>
-        <svg className="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+        <svg
+          className="w-4 h-4 text-zinc-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
+          />
         </svg>
       </div>
 
@@ -125,7 +150,13 @@ function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () =>
         {/* Commits */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="w-4 h-4 text-emerald-500 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="4" />
               <line x1="12" y1="2" x2="12" y2="8" />
               <line x1="12" y1="16" x2="12" y2="22" />
@@ -138,8 +169,18 @@ function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () =>
         {/* Repositories */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg className="w-4 h-4 text-zinc-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            <svg
+              className="w-4 h-4 text-zinc-400 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
             </svg>
             <span>Repositories</span>
           </div>
@@ -149,7 +190,13 @@ function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () =>
         {/* Pull Requests */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="w-4 h-4 text-purple-400 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="6" cy="18" r="2.5" />
               <circle cx="6" cy="6" r="2.5" />
               <circle cx="18" cy="6" r="2.5" />
@@ -163,7 +210,13 @@ function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () =>
         {/* Issues */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg className="w-4 h-4 text-rose-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="w-4 h-4 text-rose-500 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <circle cx="12" cy="16" r="0.8" fill="currentColor" />
@@ -176,8 +229,18 @@ function MonthlyStatCard({ stat, onClick }: { stat: MonthlyStat; onClick?: () =>
         {/* Reviews & Comments */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <svg
+              className="w-4 h-4 text-amber-500 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
             <span>Reviews & Comments</span>
           </div>
@@ -213,7 +276,10 @@ function SkeletonCard() {
         <div className="h-3 bg-zinc-800 rounded w-1/4 animate-pulse" />
         <div className="h-10 flex items-end gap-[3px] w-full">
           {Array.from({ length: 30 }).map((_, idx) => (
-            <div key={idx} className="bg-zinc-800/20 rounded-[1px] flex-1 h-2 animate-pulse" />
+            <div
+              key={idx}
+              className="bg-zinc-800/20 rounded-[1px] flex-1 h-2 animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -241,7 +307,8 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     try {
       const months = getPastMonths(6);
       const queryFields = months
-        .map((m, idx) => `
+        .map(
+          (m, idx) => `
           month_${idx}: contributionsCollection(from: "${m.from}", to: "${m.to}") {
             totalCommitContributions
             totalPullRequestContributions
@@ -279,7 +346,8 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
               }
             }
           }
-        `)
+        `,
+        )
         .join("\n");
 
       const queryStr = `
@@ -320,7 +388,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
 
       const parsedStats: MonthlyStat[] = months.map((m, idx) => {
         const monthData = userObj[`month_${idx}`];
-        
+
         // Extract commit counts per day
         const dayEntries: { date: string; count: number }[] = [];
         if (monthData?.contributionCalendar?.weeks) {
@@ -331,7 +399,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                 if (day.date && day.date.startsWith(targetPrefix)) {
                   dayEntries.push({
                     date: day.date,
-                    count: day.contributionCount || 0
+                    count: day.contributionCount || 0,
                   });
                 }
               });
@@ -355,13 +423,15 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
         }
 
         if (monthData?.pullRequestReviewContributionsByRepository) {
-          monthData.pullRequestReviewContributionsByRepository.forEach((r: any) => {
-            const lang = r.repository?.primaryLanguage?.name;
-            const count = r.contributions?.totalCount || 0;
-            if (lang && count > 0) {
-              languageScores[lang] = (languageScores[lang] || 0) + count;
-            }
-          });
+          monthData.pullRequestReviewContributionsByRepository.forEach(
+            (r: any) => {
+              const lang = r.repository?.primaryLanguage?.name;
+              const count = r.contributions?.totalCount || 0;
+              if (lang && count > 0) {
+                languageScores[lang] = (languageScores[lang] || 0) + count;
+              }
+            },
+          );
         }
 
         let mostUsedLanguage = "N/A";
@@ -389,7 +459,10 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
       setStats(parsedStats);
     } catch (err: unknown) {
       console.error("Error fetching monthly stats:", err);
-      const errMsg = err instanceof Error ? err.message : "Something went wrong while loading Git stats.";
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while loading Git stats.";
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -397,113 +470,120 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     }
   }, [username, session]);
 
-  const fetchTimeStats = useCallback(async (monthLabel: string) => {
-    if (!username || !session?.accessToken) return;
+  const fetchTimeStats = useCallback(
+    async (monthLabel: string) => {
+      if (!username || !session?.accessToken) return;
 
-    setLoadingTimeStats(true);
-    setTimeStats(null);
+      setLoadingTimeStats(true);
+      setTimeStats(null);
 
-    try {
-      const selectedMonthMeta = getPastMonths(6).find((m) => m.label === monthLabel);
-      if (!selectedMonthMeta) {
-        setLoadingTimeStats(false);
-        return;
-      }
+      try {
+        const selectedMonthMeta = getPastMonths(6).find(
+          (m) => m.label === monthLabel,
+        );
+        if (!selectedMonthMeta) {
+          setLoadingTimeStats(false);
+          return;
+        }
 
-      const fromStr = selectedMonthMeta.from.substring(0, 10);
-      const toStr = selectedMonthMeta.to.substring(0, 10);
+        const fromStr = selectedMonthMeta.from.substring(0, 10);
+        const toStr = selectedMonthMeta.to.substring(0, 10);
 
-      const headers = {
-        Authorization: `Bearer ${session.accessToken}`,
-        Accept: "application/vnd.github+json",
-      };
+        const headers = {
+          Authorization: `Bearer ${session.accessToken}`,
+          Accept: "application/vnd.github+json",
+        };
 
-      const commitUrl = `https://api.github.com/search/commits?q=author:${username}+committer-date:${fromStr}..${toStr}&per_page=100`;
-      const issueUrl = `https://api.github.com/search/issues?q=author:${username}+created:${fromStr}..${toStr}&per_page=100`;
+        const commitUrl = `https://api.github.com/search/commits?q=author:${username}+committer-date:${fromStr}..${toStr}&per_page=100`;
+        const issueUrl = `https://api.github.com/search/issues?q=author:${username}+created:${fromStr}..${toStr}&per_page=100`;
 
-      const [commitRes, issueRes] = await Promise.all([
-        fetch(commitUrl, { headers }),
-        fetch(issueUrl, { headers }),
-      ]);
+        const [commitRes, issueRes] = await Promise.all([
+          fetch(commitUrl, { headers }),
+          fetch(issueUrl, { headers }),
+        ]);
 
-      const commitData = commitRes.ok ? await commitRes.json() : { items: [] };
-      const issueData = issueRes.ok ? await issueRes.json() : { items: [] };
+        const commitData = commitRes.ok
+          ? await commitRes.json()
+          : { items: [] };
+        const issueData = issueRes.ok ? await issueRes.json() : { items: [] };
 
-      let day = 0;
-      let afternoon = 0;
-      let evening = 0;
-      let night = 0;
+        let day = 0;
+        let afternoon = 0;
+        let evening = 0;
+        let night = 0;
 
-      const processDate = (dateString: string) => {
-        if (!dateString) return;
-        const date = new Date(dateString);
-        const hour = date.getHours();
+        const processDate = (dateString: string) => {
+          if (!dateString) return;
+          const date = new Date(dateString);
+          const hour = date.getHours();
 
-        if (hour >= 5 && hour < 12) {
-          day++;
-        } else if (hour >= 12 && hour < 17) {
-          afternoon++;
-        } else if (hour >= 17 && hour < 21) {
-          evening++;
+          if (hour >= 5 && hour < 12) {
+            day++;
+          } else if (hour >= 12 && hour < 17) {
+            afternoon++;
+          } else if (hour >= 17 && hour < 21) {
+            evening++;
+          } else {
+            night++;
+          }
+        };
+
+        if (Array.isArray(commitData.items)) {
+          commitData.items.forEach((item: any) => {
+            if (item.commit?.committer?.date) {
+              processDate(item.commit.committer.date);
+            }
+          });
+        }
+
+        if (Array.isArray(issueData.items)) {
+          issueData.items.forEach((item: any) => {
+            if (item.created_at) {
+              processDate(item.created_at);
+            }
+          });
+        }
+
+        const total = day + afternoon + evening + night;
+        const percentages = {
+          day: total > 0 ? Math.round((day / total) * 100) : 0,
+          afternoon: total > 0 ? Math.round((afternoon / total) * 100) : 0,
+          evening: total > 0 ? Math.round((evening / total) * 100) : 0,
+          night: total > 0 ? Math.round((night / total) * 100) : 0,
+        };
+
+        const maxVal = Math.max(day, afternoon, evening, night);
+        let persona = "Nocturnal Developer";
+        if (total > 0) {
+          if (maxVal === day) {
+            persona = "Early-Bird Engineer";
+          } else if (maxVal === afternoon) {
+            persona = "Post-Lunch Programmer";
+          } else if (maxVal === evening) {
+            persona = "Shadow Scripter";
+          } else if (maxVal === night) {
+            persona = "Nocturnal Developer";
+          }
         } else {
-          night++;
+          persona = "Silent Achiever";
         }
-      };
 
-      if (Array.isArray(commitData.items)) {
-        commitData.items.forEach((item: any) => {
-          if (item.commit?.committer?.date) {
-            processDate(item.commit.committer.date);
-          }
+        setTimeStats({
+          day,
+          afternoon,
+          evening,
+          night,
+          percentages,
+          persona,
         });
+      } catch (err) {
+        console.error("Error fetching time stats:", err);
+      } finally {
+        setLoadingTimeStats(false);
       }
-
-      if (Array.isArray(issueData.items)) {
-        issueData.items.forEach((item: any) => {
-          if (item.created_at) {
-            processDate(item.created_at);
-          }
-        });
-      }
-
-      const total = day + afternoon + evening + night;
-      const percentages = {
-        day: total > 0 ? Math.round((day / total) * 100) : 0,
-        afternoon: total > 0 ? Math.round((afternoon / total) * 100) : 0,
-        evening: total > 0 ? Math.round((evening / total) * 100) : 0,
-        night: total > 0 ? Math.round((night / total) * 100) : 0,
-      };
-
-      const maxVal = Math.max(day, afternoon, evening, night);
-      let persona = "Nocturnal Developer";
-      if (total > 0) {
-        if (maxVal === day) {
-          persona = "Early-Bird Engineer";
-        } else if (maxVal === afternoon) {
-          persona = "Post-Lunch Programmer";
-        } else if (maxVal === evening) {
-          persona = "Shadow Scripter";
-        } else if (maxVal === night) {
-          persona = "Nocturnal Developer";
-        }
-      } else {
-        persona = "Silent Achiever";
-      }
-
-      setTimeStats({
-        day,
-        afternoon,
-        evening,
-        night,
-        percentages,
-        persona,
-      });
-    } catch (err) {
-      console.error("Error fetching time stats:", err);
-    } finally {
-      setLoadingTimeStats(false);
-    }
-  }, [username, session]);
+    },
+    [username, session],
+  );
 
   useEffect(() => {
     if (selectedMonth) {
@@ -525,8 +605,14 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
   };
 
   const selectedStat = stats?.find((s) => s.month === selectedMonth);
-  const selectedIdx = stats && selectedMonth ? stats.findIndex((s) => s.month === selectedMonth) : -1;
-  const prevStat = stats && selectedIdx !== -1 && selectedIdx + 1 < stats.length ? stats[selectedIdx + 1] : null;
+  const selectedIdx =
+    stats && selectedMonth
+      ? stats.findIndex((s) => s.month === selectedMonth)
+      : -1;
+  const prevStat =
+    stats && selectedIdx !== -1 && selectedIdx + 1 < stats.length
+      ? stats[selectedIdx + 1]
+      : null;
 
   let currentTotal = 0;
   let prevTotal = 0;
@@ -534,9 +620,17 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
   let diffType: "more" | "less" | "equal" | "none" = "none";
 
   if (selectedStat) {
-    currentTotal = selectedStat.commits + selectedStat.pullRequests + selectedStat.issues + selectedStat.reviews;
+    currentTotal =
+      selectedStat.commits +
+      selectedStat.pullRequests +
+      selectedStat.issues +
+      selectedStat.reviews;
     if (prevStat) {
-      prevTotal = prevStat.commits + prevStat.pullRequests + prevStat.issues + prevStat.reviews;
+      prevTotal =
+        prevStat.commits +
+        prevStat.pullRequests +
+        prevStat.issues +
+        prevStat.reviews;
       if (prevTotal === 0) {
         if (currentTotal > 0) {
           diffPercent = 100;
@@ -560,7 +654,12 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
   }
 
   let mostActiveDayText = "";
-  if (selectedStat && selectedStat.commitHistory && selectedStat.commitHistory.length > 0 && selectedMonth) {
+  if (
+    selectedStat &&
+    selectedStat.commitHistory &&
+    selectedStat.commitHistory.length > 0 &&
+    selectedMonth
+  ) {
     const maxVal = Math.max(...selectedStat.commitHistory);
     if (maxVal > 0) {
       const dayIdx = selectedStat.commitHistory.indexOf(maxVal);
@@ -587,8 +686,18 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
             onClick={() => setSelectedMonth(null)}
             className="flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
             Back to Git Stats
           </button>
@@ -601,39 +710,66 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           {selectedStat !== undefined && (
             <div className="space-y-1.5 text-sm text-zinc-400 font-mono">
               <div>
-                Repositories worked on: <span className="text-emerald-400 font-bold font-sans text-base">{selectedStat.repositories}</span>
+                Repositories worked on:{" "}
+                <span className="text-emerald-400 font-bold font-sans text-base">
+                  {selectedStat.repositories}
+                </span>
               </div>
               <div>
-                Repositories created: <span className="text-teal-400 font-bold font-sans text-base">{selectedStat.reposCreated}</span>
+                Repositories created:{" "}
+                <span className="text-teal-400 font-bold font-sans text-base">
+                  {selectedStat.reposCreated}
+                </span>
               </div>
               <div>
-                Pull requests opened: <span className="text-purple-400 font-bold font-sans text-base">{selectedStat.pullRequests}</span>
+                Pull requests opened:{" "}
+                <span className="text-purple-400 font-bold font-sans text-base">
+                  {selectedStat.pullRequests}
+                </span>
               </div>
               <div>
-                Most used language: <span className="text-sky-400 font-bold font-sans text-base">{selectedStat.mostUsedLanguage}</span>
+                Most used language:{" "}
+                <span className="text-sky-400 font-bold font-sans text-base">
+                  {selectedStat.mostUsedLanguage}
+                </span>
               </div>
               {prevStat && (
                 <div className="text-xs mt-1.5 text-zinc-500 font-sans">
                   {diffType === "more" && (
                     <span>
-                      📈 <span className="text-emerald-400 font-semibold">{diffPercent}% more</span> contributions than last month ({currentTotal} vs {prevTotal})
+                      📈{" "}
+                      <span className="text-emerald-400 font-semibold">
+                        {diffPercent}% more
+                      </span>{" "}
+                      contributions than last month ({currentTotal} vs{" "}
+                      {prevTotal})
                     </span>
                   )}
                   {diffType === "less" && (
                     <span>
-                      📉 <span className="text-rose-400 font-semibold">{diffPercent}% less</span> contributions than last month ({currentTotal} vs {prevTotal})
+                      📉{" "}
+                      <span className="text-rose-400 font-semibold">
+                        {diffPercent}% less
+                      </span>{" "}
+                      contributions than last month ({currentTotal} vs{" "}
+                      {prevTotal})
                     </span>
                   )}
                   {diffType === "equal" && (
                     <span>
-                      📊 <span className="text-zinc-300 font-semibold">Equal</span> contributions as last month ({currentTotal})
+                      📊{" "}
+                      <span className="text-zinc-300 font-semibold">Equal</span>{" "}
+                      contributions as last month ({currentTotal})
                     </span>
                   )}
                 </div>
               )}
               {mostActiveDayText && (
                 <div className="text-xs text-zinc-500 font-sans mt-0.5">
-                  ⭐ Most active day: <span className="text-amber-400 font-semibold">{mostActiveDayText}</span>
+                  ⭐ Most active day:{" "}
+                  <span className="text-amber-400 font-semibold">
+                    {mostActiveDayText}
+                  </span>
                 </div>
               )}
             </div>
@@ -647,15 +783,32 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
               Developer Persona
             </h3>
             <p className="text-xs text-zinc-500 font-mono">
-              Analyzing timezone-adjusted contribution hours for {selectedMonth}.
+              Analyzing timezone-adjusted contribution hours for {selectedMonth}
+              .
             </p>
           </div>
 
           {loadingTimeStats ? (
             <div className="flex items-center gap-2 font-mono text-xs text-zinc-500 py-6">
-              <svg className="animate-spin h-4 w-4 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin h-4 w-4 text-emerald-400"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               <span>Analyzing contribution times...</span>
             </div>
@@ -667,19 +820,23 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                   Result
                 </div>
                 <div className="flex">
-                  <div className={`px-4 py-2.5 rounded border font-mono text-xs font-semibold flex items-center gap-2 select-none shadow-lg ${
-                    timeStats.persona === "Early-Bird Engineer"
-                      ? "bg-amber-950/20 border-amber-500/30 text-amber-400 shadow-amber-500/5"
-                      : timeStats.persona === "Post-Lunch Programmer"
-                        ? "bg-orange-950/20 border-orange-500/30 text-orange-400 shadow-orange-500/5"
-                        : timeStats.persona === "Shadow Scripter"
-                          ? "bg-purple-950/20 border-purple-500/30 text-purple-400 shadow-purple-500/5"
-                          : timeStats.persona === "Nocturnal Developer"
-                            ? "bg-indigo-950/20 border-indigo-500/30 text-indigo-400 shadow-indigo-500/5"
-                            : "bg-zinc-900 border-zinc-800 text-zinc-300"
-                  }`}>
+                  <div
+                    className={`px-4 py-2.5 rounded border font-mono text-xs font-semibold flex items-center gap-2 select-none shadow-lg ${
+                      timeStats.persona === "Early-Bird Engineer"
+                        ? "bg-amber-950/20 border-amber-500/30 text-amber-400 shadow-amber-500/5"
+                        : timeStats.persona === "Post-Lunch Programmer"
+                          ? "bg-orange-950/20 border-orange-500/30 text-orange-400 shadow-orange-500/5"
+                          : timeStats.persona === "Shadow Scripter"
+                            ? "bg-purple-950/20 border-purple-500/30 text-purple-400 shadow-purple-500/5"
+                            : timeStats.persona === "Nocturnal Developer"
+                              ? "bg-indigo-950/20 border-indigo-500/30 text-indigo-400 shadow-indigo-500/5"
+                              : "bg-zinc-900 border-zinc-800 text-zinc-300"
+                    }`}
+                  >
                     <span>you are a/an</span>
-                    <span className="underline decoration-2 underline-offset-4 decoration-current">{timeStats.persona}</span>
+                    <span className="underline decoration-2 underline-offset-4 decoration-current">
+                      {timeStats.persona}
+                    </span>
                     <span>
                       {timeStats.persona === "Early-Bird Engineer" && "☀️"}
                       {timeStats.persona === "Post-Lunch Programmer" && "☕"}
@@ -702,7 +859,10 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                   <div className="flex justify-between text-zinc-400">
                     <span>Day (5am - 12pm)</span>
                     <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.day}% <span className="text-[10px] text-zinc-500">({timeStats.day})</span>
+                      {timeStats.percentages.day}%{" "}
+                      <span className="text-[10px] text-zinc-500">
+                        ({timeStats.day})
+                      </span>
                     </span>
                   </div>
                   <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
@@ -718,7 +878,10 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                   <div className="flex justify-between text-zinc-400">
                     <span>Afternoon (12pm - 5pm)</span>
                     <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.afternoon}% <span className="text-[10px] text-zinc-500">({timeStats.afternoon})</span>
+                      {timeStats.percentages.afternoon}%{" "}
+                      <span className="text-[10px] text-zinc-500">
+                        ({timeStats.afternoon})
+                      </span>
                     </span>
                   </div>
                   <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
@@ -734,7 +897,10 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                   <div className="flex justify-between text-zinc-400">
                     <span>Evening (5pm - 9pm)</span>
                     <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.evening}% <span className="text-[10px] text-zinc-500">({timeStats.evening})</span>
+                      {timeStats.percentages.evening}%{" "}
+                      <span className="text-[10px] text-zinc-500">
+                        ({timeStats.evening})
+                      </span>
                     </span>
                   </div>
                   <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
@@ -750,7 +916,10 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                   <div className="flex justify-between text-zinc-400">
                     <span>Night (9pm - 5am)</span>
                     <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.night}% <span className="text-[10px] text-zinc-500">({timeStats.night})</span>
+                      {timeStats.percentages.night}%{" "}
+                      <span className="text-[10px] text-zinc-500">
+                        ({timeStats.night})
+                      </span>
                     </span>
                   </div>
                   <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
@@ -777,12 +946,14 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">Git Stats</h1>
+          <h1 className="text-3xl font-semibold text-white tracking-wide">
+            Git Stats
+          </h1>
           <p className="text-xs text-zinc-500 mt-2 font-mono">
             Monthly breakdown of your GitHub contributions and activity.
           </p>
         </div>
-        
+
         {username && session && (
           <button
             onClick={handleRefresh}
@@ -796,7 +967,11 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
               stroke="currentColor"
               strokeWidth="2"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
+              />
             </svg>
             {isRefreshing ? "Refreshing..." : "Sync GitHub"}
           </button>
@@ -820,15 +995,16 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
       {!error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading
-            ? Array.from({ length: 6 }).map((_, idx) => <SkeletonCard key={idx} />)
+            ? Array.from({ length: 6 }).map((_, idx) => (
+                <SkeletonCard key={idx} />
+              ))
             : stats?.map((stat) => (
                 <MonthlyStatCard
                   key={stat.month}
                   stat={stat}
                   onClick={() => setSelectedMonth(stat.month)}
                 />
-              ))
-          }
+              ))}
         </div>
       )}
     </div>
