@@ -57,8 +57,6 @@ export default function Home() {
     useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [loadingNotifications, setLoadingNotifications] =
-    useState<boolean>(false);
 
   const [position, setPosition] = useState({
     x: 0,
@@ -112,16 +110,14 @@ export default function Home() {
       fetchRecentCommits();
       fetchContributionCalendar();
       fetchNotifications();
-      console.log(userRepos);
     }
   }, [username]);
 
   async function fetchNotifications() {
     if (!username || !session?.accessToken) return;
-    setLoadingNotifications(true);
     try {
       const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 7);
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
       const sinceISO = oneDayAgo.toISOString();
 
       const headers = {
@@ -386,8 +382,6 @@ export default function Home() {
       setNotifications(feed);
     } catch (error) {
       console.error("Error fetching notifications feed:", error);
-    } finally {
-      setLoadingNotifications(false);
     }
   }
 
