@@ -407,7 +407,7 @@ export default function Home() {
             query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
               user(login: $LOGIN) {
                 contributionsCollection(from: $FROM, to: $TO) {
-                  commitContributionsByRepository(maxRepositories: 25) {
+                  commitContributionsByRepository(maxRepositories: 100) {
                     repository {
                       name
                       nameWithOwner
