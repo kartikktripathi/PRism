@@ -429,15 +429,15 @@ export default function Home() {
 
       processWeeks(
         y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
+        [],
       );
       processWeeks(
         y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
+        [],
       );
       processWeeks(
         y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
+        [],
       );
 
       const uniqueContributionsMap: { [date: string]: number } = {};
@@ -587,8 +587,8 @@ export default function Home() {
                 : "mentioned you in";
           let url = n.subject.url
             ? n.subject.url
-                .replace("api.github.com/repos", "github.com")
-                .replace("/pulls/", "/pull/")
+              .replace("api.github.com/repos", "github.com")
+              .replace("/pulls/", "/pull/")
             : `https://github.com/${n.repository.full_name}`;
 
           if (
@@ -926,13 +926,11 @@ export default function Home() {
       {/* Top Header */}
       <header className="h-14 border-b border-zinc-800/60 bg-zinc-950/20 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
         {/* Left Side: PRism Logo */}
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-sm tracking-wider font-semibold text-white">
-            PRism
-          </span>
-          <span className="px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900/40 text-[9px] font-mono text-zinc-500">
-            v0.1.0
-          </span>
+        <div
+          onClick={() => window.location.reload()}
+          className="flex justify-start -ml-10 translate-y-[3px] hover:cursor-pointer hover:scale-110 duration-500"
+        >
+          <img src="/logo.png" className="w-28 h-14 object-contain" />
         </div>
 
         {/* Right Side: GitHub Avatar & Name */}
@@ -1001,11 +999,10 @@ export default function Home() {
                 <button
                   key={tab}
                   onClick={() => handleTabChange(tab)}
-                  className={`w-full flex items-center px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono ${
-                    isActive
-                      ? "bg-zinc-900/60 border border-zinc-800/60 text-white font-medium"
-                      : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/10 border border-transparent"
-                  }`}
+                  className={`w-full flex items-center px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono ${isActive
+                    ? "bg-zinc-900/60 border border-zinc-800/60 text-white font-medium"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/10 border border-transparent"
+                    }`}
                 >
                   {tab}
                 </button>
