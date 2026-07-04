@@ -945,7 +945,7 @@ export default function Home() {
               className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
               title={`${streak} day contribution streak`}
             >
-              <span>{streak >= 1000 ? "1000+" : streak}</span>
+              <span className={`${outfit.className} text-lg`}>{streak >= 1000 ? "1000+" : streak}</span>
               <img className="w-6 h-6 object-contain" src="/fire.gif" />
             </div>
           )}
@@ -962,11 +962,12 @@ export default function Home() {
           {session?.user?.image ? (
             <img
               src={session.user.image}
-              className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
+              className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
               alt="avatar"
+              onClick={() => window.open(`https://github.com/${username}`, "_blank")}
             />
           ) : (
-            <div className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center text-xs font-mono text-zinc-400">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono text-zinc-400">
               {session?.user?.name?.[0] || "User"}
             </div>
           )}
