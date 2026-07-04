@@ -43,7 +43,6 @@ export default function Dashboard({
   loadingContribution,
   notifications = [],
 }: DashboardProps) {
-  console.log("notifs:", notifications);
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const userReposOwned = repos
@@ -55,7 +54,6 @@ export default function Dashboard({
   const newPRs = prs.filter((pr) => {
     return new Date(pr.created_at) >= thirtyDaysAgo;
   });
-  console.log(newPRs);
 
   const stats = [
     {

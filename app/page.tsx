@@ -598,7 +598,6 @@ export default function Home() {
     });
 
     const data = await res.json();
-    console.log("User:", data);
     setGithubUser(data);
     setUsername(data.login);
   }
