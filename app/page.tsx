@@ -117,10 +117,19 @@ export default function Home() {
       if (loadStates.repos.status === "idle") fetchReposWithRetry();
       if (loadStates.prs.status === "idle") fetchPRsWithRetry();
       if (loadStates.topRepos.status === "idle") fetchRecentCommitsWithRetry();
-      if (loadStates.contributions.status === "idle") fetchContributionCalendarWithRetry();
-      if (loadStates.notifications.status === "idle") fetchNotificationsWithRetry();
+      if (loadStates.contributions.status === "idle")
+        fetchContributionCalendarWithRetry();
+      if (loadStates.notifications.status === "idle")
+        fetchNotificationsWithRetry();
     }
-  }, [username, loadStates.repos.status, loadStates.prs.status, loadStates.topRepos.status, loadStates.contributions.status, loadStates.notifications.status]);
+  }, [
+    username,
+    loadStates.repos.status,
+    loadStates.prs.status,
+    loadStates.topRepos.status,
+    loadStates.contributions.status,
+    loadStates.notifications.status,
+  ]);
 
   useEffect(() => {
     if (
@@ -322,7 +331,10 @@ export default function Home() {
         topRepos: { status: "success", errorCount: 0 },
       }));
     } catch (error) {
-      console.error("Error fetching top repos from GraphQL, retrying in 3s...", error);
+      console.error(
+        "Error fetching top repos from GraphQL, retrying in 3s...",
+        error,
+      );
       setLoadStates((prev) => ({
         ...prev,
         topRepos: { status: "error", errorCount: prev.topRepos.errorCount + 1 },
@@ -464,10 +476,16 @@ export default function Home() {
         contributions: { status: "success", errorCount: 0 },
       }));
     } catch (error) {
-      console.error("Error fetching contribution calendar, retrying in 3s...", error);
+      console.error(
+        "Error fetching contribution calendar, retrying in 3s...",
+        error,
+      );
       setLoadStates((prev) => ({
         ...prev,
-        contributions: { status: "error", errorCount: prev.contributions.errorCount + 1 },
+        contributions: {
+          status: "error",
+          errorCount: prev.contributions.errorCount + 1,
+        },
       }));
       setTimeout(fetchContributionCalendarWithRetry, 3000);
     } finally {
@@ -501,34 +519,34 @@ export default function Home() {
 
       // 1. Fetch Inbox Notifications
       const notifs = await fetchWithCheck(
-        `https://api.github.com/notifications?all=true&since=${sinceISO}`
+        `https://api.github.com/notifications?all=true&since=${sinceISO}`,
       );
 
       // 2. Fetch Received Events (stars, forks)
       const events = await fetchWithCheck(
-        `https://api.github.com/users/${username}/received_events?per_page=100`
+        `https://api.github.com/users/${username}/received_events?per_page=100`,
       );
 
       // 3. Fetch Followers
       const followers = await fetchWithCheck(
-        `https://api.github.com/users/${username}/followers?per_page=10`
+        `https://api.github.com/users/${username}/followers?per_page=10`,
       );
 
       // 4. Fetch User's Own Events (for repo creation, etc.)
       const userEvents = await fetchWithCheck(
-        `https://api.github.com/users/${username}/events?per_page=100`
+        `https://api.github.com/users/${username}/events?per_page=100`,
       );
 
       // 5. Fetch User's Merged PRs
       const sinceDateOnly = sinceISO.split("T")[0];
       const mergedPRsData = await fetchWithCheck(
-        `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`,
       );
       const mergedPRs = mergedPRsData?.items || [];
 
       // 6. Fetch User's Opened PRs
       const openedPRsData = await fetchWithCheck(
-        `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`,
       );
       const openedPRs = openedPRsData?.items || [];
 
@@ -750,7 +768,10 @@ export default function Home() {
       console.error("Error fetching notifications, retrying in 3s...", error);
       setLoadStates((prev) => ({
         ...prev,
-        notifications: { status: "error", errorCount: prev.notifications.errorCount + 1 },
+        notifications: {
+          status: "error",
+          errorCount: prev.notifications.errorCount + 1,
+        },
       }));
       setTimeout(fetchNotificationsWithRetry, 3000);
     }

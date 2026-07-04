@@ -39,7 +39,7 @@ export function DashboardLoader({ loadStates }: DashboardLoaderProps) {
           animation: scale-pulse 3s ease-in-out infinite;
         }
       `}</style>
-      
+
       <div className="relative animate-scale-pulse">
         <img
           src="/logo.png"
