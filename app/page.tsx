@@ -680,9 +680,9 @@ export default function Home() {
               className="cursor-move flex items-center justify-between px-4 py-3 border-b border-zinc-800/60 bg-zinc-900/20"
             >
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-red-500 cursor-pointer" />
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-yellow-500 cursor-pointer" />
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-green-500 cursor-pointer" />
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 cursor-pointer" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 cursor-pointer" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500 cursor-pointer" />
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 justify-center">
                 <span>http://localhost:3000/</span>
