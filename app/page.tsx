@@ -9,6 +9,11 @@ import ReviewsAndComments from "@/components/pages/ReviewsAndComments";
 import Organizations from "@/components/pages/Organizations";
 import GitWrapped from "@/components/pages/GitStats";
 import { DashboardLoader, LoadStates } from "@/components/ui/dashboard-loader";
+import { Outfit } from "next/font/google";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+});
 
 function calculateStreak(contributions: { count: number; date: string }[]) {
   if (!contributions || contributions.length === 0) return 0;
@@ -940,17 +945,17 @@ export default function Home() {
               className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
               title={`${streak} day contribution streak`}
             >
-              <span>🔥</span>
               <span>{streak >= 1000 ? "1000+" : streak}</span>
+              <img className="w-6 h-6 object-contain" src="/fire.gif" />
             </div>
           )}
 
-          <div className="flex flex-col items-end text-[11px] font-mono leading-none gap-0.5">
-            <span className="text-zinc-300 font-sans text-xs font-medium">
+          <div className={`${outfit.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}>
+            <span className="text-zinc-300 text-xs font-medium">
               {session?.user?.name || "Open Sourcerer"}
             </span>
             <span className="text-zinc-500">
-              {session?.user?.email || "Email Unavailable"}
+              {username || "Username Unavailable"}
             </span>
           </div>
 
