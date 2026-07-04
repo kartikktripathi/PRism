@@ -939,42 +939,46 @@ export default function Home() {
         </div>
 
         {/* Right Side: GitHub Avatar & Name */}
-        <div className="flex items-center gap-3.5">
-          {streak > 0 && (
-            <div
-              className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
-              title={`${streak} day contribution streak`}
-            >
-              <span className={`${outfit.className} text-lg`}>{streak >= 1000 ? "1000+" : streak}</span>
-              <img className="w-6 h-6 object-contain" src="/fire.gif" />
-            </div>
-          )}
+        <div className="group/profile relative flex items-center h-full pr-1">
+          {/* Sliding wrapper containing Streak, Name, and Avatar */}
+          <div className="flex items-center gap-3.5 transition-transform duration-300 ease-out group-hover/profile:-translate-x-10 z-10">
+            {streak > 0 && (
+              <div
+                className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
+                title={`${streak} day contribution streak`}
+              >
+                <span className={`${outfit.className} text-lg`}>{streak >= 1000 ? "1000+" : streak}</span>
+                <img className="w-6 h-6 object-contain" src="/fire.gif" />
+              </div>
+            )}
 
-          <div className={`${outfit.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}>
-            <span className="text-zinc-300 text-xs font-medium">
-              {session?.user?.name || "Open Sourcerer"}
-            </span>
-            <span className="text-zinc-500">
-              {username || "Username Unavailable"}
-            </span>
+            <div className={`${outfit.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}>
+              <span className="text-zinc-300 text-xs font-medium">
+                {session?.user?.name || "Open Sourcerer"}
+              </span>
+              <span className="text-zinc-500">
+                {username || "Username Unavailable"}
+              </span>
+            </div>
+
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+              className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
+                alt="avatar"
+                onClick={() => window.open(`https://github.com/${username}`, "_blank")}
+              />
+            ) : (
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono text-zinc-400">
+                {session?.user?.name?.[0] || "User"}
+              </div>
+            )}
           </div>
 
-          {session?.user?.image ? (
-            <img
-              src={session.user.image}
-              className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
-              alt="avatar"
-              onClick={() => window.open(`https://github.com/${username}`, "_blank")}
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono text-zinc-400">
-              {session?.user?.name?.[0] || "User"}
-            </div>
-          )}
-
+          {/* Logout Button (Hidden behind/revealed on hover) */}
           <button
             onClick={() => signOut()}
-            className="p-1.5 rounded border border-zinc-800 bg-zinc-900/10 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer ml-1"
+            className="absolute right-1 z-0 w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer flex items-center justify-center top-1/2 -translate-y-1/2"
             title="Sign out"
           >
             <svg
