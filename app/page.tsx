@@ -619,7 +619,6 @@ export default function Home() {
     );
 
     const data = await res.json();
-    console.log("PRs:", data);
     setPrs(data.items || []);
   }
 
@@ -794,7 +793,7 @@ export default function Home() {
               {session?.user?.name || "Open Sourcerer"}
             </span>
             <span className="text-zinc-500">
-              {session?.user?.email || "github-auth"}
+              {session?.user?.email || "Email Unavailable"}
             </span>
           </div>
 
@@ -806,7 +805,7 @@ export default function Home() {
             />
           ) : (
             <div className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center text-xs font-mono text-zinc-400">
-              {session?.user?.name?.[0] || "U"}
+              {session?.user?.name?.[0] || "User"}
             </div>
           )}
 
