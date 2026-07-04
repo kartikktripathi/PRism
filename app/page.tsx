@@ -8,6 +8,7 @@ import IssuesAndPRs from "@/components/pages/IssuesAndPRs";
 import ReviewsAndComments from "@/components/pages/ReviewsAndComments";
 import Organizations from "@/components/pages/Organizations";
 import GitWrapped from "@/components/pages/GitStats";
+import { DashboardLoader, LoadStates } from "@/components/ui/dashboard-loader";
 
 function calculateStreak(contributions: { count: number; date: string }[]) {
   if (!contributions || contributions.length === 0) return 0;
@@ -57,6 +58,15 @@ export default function Home() {
     useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [loadStates, setLoadStates] = useState<LoadStates>({
+    user: { status: "idle", errorCount: 0 },
+    repos: { status: "idle", errorCount: 0 },
+    prs: { status: "idle", errorCount: 0 },
+    topRepos: { status: "idle", errorCount: 0 },
+    contributions: { status: "idle", errorCount: 0 },
+    notifications: { status: "idle", errorCount: 0 },
+  });
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const [position, setPosition] = useState({
     x: 0,
@@ -77,7 +87,21 @@ export default function Home() {
 
   useEffect(() => {
     if (session) {
-      fetchUser();
+      if (loadStates.user.status === "idle") {
+        fetchUserWithRetry();
+      }
+    } else {
+      setLoadStates({
+        user: { status: "idle", errorCount: 0 },
+        repos: { status: "idle", errorCount: 0 },
+        prs: { status: "idle", errorCount: 0 },
+        topRepos: { status: "idle", errorCount: 0 },
+        contributions: { status: "idle", errorCount: 0 },
+        notifications: { status: "idle", errorCount: 0 },
+      });
+      setUsername(null);
+      setGithubUser(null);
+      setInitialLoadComplete(false);
     }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
@@ -88,33 +112,375 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [session]);
 
-  async function fetchRepos() {
-    const res = await fetch(
-      "https://api.github.com/user/repos?per_page=100&type=all",
-      {
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-      },
-    );
-
-    const data = await res.json();
-
-    setUserRepos(data);
-  }
-
   useEffect(() => {
     if (username) {
-      fetchPRs();
-      fetchRepos();
-      fetchRecentCommits();
-      fetchContributionCalendar();
-      fetchNotifications();
+      if (loadStates.repos.status === "idle") fetchReposWithRetry();
+      if (loadStates.prs.status === "idle") fetchPRsWithRetry();
+      if (loadStates.topRepos.status === "idle") fetchRecentCommitsWithRetry();
+      if (loadStates.contributions.status === "idle") fetchContributionCalendarWithRetry();
+      if (loadStates.notifications.status === "idle") fetchNotificationsWithRetry();
     }
-  }, [username]);
+  }, [username, loadStates.repos.status, loadStates.prs.status, loadStates.topRepos.status, loadStates.contributions.status, loadStates.notifications.status]);
 
-  async function fetchNotifications() {
+  useEffect(() => {
+    if (
+      loadStates.user.status === "success" &&
+      loadStates.repos.status === "success" &&
+      loadStates.prs.status === "success" &&
+      loadStates.topRepos.status === "success" &&
+      loadStates.contributions.status === "success" &&
+      loadStates.notifications.status === "success"
+    ) {
+      setInitialLoadComplete(true);
+    }
+  }, [
+    loadStates.user.status,
+    loadStates.repos.status,
+    loadStates.prs.status,
+    loadStates.topRepos.status,
+    loadStates.contributions.status,
+    loadStates.notifications.status,
+  ]);
+
+  async function fetchUserWithRetry() {
+    if (!session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      user: { ...prev.user, status: "loading" },
+    }));
+    try {
+      const res = await fetch("https://api.github.com/user", {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch user: ${res.status}`);
+      }
+      const data = await res.json();
+      setGithubUser(data);
+      setUsername(data.login);
+      setLoadStates((prev) => ({
+        ...prev,
+        user: { status: "success", errorCount: 0 },
+      }));
+    } catch (err) {
+      console.error("fetchUser failed, retrying in 3s...", err);
+      setLoadStates((prev) => ({
+        ...prev,
+        user: { status: "error", errorCount: prev.user.errorCount + 1 },
+      }));
+      setTimeout(fetchUserWithRetry, 3000);
+    }
+  }
+
+  async function fetchReposWithRetry() {
+    if (!session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      repos: { ...prev.repos, status: "loading" },
+    }));
+    try {
+      const res = await fetch(
+        "https://api.github.com/user/repos?per_page=100&type=all",
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        },
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to fetch repos: ${res.status}`);
+      }
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        throw new Error("Expected array for repos");
+      }
+      setUserRepos(data);
+      setLoadStates((prev) => ({
+        ...prev,
+        repos: { status: "success", errorCount: 0 },
+      }));
+    } catch (err) {
+      console.error("fetchRepos failed, retrying in 3s...", err);
+      setLoadStates((prev) => ({
+        ...prev,
+        repos: { status: "error", errorCount: prev.repos.errorCount + 1 },
+      }));
+      setTimeout(fetchReposWithRetry, 3000);
+    }
+  }
+
+  async function fetchPRsWithRetry() {
     if (!username || !session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      prs: { ...prev.prs, status: "loading" },
+    }));
+    try {
+      const res = await fetch(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        },
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to fetch PRs: ${res.status}`);
+      }
+      const data = await res.json();
+      setPrs(data.items || []);
+      setLoadStates((prev) => ({
+        ...prev,
+        prs: { status: "success", errorCount: 0 },
+      }));
+    } catch (err) {
+      console.error("fetchPRs failed, retrying in 3s...", err);
+      setLoadStates((prev) => ({
+        ...prev,
+        prs: { status: "error", errorCount: prev.prs.errorCount + 1 },
+      }));
+      setTimeout(fetchPRsWithRetry, 3000);
+    }
+  }
+
+  async function fetchRecentCommitsWithRetry() {
+    if (!username || !session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      topRepos: { ...prev.topRepos, status: "loading" },
+    }));
+    setLoadingTopRepos(true);
+    try {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: `
+            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+              user(login: $LOGIN) {
+                contributionsCollection(from: $FROM, to: $TO) {
+                  commitContributionsByRepository(maxRepositories: 100) {
+                    repository {
+                      name
+                      nameWithOwner
+                      url
+                    }
+                    contributions {
+                      totalCount
+                    }
+                  }
+                }
+              }
+            }
+          `,
+          variables: {
+            LOGIN: username,
+            FROM: sevenDaysAgo.toISOString(),
+            TO: tomorrow.toISOString(),
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`GraphQL request failed: ${res.statusText}`);
+      }
+
+      const json = await res.json();
+      if (json.errors) {
+        throw new Error(JSON.stringify(json.errors));
+      }
+
+      const reposList =
+        json.data?.user?.contributionsCollection
+          ?.commitContributionsByRepository || [];
+      const repoCounts = reposList.map((item: any) => ({
+        name: item.repository.name,
+        fullName: item.repository.nameWithOwner,
+        url: item.repository.url,
+        count: item.contributions.totalCount,
+      }));
+
+      const sorted = repoCounts
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 3);
+
+      setTopRepos(sorted);
+      setLoadStates((prev) => ({
+        ...prev,
+        topRepos: { status: "success", errorCount: 0 },
+      }));
+    } catch (error) {
+      console.error("Error fetching top repos from GraphQL, retrying in 3s...", error);
+      setLoadStates((prev) => ({
+        ...prev,
+        topRepos: { status: "error", errorCount: prev.topRepos.errorCount + 1 },
+      }));
+      setTimeout(fetchRecentCommitsWithRetry, 3000);
+    } finally {
+      setLoadingTopRepos(false);
+    }
+  }
+
+  async function fetchContributionCalendarWithRetry() {
+    if (!username || !session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      contributions: { ...prev.contributions, status: "loading" },
+    }));
+    setLoadingContribution(true);
+    try {
+      const now = new Date();
+
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const oneYearAgo = new Date(now);
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+
+      const twoYearsAgo = new Date(now);
+      twoYearsAgo.setDate(twoYearsAgo.getDate() - 730);
+
+      const threeYearsAgo = new Date(now);
+      threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
+
+      const fetchYear = (from: Date, to: Date) => {
+        return fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: `
+              query userInfo($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+                user(login: $LOGIN) {
+                  contributionsCollection(from: $FROM, to: $TO) {
+                    contributionCalendar {
+                      weeks {
+                        contributionDays {
+                          contributionCount
+                          date
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `,
+            variables: {
+              LOGIN: username,
+              FROM: from.toISOString(),
+              TO: to.toISOString(),
+            },
+          }),
+        }).then(async (res) => {
+          if (!res.ok) {
+            throw new Error(`GraphQL request failed: ${res.statusText}`);
+          }
+          const json = await res.json();
+          if (json.errors) {
+            throw new Error(JSON.stringify(json.errors));
+          }
+          return json;
+        });
+      };
+
+      const [y1, y2, y3] = await Promise.all([
+        fetchYear(oneYearAgo, tomorrow),
+        fetchYear(twoYearsAgo, oneYearAgo),
+        fetchYear(threeYearsAgo, twoYearsAgo),
+      ]);
+
+      const contributions: any[] = [];
+      const processWeeks = (weeks: any[]) => {
+        weeks.forEach((week: any) => {
+          week.contributionDays.forEach((day: any) => {
+            contributions.push({
+              count: day.contributionCount,
+              date: day.date,
+            });
+          });
+        });
+      };
+
+      processWeeks(
+        y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
+          [],
+      );
+      processWeeks(
+        y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
+          [],
+      );
+      processWeeks(
+        y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
+          [],
+      );
+
+      const uniqueContributionsMap: { [date: string]: number } = {};
+      contributions.forEach((c) => {
+        uniqueContributionsMap[c.date] = c.count;
+      });
+
+      const uniqueContributions = Object.entries(uniqueContributionsMap).map(
+        ([date, count]) => ({
+          date,
+          count,
+        }),
+      );
+
+      uniqueContributions.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
+
+      const streakValue = calculateStreak(uniqueContributions);
+      setStreak(streakValue);
+
+      const today = new Date();
+      const past30Days = uniqueContributions.filter((c: any) => {
+        const cDate = new Date(c.date);
+        const timeDiff = today.getTime() - cDate.getTime();
+        const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        return diffDays >= 0 && diffDays <= 30;
+      });
+
+      past30Days.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
+      setContributionData(past30Days);
+      setLoadStates((prev) => ({
+        ...prev,
+        contributions: { status: "success", errorCount: 0 },
+      }));
+    } catch (error) {
+      console.error("Error fetching contribution calendar, retrying in 3s...", error);
+      setLoadStates((prev) => ({
+        ...prev,
+        contributions: { status: "error", errorCount: prev.contributions.errorCount + 1 },
+      }));
+      setTimeout(fetchContributionCalendarWithRetry, 3000);
+    } finally {
+      setLoadingContribution(false);
+    }
+  }
+
+  async function fetchNotificationsWithRetry() {
+    if (!username || !session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      notifications: { ...prev.notifications, status: "loading" },
+    }));
     try {
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
@@ -125,49 +491,45 @@ export default function Home() {
         Accept: "application/vnd.github+json",
       };
 
+      const fetchWithCheck = async (url: string) => {
+        const res = await fetch(url, { headers });
+        if (!res.ok) {
+          throw new Error(`Failed to fetch ${url}: Status ${res.status}`);
+        }
+        return res.json();
+      };
+
       // 1. Fetch Inbox Notifications
-      const notifsRes = await fetch(
-        `https://api.github.com/notifications?all=true&since=${sinceISO}`,
-        { headers },
+      const notifs = await fetchWithCheck(
+        `https://api.github.com/notifications?all=true&since=${sinceISO}`
       );
-      const notifs = notifsRes.ok ? await notifsRes.json() : [];
 
       // 2. Fetch Received Events (stars, forks)
-      const eventsRes = await fetch(
-        `https://api.github.com/users/${username}/received_events?per_page=100`,
-        { headers },
+      const events = await fetchWithCheck(
+        `https://api.github.com/users/${username}/received_events?per_page=100`
       );
-      const events = eventsRes.ok ? await eventsRes.json() : [];
 
       // 3. Fetch Followers
-      const followersRes = await fetch(
-        `https://api.github.com/users/${username}/followers?per_page=10`,
-        { headers },
+      const followers = await fetchWithCheck(
+        `https://api.github.com/users/${username}/followers?per_page=10`
       );
-      const followers = followersRes.ok ? await followersRes.json() : [];
 
       // 4. Fetch User's Own Events (for repo creation, etc.)
-      const userEventsRes = await fetch(
-        `https://api.github.com/users/${username}/events?per_page=100`,
-        { headers },
+      const userEvents = await fetchWithCheck(
+        `https://api.github.com/users/${username}/events?per_page=100`
       );
-      const userEvents = userEventsRes.ok ? await userEventsRes.json() : [];
 
       // 5. Fetch User's Merged PRs
       const sinceDateOnly = sinceISO.split("T")[0];
-      const mergedPRsRes = await fetch(
-        `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`,
-        { headers },
+      const mergedPRsData = await fetchWithCheck(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`
       );
-      const mergedPRsData = mergedPRsRes.ok ? await mergedPRsRes.json() : null;
       const mergedPRs = mergedPRsData?.items || [];
 
       // 6. Fetch User's Opened PRs
-      const openedPRsRes = await fetch(
-        `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`,
-        { headers },
+      const openedPRsData = await fetchWithCheck(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`
       );
-      const openedPRsData = openedPRsRes.ok ? await openedPRsRes.json() : null;
       const openedPRs = openedPRsData?.items || [];
 
       const feed: any[] = [];
@@ -380,245 +742,18 @@ export default function Home() {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
       setNotifications(feed);
-    } catch (error) {
-      console.error("Error fetching notifications feed:", error);
-    }
-  }
-
-  async function fetchRecentCommits() {
-    if (!username || !session?.accessToken) return;
-    setLoadingTopRepos(true);
-    try {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const sevenDaysAgo = new Date(now);
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-      const res = await fetch("https://api.github.com/graphql", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: `
-            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
-              user(login: $LOGIN) {
-                contributionsCollection(from: $FROM, to: $TO) {
-                  commitContributionsByRepository(maxRepositories: 100) {
-                    repository {
-                      name
-                      nameWithOwner
-                      url
-                    }
-                    contributions {
-                      totalCount
-                    }
-                  }
-                }
-              }
-            }
-          `,
-          variables: {
-            LOGIN: username,
-            FROM: sevenDaysAgo.toISOString(),
-            TO: tomorrow.toISOString(),
-          },
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`GraphQL request failed: ${res.statusText}`);
-      }
-
-      const json = await res.json();
-      if (json.errors) {
-        throw new Error(JSON.stringify(json.errors));
-      }
-
-      const reposList =
-        json.data?.user?.contributionsCollection
-          ?.commitContributionsByRepository || [];
-      const repoCounts = reposList.map((item: any) => ({
-        name: item.repository.name,
-        fullName: item.repository.nameWithOwner,
-        url: item.repository.url,
-        count: item.contributions.totalCount,
+      setLoadStates((prev) => ({
+        ...prev,
+        notifications: { status: "success", errorCount: 0 },
       }));
-
-      // Sort by commit count descending and take the top 3
-      const sorted = repoCounts
-        .sort((a: any, b: any) => b.count - a.count)
-        .slice(0, 3);
-
-      setTopRepos(sorted);
     } catch (error) {
-      console.error("Error fetching top repos from GraphQL:", error);
-    } finally {
-      setLoadingTopRepos(false);
+      console.error("Error fetching notifications, retrying in 3s...", error);
+      setLoadStates((prev) => ({
+        ...prev,
+        notifications: { status: "error", errorCount: prev.notifications.errorCount + 1 },
+      }));
+      setTimeout(fetchNotificationsWithRetry, 3000);
     }
-  }
-
-  async function fetchContributionCalendar() {
-    if (!username || !session?.accessToken) return;
-    setLoadingContribution(true);
-    try {
-      const now = new Date();
-
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const oneYearAgo = new Date(now);
-      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
-
-      const twoYearsAgo = new Date(now);
-      twoYearsAgo.setDate(twoYearsAgo.getDate() - 730);
-
-      const threeYearsAgo = new Date(now);
-      threeYearsAgo.setDate(threeYearsAgo.getDate() - 1095);
-
-      const fetchYear = (from: Date, to: Date) => {
-        return fetch("https://api.github.com/graphql", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${session?.accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query: `
-              query userInfo($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
-                user(login: $LOGIN) {
-                  contributionsCollection(from: $FROM, to: $TO) {
-                    contributionCalendar {
-                      weeks {
-                        contributionDays {
-                          contributionCount
-                          date
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            `,
-            variables: {
-              LOGIN: username,
-              FROM: from.toISOString(),
-              TO: to.toISOString(),
-            },
-          }),
-        }).then(async (res) => {
-          if (!res.ok) {
-            throw new Error(`GraphQL request failed: ${res.statusText}`);
-          }
-          const json = await res.json();
-          if (json.errors) {
-            throw new Error(JSON.stringify(json.errors));
-          }
-          return json;
-        });
-      };
-
-      const [y1, y2, y3] = await Promise.all([
-        fetchYear(oneYearAgo, tomorrow),
-        fetchYear(twoYearsAgo, oneYearAgo),
-        fetchYear(threeYearsAgo, twoYearsAgo),
-      ]);
-
-      const contributions: any[] = [];
-      const processWeeks = (weeks: any[]) => {
-        weeks.forEach((week: any) => {
-          week.contributionDays.forEach((day: any) => {
-            contributions.push({
-              count: day.contributionCount,
-              date: day.date,
-            });
-          });
-        });
-      };
-
-      processWeeks(
-        y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
-      );
-      processWeeks(
-        y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
-      );
-      processWeeks(
-        y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
-      );
-
-      const uniqueContributionsMap: { [date: string]: number } = {};
-      contributions.forEach((c) => {
-        uniqueContributionsMap[c.date] = c.count;
-      });
-
-      const uniqueContributions = Object.entries(uniqueContributionsMap).map(
-        ([date, count]) => ({
-          date,
-          count,
-        }),
-      );
-
-      uniqueContributions.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      );
-
-      const streakValue = calculateStreak(uniqueContributions);
-      setStreak(streakValue);
-
-      const today = new Date();
-      const past30Days = uniqueContributions.filter((c: any) => {
-        const cDate = new Date(c.date);
-        const timeDiff = today.getTime() - cDate.getTime();
-        const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        return diffDays >= 0 && diffDays <= 30;
-      });
-
-      past30Days.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      );
-      setContributionData(past30Days);
-    } catch (error) {
-      console.error("Error fetching contribution calendar:", error);
-    } finally {
-      setLoadingContribution(false);
-    }
-  }
-
-  async function fetchUser() {
-    const res = await fetch("https://api.github.com/user", {
-      headers: {
-        Authorization: `Bearer ${session?.accessToken}`,
-      },
-    });
-
-    const data = await res.json();
-    setGithubUser(data);
-    setUsername(data.login);
-  }
-
-  async function fetchPRs() {
-    if (!username) {
-      alert("Fetch user first");
-      return;
-    }
-
-    const res = await fetch(
-      `https://api.github.com/search/issues?q=is:pr+author:${username}`,
-      {
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-      },
-    );
-
-    const data = await res.json();
-    setPrs(data.items || []);
   }
 
   function handleMouseDown(e: React.MouseEvent) {
@@ -751,6 +886,10 @@ export default function Home() {
         </div>
       </main>
     );
+  }
+
+  if (session && !initialLoadComplete) {
+    return <DashboardLoader loadStates={loadStates} />;
   }
 
   const tabs = [
