@@ -929,13 +929,13 @@ export default function Home() {
   return (
     <main className="h-screen w-screen bg-[#09090b] text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
       {/* Top Header */}
-      <header className="h-14 border-b border-zinc-800/60 bg-zinc-950/20 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
+      <header className="h-16 bg-black backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
         {/* Left Side: PRism Logo */}
         <div
           onClick={() => window.location.reload()}
           className="flex justify-start -ml-10 translate-y-[3px] hover:cursor-pointer hover:scale-110 duration-500"
         >
-          <img src="/logo.png" className="w-28 h-14 object-contain" />
+          <img src="/logo.png" className="w-32 h-16 object-contain" />
         </div>
 
         {/* Right Side: GitHub Avatar & Name */}
@@ -991,7 +991,7 @@ export default function Home() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1"
+                d="M5 12h14M12 5l7 7-7 7"
               />
             </svg>
           </button>
@@ -1001,7 +1001,7 @@ export default function Home() {
       {/* Main Container */}
       <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar Nav */}
-        <aside className="w-60 border-r border-zinc-800/60 bg-zinc-950/10 py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
+        <aside className="w-60 bg-black py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
           <nav className="space-y-1">
             {tabs.map((tab) => {
               const isActive = selectedTab === tab;
@@ -1022,7 +1022,7 @@ export default function Home() {
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-8 bg-zinc-950/5">
+        <main className="flex-1 overflow-y-auto p-8 bg-black">
           {selectedTab === "Dashboard" && (
             <Dashboard
               prs={prs}
