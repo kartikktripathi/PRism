@@ -12,6 +12,7 @@
     "@react-three/fiber": "^9.6.1",
     "chart.js": "^4.4.0",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.42.2",
     "next": "16.2.4",
     "next-auth": "^4.24.14",
     "prettier": "^3.8.4",

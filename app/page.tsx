@@ -11,6 +11,8 @@ import GitWrapped from "@/components/pages/GitStats";
 import { DashboardLoader, LoadStates } from "@/components/ui/dashboard-loader";
 import { Outfit } from "next/font/google";
 import { LineHoverLink } from "@/components/ui/line-hover-link";
+import { FolderPreview } from "@/components/ui/folder-preview";
+import { motion, AnimatePresence } from "framer-motion";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -79,6 +81,7 @@ export default function Home() {
     y: 0,
   });
   const [selectedTab, setSelectedTab] = useState("Dashboard");
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   const [dragging, setDragging] = useState(false);
 
@@ -928,7 +931,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="h-screen w-screen bg-[#09090b] text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
+    <main className="h-screen w-screen bg-black text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
       {/* Top Header */}
       <header className="h-16 bg-black backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
         {/* Left Side: PRism Logo */}
@@ -1002,42 +1005,89 @@ export default function Home() {
       {/* Main Container */}
       <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar Nav */}
-        <aside className="w-60 bg-black py-6 px-4 flex flex-col justify-center h-full flex-shrink-0">
-          <nav className="space-y-3">
-            {tabs.map((tab) => {
-              const isActive = selectedTab === tab;
-              const isMultiLine = tab === "Issues & PRs" || tab === "Reviews & Comments";
-              return (
-                <div key={tab} className="w-full flex justify-center py-2">
-                  <LineHoverLink
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleTabChange(tab);
-                    }}
-                    variant={tab === "GitStats" ? "scribble" : "pulse"}
-                    className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${
-                      isActive ? "text-white font-bold" : "text-zinc-500 hover:text-zinc-300"
-                    } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
-                  >
-                    {tab === "Issues & PRs" ? (
-                      <>
-                        <span>Issues</span>
-                        <span className="text-[12px]">&</span>
-                        <span>PRs</span>
-                      </>
-                    ) : tab === "Reviews & Comments" ? (
-                      <>
-                        <span>Reviews</span>
-                        <span className="text-[12px]">&</span>
-                        <span>Comments</span>
-                      </>
-                    ) : (
-                      tab
-                    )}
-                  </LineHoverLink>
-                </div>
-              );
-            })}
+        <aside
+          onMouseEnter={() => setIsSidebarHovered(true)}
+          onMouseLeave={() => setIsSidebarHovered(false)}
+          className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100%-32px)] my-4 flex-shrink-0 relative overflow-hidden border-r border-t border-b rounded-r-2xl border-zinc-900"
+        >
+          <nav className="flex-1 flex flex-col justify-end w-full">
+            <AnimatePresence>
+              {isSidebarHovered && (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  variants={{
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.08,
+                        staggerDirection: -1,
+                      }
+                    },
+                    hidden: {
+                      transition: {
+                        staggerChildren: 0.05,
+                        staggerDirection: 1,
+                      }
+                    }
+                  }}
+                  className="space-y-6 mb-8 flex flex-col items-center justify-end"
+                >
+                  {tabs.map((tab) => {
+                    const isActive = selectedTab === tab;
+                    const isMultiLine = tab === "Issues & PRs" || tab === "Reviews & Comments";
+                    return (
+                      <motion.div
+                        key={tab}
+                        variants={{
+                          hidden: { opacity: 0, y: 180, scale: 0.8 },
+                          visible: { opacity: 1, y: 0, scale: 1 }
+                        }}
+                        transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                        className="w-full flex justify-center py-1"
+                      >
+                        <LineHoverLink
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleTabChange(tab);
+                          }}
+                          variant={tab === "GitStats" ? "scribble" : "pulse"}
+                          className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${isActive ? "text-white font-bold" : "text-zinc-500 hover:text-zinc-300"
+                            } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
+                        >
+                          {tab === "Issues & PRs" ? (
+                            <>
+                              <span>Issues</span>
+                              <span className="text-[12px]">&</span>
+                              <span>PRs</span>
+                            </>
+                          ) : tab === "Reviews & Comments" ? (
+                            <>
+                              <span>Reviews</span>
+                              <span className="text-[12px]">&</span>
+                              <span>Comments</span>
+                            </>
+                          ) : (
+                            tab
+                          )}
+                        </LineHoverLink>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Folder at the bottom */}
+            <div className="flex flex-col items-center justify-center mt-auto pt-4 border-t border-zinc-900/40">
+              <FolderPreview
+                variant="ardra"
+                size="md"
+                label={isSidebarHovered ? "MENU" : "HOVER ME"}
+                isHovered={isSidebarHovered}
+                className="text-zinc-400"
+              />
+            </div>
           </nav>
         </aside>
 
