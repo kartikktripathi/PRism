@@ -10,6 +10,7 @@ import Organizations from "@/components/pages/Organizations";
 import GitWrapped from "@/components/pages/GitStats";
 import { DashboardLoader, LoadStates } from "@/components/ui/dashboard-loader";
 import { Outfit } from "next/font/google";
+import { LineHoverLink } from "@/components/ui/line-hover-link";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -933,9 +934,9 @@ export default function Home() {
         {/* Left Side: PRism Logo */}
         <div
           onClick={() => window.location.reload()}
-          className="flex justify-start -ml-15 translate-y-[15px] hover:cursor-pointer hover:scale-110 duration-500"
+          className="flex justify-start -ml-15 translate-y-[15px] hover:cursor-pointer hover:scale-130 duration-500"
         >
-          <img src="/logo.png" className="w-36 h-24 object-contain" />
+          <img src="/logo.png" className="w-36 h-16 object-contain" />
         </div>
 
         {/* Right Side: GitHub Avatar & Name */}
@@ -1002,17 +1003,24 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar Nav */}
         <aside className="w-60 bg-black py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
-          <nav className="space-y-1">
+          <nav className="space-y-3">
             {tabs.map((tab) => {
               const isActive = selectedTab === tab;
               return (
-                <button
-                  key={tab}
-                  onClick={() => handleTabChange(tab)}
-                  className={`${outfit.className} uppercase w-full flex justify-center px-3 py-2 text-md rounded transition-all cursor-pointer text-zinc-500 hover:text-zinc-300 hover:font-bold`}
-                >
-                  {tab}
-                </button>
+                <div key={tab} className="w-full flex justify-center py-2">
+                  <LineHoverLink
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleTabChange(tab);
+                    }}
+                    variant={tab === "GitStats" ? "scribble" : "pulse"}
+                    className={`${outfit.className} uppercase text-md transition-all cursor-pointer ${
+                      isActive ? "text-white font-bold" : "text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    {tab}
+                  </LineHoverLink>
+                </div>
               );
             })}
           </nav>
