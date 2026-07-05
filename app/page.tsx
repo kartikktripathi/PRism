@@ -937,7 +937,7 @@ export default function Home() {
         {/* Left Side: PRism Logo */}
         <div
           onClick={() => window.location.reload()}
-          className="flex justify-start -ml-15 translate-y-[15px] hover:cursor-pointer hover:scale-130 duration-500"
+          className="flex justify-start -ml-15 translate-y-[13px] hover:cursor-pointer hover:scale-130 duration-500"
         >
           <img src="/logo.png" className="w-36 h-16 object-contain" />
         </div>
@@ -1008,7 +1008,7 @@ export default function Home() {
         <aside
           onMouseEnter={() => setIsSidebarHovered(true)}
           onMouseLeave={() => setIsSidebarHovered(false)}
-          className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100%-32px)] my-4 flex-shrink-0 relative overflow-hidden border-r border-t border-b rounded-r-2xl border-zinc-900"
+          className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100%-16px)] mt-4 flex-shrink-0 relative overflow-hidden border-r border-t rounded-tr-2xl border-zinc-900"
         >
           <nav className="flex-1 flex flex-col justify-end w-full">
             <AnimatePresence>
