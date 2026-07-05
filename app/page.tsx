@@ -1017,7 +1017,7 @@ export default function Home() {
             }`}
           >
             <Dither
-              waveSpeed={0.13}
+              waveSpeed={0.03}
               waveFrequency={3.5}
               waveAmplitude={0.35}
               waveColor={[0.5, 0.5, 0.5]}
@@ -1032,7 +1032,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
           </div>
 
-          <nav className="flex-1 flex flex-col justify-end w-full relative z-10">
+          <nav className="flex-1 flex flex-col justify-end w-full relative z-10 pointer-events-none">
             <AnimatePresence>
               {isSidebarHovered && (
                 <motion.div
@@ -1053,7 +1053,7 @@ export default function Home() {
                       }
                     }
                   }}
-                  className="space-y-6 mb-8 flex flex-col items-center justify-end"
+                  className="space-y-6 mb-8 flex flex-col items-center justify-end pointer-events-auto"
                 >
                   {tabs.map((tab) => {
                     const isActive = selectedTab === tab;
@@ -1103,7 +1103,7 @@ export default function Home() {
             {/* Folder at the bottom */}
             <div 
               onMouseEnter={() => setIsSidebarHovered(true)}
-              className="flex flex-col items-center justify-center mt-auto pt-4 border-t border-zinc-900/40 w-full"
+              className="flex flex-col items-center justify-center mt-auto pt-4 border-t border-zinc-900/40 w-full pointer-events-auto"
             >
               <FolderPreview
                 variant="ardra"

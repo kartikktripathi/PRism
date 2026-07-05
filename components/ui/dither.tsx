@@ -288,6 +288,11 @@ function DitheredWaves({
     );
   };
 
+  const handlePointerOut = () => {
+    if (!enableMouseInteraction) return;
+    mouseRef.current.set(-9999, -9999);
+  };
+
   return (
     <>
       <mesh ref={mesh} scale={[viewport.width, viewport.height, 1]}>
@@ -305,12 +310,13 @@ function DitheredWaves({
 
       <mesh
         onPointerMove={handlePointerMove}
+        onPointerOut={handlePointerOut}
         position={[0, 0, 0.01]}
         scale={[viewport.width, viewport.height, 1]}
-        visible={false}
+        visible={true}
       >
         <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial transparent opacity={0} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
     </>
   );
