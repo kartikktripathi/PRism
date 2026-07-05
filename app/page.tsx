@@ -921,9 +921,9 @@ export default function Home() {
   const tabs = [
     "Dashboard",
     "Issues & PRs",
-    "Reviews and Comments",
+    "Reviews & Comments",
     "Organizations",
-    "GitWrapped",
+    "GitStats",
   ];
 
   return (
@@ -933,9 +933,9 @@ export default function Home() {
         {/* Left Side: PRism Logo */}
         <div
           onClick={() => window.location.reload()}
-          className="flex justify-start -ml-10 translate-y-[3px] hover:cursor-pointer hover:scale-110 duration-500"
+          className="flex justify-start -ml-15 translate-y-[15px] hover:cursor-pointer hover:scale-110 duration-500"
         >
-          <img src="/logo.png" className="w-32 h-16 object-contain" />
+          <img src="/logo.png" className="w-36 h-24 object-contain" />
         </div>
 
         {/* Right Side: GitHub Avatar & Name */}
@@ -964,12 +964,12 @@ export default function Home() {
             {session?.user?.image ? (
               <img
                 src={session.user.image}
-              className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
+                className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
                 alt="avatar"
                 onClick={() => window.open(`https://github.com/${username}`, "_blank")}
               />
             ) : (
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono text-zinc-400">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono text-zinc-400">
                 {session?.user?.name?.[0] || "User"}
               </div>
             )}
@@ -1009,10 +1009,7 @@ export default function Home() {
                 <button
                   key={tab}
                   onClick={() => handleTabChange(tab)}
-                  className={`w-full flex items-center px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono ${isActive
-                    ? "bg-zinc-900/60 border border-zinc-800/60 text-white font-medium"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/10 border border-transparent"
-                    }`}
+                  className={`${outfit.className} uppercase w-full flex justify-center px-3 py-2 text-md rounded transition-all cursor-pointer text-zinc-500 hover:text-zinc-300 hover:font-bold`}
                 >
                   {tab}
                 </button>
