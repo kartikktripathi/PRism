@@ -83,6 +83,25 @@ export default function Home() {
   });
   const [selectedTab, setSelectedTab] = useState("Dashboard");
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [quoteData, setQuoteData] = useState<{ quote: string; author: string } | null>(null);
+
+  useEffect(() => {
+    async function fetchQuote() {
+      try {
+        const res = await fetch("https://raw.githubusercontent.com/mudroljub/programming-quotes-api/master/data/quotes.json");
+        if (!res.ok) throw new Error("Failed to fetch quotes database");
+        const quotesList = await res.json();
+        if (Array.isArray(quotesList) && quotesList.length > 0) {
+          const randomIndex = Math.floor(Math.random() * quotesList.length);
+          const item = quotesList[randomIndex];
+          setQuoteData({ quote: item.text, author: item.author });
+        }
+      } catch (error) {
+        console.error("Error fetching programming quotes:", error);
+      }
+    }
+    fetchQuote();
+  }, []);
 
   const [dragging, setDragging] = useState(false);
 
@@ -1012,9 +1031,8 @@ export default function Home() {
         >
           {/* Dither Background Shader */}
           <div
-            className={`absolute inset-0 z-0 transition-all duration-700 ease-in-out ${
-              isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-25 scale-100"
-            }`}
+            className={`absolute inset-0 z-0 transition-all duration-700 ease-in-out ${isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-25 scale-100"
+              }`}
           >
             <Dither
               waveSpeed={0.03}
@@ -1024,7 +1042,7 @@ export default function Home() {
               colorNum={6}
               pixelSize={1}
               disableAnimation={false}
-              enableMouseInteraction={true}
+              enableMouseInteraction={false}
               mouseRadius={0.1}
               className="w-full h-full"
             />
@@ -1033,6 +1051,22 @@ export default function Home() {
           </div>
 
           <nav className="flex-1 flex flex-col justify-end w-full relative z-10 pointer-events-none">
+            {/* Programming Quote (visible when sidebar is not hovered) */}
+            {quoteData && (
+              <div
+                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${
+                  isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
+                }`}
+              >
+                <p className="text-[13px] font-mono leading-relaxed text-zinc-400 tracking-tight italic select-text">
+                  "{quoteData.quote}"
+                </p>
+                <p className={`${outfit.className} text-[9px] uppercase tracking-wider text-zinc-500 mt-2 select-text`}>
+                  {quoteData.author}
+                </p>
+              </div>
+            )}
+
             <AnimatePresence>
               {isSidebarHovered && (
                 <motion.div
@@ -1101,7 +1135,7 @@ export default function Home() {
             </AnimatePresence>
 
             {/* Folder at the bottom */}
-            <div 
+            <div
               onMouseEnter={() => setIsSidebarHovered(true)}
               className="flex flex-col items-center justify-center mt-auto pt-4 border-t border-zinc-900/40 w-full pointer-events-auto"
             >
