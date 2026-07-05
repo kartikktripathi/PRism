@@ -20,6 +20,18 @@ ChartJS.register(
   Filler,
 );
 
+import { Cormorant_Garamond, League_Spartan } from "next/font/google";
+
+const cormorantGaramond = Cormorant_Garamond({
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+});
+
+const leagueSpartan = League_Spartan({
+  subsets: ["latin"],
+});
+
 type DashboardProps = {
   prs: any[];
   session: any;
@@ -175,17 +187,14 @@ export default function Dashboard({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold text-white">
-          Welcome, {session?.user?.name?.split(" ")[0]}
+        <h1 className={`text-6xl text-white font-300 ${cormorantGaramond.className}`}>
+          Welcome, {session?.user?.name?.split(" ")[0]}.
         </h1>
 
-        <p className="text-zinc-500 mt-2">
-          Here's what's happening across your GitHub activity.
+        <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
+          Here's what's happening across your GitHub in the past 30 days.
         </p>
 
-        <h2 className="text-zinc-400 mt-4 text-sm font-semibold tracking-wide font-mono uppercase">
-          Activity stats of last 30 days
-        </h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat) => (
