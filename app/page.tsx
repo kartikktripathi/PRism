@@ -13,6 +13,7 @@ import { Outfit } from "next/font/google";
 import { LineHoverLink } from "@/components/ui/line-hover-link";
 import { FolderPreview } from "@/components/ui/folder-preview";
 import { motion, AnimatePresence } from "framer-motion";
+import { Dither } from "@/components/ui/dither";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -1006,11 +1007,32 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar Nav */}
         <aside
-          onMouseEnter={() => setIsSidebarHovered(true)}
           onMouseLeave={() => setIsSidebarHovered(false)}
           className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100%-16px)] mt-4 flex-shrink-0 relative overflow-hidden border-r border-t rounded-tr-2xl border-zinc-900"
         >
-          <nav className="flex-1 flex flex-col justify-end w-full">
+          {/* Dither Background Shader */}
+          <div
+            className={`absolute inset-0 z-0 transition-all duration-700 ease-in-out ${
+              isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-25 scale-100"
+            }`}
+          >
+            <Dither
+              waveSpeed={0.13}
+              waveFrequency={3.5}
+              waveAmplitude={0.35}
+              waveColor={[0.5, 0.5, 0.5]}
+              colorNum={6}
+              pixelSize={1}
+              disableAnimation={false}
+              enableMouseInteraction={true}
+              mouseRadius={0.1}
+              className="w-full h-full"
+            />
+            {/* Smooth gradient fade to black at the bottom to blend into the folder zone */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
+          </div>
+
+          <nav className="flex-1 flex flex-col justify-end w-full relative z-10">
             <AnimatePresence>
               {isSidebarHovered && (
                 <motion.div
@@ -1079,7 +1101,10 @@ export default function Home() {
             </AnimatePresence>
 
             {/* Folder at the bottom */}
-            <div className="flex flex-col items-center justify-center mt-auto pt-4 border-t border-zinc-900/40">
+            <div 
+              onMouseEnter={() => setIsSidebarHovered(true)}
+              className="flex flex-col items-center justify-center mt-auto pt-4 border-t border-zinc-900/40 w-full"
+            >
               <FolderPreview
                 variant="ardra"
                 size="md"

@@ -114,11 +114,11 @@ const variantColors: Record<
     bg: "bg-slate-200 dark:bg-slate-800",
   },
   ardra: {
-    back: "text-blue-800 dark:text-blue-700",
-    cover: "text-blue-600 dark:text-blue-500",
-    deco: "text-blue-700 dark:text-blue-600",
-    caption: "text-blue-500 dark:text-blue-400",
-    bg: "bg-gray-800 dark:bg-gray-950",
+    back: "text-zinc-850",
+    cover: "text-zinc-600",
+    deco: "text-zinc-500",
+    caption: "text-zinc-500",
+    bg: "bg-zinc-900",
   },
   shakti: {
     back: "text-indigo-800",
