@@ -953,7 +953,7 @@ export default function Home() {
   return (
     <main className="h-screen w-screen bg-black text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
       {/* Top Header */}
-      <header className="h-16 bg-black backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
+      <header className="h-16 bg-black backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10 shadow-2xl shadow-[#000000]">
         {/* Left Side: PRism Logo */}
         <div
           onClick={() => window.location.reload()}
@@ -1054,9 +1054,8 @@ export default function Home() {
             {/* Programming Quote (visible when sidebar is not hovered) */}
             {quoteData && (
               <div
-                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${
-                  isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
-                }`}
+                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
+                  }`}
               >
                 <p className="text-[13px] font-mono leading-relaxed text-zinc-400 tracking-tight italic select-text">
                   "{quoteData.quote}"

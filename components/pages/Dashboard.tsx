@@ -69,16 +69,19 @@ export default function Dashboard({
 
   const stats = [
     {
-      title: "Open PRs",
+      title: "Open Pull Requests",
       value: newPRs.filter((pr) => pr.state == "open").length,
+      numColor: "#ff6a6aff"
     },
     {
-      title: "Merged PRs",
+      title: "Merged Pull Requests",
       value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
+      numColor: "#9447cbff"
     },
     {
-      title: "Repositories",
+      title: "Repositories Contributed To",
       value: userReposOwned.length,
+      numColor: "#84bce4ff"
     },
   ];
 
@@ -200,12 +203,14 @@ export default function Dashboard({
         {stats.map((stat) => (
           <div
             key={stat.title}
-            className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4"
+            className="rounded-lg bg-zinc-950/30 p-4"
           >
-            <p className="text-xs text-zinc-500">{stat.title}</p>
-
-            <p className="text-2xl font-semibold text-white mt-2">
+            <p 
+              className="text-6xl font-semibold mt-2"
+              style={{ color: stat.numColor }}
+            >
               {stat.value}
+              <span className="text-xs text-zinc-500 ml-2 font-normal font-sans tracking-wide">{stat.title}</span>
             </p>
           </div>
         ))}
