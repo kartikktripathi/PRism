@@ -1002,10 +1002,11 @@ export default function Home() {
       {/* Main Container */}
       <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar Nav */}
-        <aside className="w-60 bg-black py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
+        <aside className="w-60 bg-black py-6 px-4 flex flex-col justify-center h-full flex-shrink-0">
           <nav className="space-y-3">
             {tabs.map((tab) => {
               const isActive = selectedTab === tab;
+              const isMultiLine = tab === "Issues & PRs" || tab === "Reviews & Comments";
               return (
                 <div key={tab} className="w-full flex justify-center py-2">
                   <LineHoverLink
@@ -1014,11 +1015,25 @@ export default function Home() {
                       handleTabChange(tab);
                     }}
                     variant={tab === "GitStats" ? "scribble" : "pulse"}
-                    className={`${outfit.className} uppercase text-md transition-all cursor-pointer ${
+                    className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${
                       isActive ? "text-white font-bold" : "text-zinc-500 hover:text-zinc-300"
-                    }`}
+                    } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
                   >
-                    {tab}
+                    {tab === "Issues & PRs" ? (
+                      <>
+                        <span>Issues</span>
+                        <span className="text-[12px]">&</span>
+                        <span>PRs</span>
+                      </>
+                    ) : tab === "Reviews & Comments" ? (
+                      <>
+                        <span>Reviews</span>
+                        <span className="text-[12px]">&</span>
+                        <span>Comments</span>
+                      </>
+                    ) : (
+                      tab
+                    )}
                   </LineHoverLink>
                 </div>
               );
