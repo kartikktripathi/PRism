@@ -39,9 +39,7 @@ type DashboardProps = {
   data: any;
   repos: any[];
   topRepos: any[];
-  loadingTopRepos: boolean;
   contributionData: any[];
-  loadingContribution: boolean;
   notifications?: any[];
 };
 
@@ -51,9 +49,7 @@ export default function Dashboard({
   data,
   repos,
   topRepos,
-  loadingTopRepos,
   contributionData,
-  loadingContribution,
   notifications = [],
 }: DashboardProps) {
   const [duration, setDuration] = useState<"week" | "month" | "year">("month");
@@ -278,13 +274,7 @@ export default function Dashboard({
           </select>
         </p>
 
-        {loadingContribution ? (
-          <div className="animate-pulse rounded-lg border border-zinc-800 bg-zinc-950/20 p-6 h-[300px] flex items-center justify-center">
-            <span className="text-xs text-zinc-500 font-mono animate-pulse">
-              Fetching contribution history...
-            </span>
-          </div>
-        ) : (filteredContributionData || []).length === 0 ? (
+        {(filteredContributionData || []).length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
               No contributions recorded on GitHub in the past {duration === "week" ? "7" : duration === "month" ? "30" : "365"} days.
@@ -309,23 +299,7 @@ export default function Dashboard({
           Based on your commit activity over the last 7 days.
         </p>
 
-        {loadingTopRepos ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="animate-pulse rounded-lg border border-zinc-800 bg-zinc-950/20 p-5 h-28 flex flex-col justify-between"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="h-4 bg-zinc-800 rounded w-1/2" />
-                  <div className="h-5 bg-zinc-800 rounded w-1/4" />
-                </div>
-                <div className="h-3 bg-zinc-800 rounded w-1/3" />
-                <div className="h-1 bg-zinc-800 rounded w-full" />
-              </div>
-            ))}
-          </div>
-        ) : topRepos.length === 0 ? (
+        {topRepos.length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
               No commits recorded on GitHub in the past 7 days.

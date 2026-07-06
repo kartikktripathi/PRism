@@ -66,10 +66,7 @@ export default function Home() {
   const [githubUser, setGithubUser] = useState<any>(null);
   const [userRepos, setUserRepos] = useState<any[]>([]);
   const [topRepos, setTopRepos] = useState<any[]>([]);
-  const [loadingTopRepos, setLoadingTopRepos] = useState<boolean>(false);
   const [contributionData, setContributionData] = useState<any[]>([]);
-  const [loadingContribution, setLoadingContribution] =
-    useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loadStates, setLoadStates] = useState<LoadStates>({
@@ -299,7 +296,6 @@ export default function Home() {
       ...prev,
       topRepos: { ...prev.topRepos, status: "loading" },
     }));
-    setLoadingTopRepos(true);
     try {
       const now = new Date();
       const tomorrow = new Date(now);
@@ -379,8 +375,6 @@ export default function Home() {
         topRepos: { status: "error", errorCount: prev.topRepos.errorCount + 1 },
       }));
       setTimeout(fetchRecentCommitsWithRetry, 3000);
-    } finally {
-      setLoadingTopRepos(false);
     }
   }
 
@@ -390,7 +384,6 @@ export default function Home() {
       ...prev,
       contributions: { ...prev.contributions, status: "loading" },
     }));
-    setLoadingContribution(true);
     try {
       const now = new Date();
 
@@ -527,8 +520,6 @@ export default function Home() {
         },
       }));
       setTimeout(fetchContributionCalendarWithRetry, 3000);
-    } finally {
-      setLoadingContribution(false);
     }
   }
 
@@ -1188,9 +1179,7 @@ export default function Home() {
                 data={githubUser}
                 repos={userRepos}
                 topRepos={topRepos}
-                loadingTopRepos={loadingTopRepos}
                 contributionData={contributionData}
-                loadingContribution={loadingContribution}
                 notifications={notifications}
               />
             )}
