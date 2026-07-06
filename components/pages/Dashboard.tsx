@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -55,6 +56,19 @@ export default function Dashboard({
   loadingContribution,
   notifications = [],
 }: DashboardProps) {
+  const [duration, setDuration] = useState<"week" | "month" | "year">("month");
+
+  const filteredContributionData = (() => {
+    if (!contributionData || contributionData.length === 0) return [];
+    if (duration === "week") {
+      return contributionData.slice(-7);
+    } else if (duration === "month") {
+      return contributionData.slice(-30);
+    } else {
+      return contributionData.slice(-365);
+    }
+  })();
+
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const userReposOwned = repos
@@ -92,7 +106,7 @@ export default function Dashboard({
   ];
 
   // Format labels and dataset for the line chart
-  const chartLabels = (contributionData || []).map((day: any) => {
+  const chartLabels = (filteredContributionData || []).map((day: any) => {
     const dateObj = new Date(day.date);
     return dateObj.toLocaleDateString("en-US", {
       month: "short",
@@ -101,7 +115,7 @@ export default function Dashboard({
     });
   });
 
-  const chartCounts = (contributionData || []).map((day: any) => day.count);
+  const chartCounts = (filteredContributionData || []).map((day: any) => day.count);
 
   const chartData = {
     labels: chartLabels,
@@ -249,13 +263,19 @@ export default function Dashboard({
       {/* Commit Graph Section */}
       <div className="border-t border-zinc-800/60 pt-8">
         <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
-          Commit & Contribution Activity{" "}
-          <span className="text-zinc-500 text-xs font-normal font-sans capitalize">
-            (Past 30 Days)
-          </span>
+          Contribution Activity
         </h3>
         <p className="text-xs text-zinc-500 mt-1 mb-6">
-          A daily breakdown of your commits, pull requests, issues, and reviews.
+          A daily breakdown of your contributions in the past{" "}
+          <select
+            value={duration}
+            onChange={(e) => setDuration(e.target.value as any)}
+            className="bg-transparent border-none font-semibold cursor-pointer focus:outline-none hover:text-white transition-colors underline underline-offset-3 appearance-none"
+          >
+            <option value="week" className="bg-zinc-950 text-zinc-300">week</option>
+            <option value="month" className="bg-zinc-950 text-zinc-300">month</option>
+            <option value="year" className="bg-zinc-950 text-zinc-300">year</option>
+          </select>
         </p>
 
         {loadingContribution ? (
@@ -264,10 +284,10 @@ export default function Dashboard({
               Fetching contribution history...
             </span>
           </div>
-        ) : (contributionData || []).length === 0 ? (
+        ) : (filteredContributionData || []).length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
-              No contributions recorded on GitHub in the past 30 days.
+              No contributions recorded on GitHub in the past {duration === "week" ? "7" : duration === "month" ? "30" : "365"} days.
             </p>
           </div>
         ) : (

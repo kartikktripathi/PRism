@@ -499,17 +499,17 @@ export default function Home() {
       setStreak(streakValue);
 
       const today = new Date();
-      const past30Days = uniqueContributions.filter((c: any) => {
+      const past365Days = uniqueContributions.filter((c: any) => {
         const cDate = new Date(c.date);
         const timeDiff = today.getTime() - cDate.getTime();
         const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        return diffDays >= 0 && diffDays <= 30;
+        return diffDays >= 0 && diffDays <= 365;
       });
 
-      past30Days.sort(
+      past365Days.sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
       );
-      setContributionData(past30Days);
+      setContributionData(past365Days);
       setLoadStates((prev) => ({
         ...prev,
         contributions: { status: "success", errorCount: 0 },
@@ -1043,7 +1043,7 @@ export default function Home() {
         {/* Sidebar Nav */}
         <aside
           onMouseLeave={() => setIsSidebarHovered(false)}
-          className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100%-16px)] mt-4 flex-shrink-0 relative overflow-hidden border-r border-t rounded-tr-2xl border-zinc-900"
+          className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100vh-80px)] mt-4 flex-shrink-0 relative overflow-hidden border-r border-t rounded-tr-2xl border-zinc-900"
         >
           {/* Dither Background Shader */}
           <div
