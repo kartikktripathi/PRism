@@ -74,19 +74,22 @@ export default function Dashboard({
       title: "Repositories Contributed To",
       value: userReposOwned.length,
       numColor: "#84bce4",
-      description: "Active repositories in workspace."
+      description: "Active repositories in workspace.",
     },
     {
       title: "Pull Requests Created",
-      value: newPRs.filter((pr) => pr.state == "merged").length + newPRs.filter((pr) => pr.state == "open").length + newPRs.filter((pr) => pr.state == "closed").length,
+      value:
+        newPRs.filter((pr) => pr.state == "merged").length +
+        newPRs.filter((pr) => pr.state == "open").length +
+        newPRs.filter((pr) => pr.state == "closed").length,
       numColor: "#ff6a6a",
-      description: "Total PR lifecycles submitted."
+      description: "Total PR lifecycles submitted.",
     },
     {
       title: "Pull Requests Merged",
       value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
       numColor: "#9f67c6",
-      description: "Completed and merged codebases."
+      description: "Completed and merged codebases.",
     },
   ];
 
@@ -195,14 +198,17 @@ export default function Dashboard({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className={`text-6xl text-white font-300 ${leagueSpartan.className}`}>
+        <h1
+          className={`text-6xl text-white font-300 ${leagueSpartan.className}`}
+        >
           Welcome, {session?.user?.name?.split(" ")[0]}.
         </h1>
 
-        <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
+        <p
+          className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}
+        >
           Here's what's happening across your GitHub in the past 30 days.
         </p>
-
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat) => (
@@ -221,7 +227,9 @@ export default function Dashboard({
                     boxShadow: `0 0 8px ${stat.numColor}`,
                   }}
                 />
-                <span className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}>
+                <span
+                  className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
+                >
                   {stat.title}
                 </span>
               </div>

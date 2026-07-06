@@ -26,8 +26,12 @@ export function SpotlightCard({
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => cardRef.current?.style.setProperty("--spotlight-opacity", "1")}
-      onMouseLeave={() => cardRef.current?.style.setProperty("--spotlight-opacity", "0")}
+      onMouseEnter={() =>
+        cardRef.current?.style.setProperty("--spotlight-opacity", "1")
+      }
+      onMouseLeave={() =>
+        cardRef.current?.style.setProperty("--spotlight-opacity", "0")
+      }
       className={`relative p-[1px] overflow-hidden transition-all duration-300 bg-zinc-900/60 spotlight-card-transition ${className}`}
       style={
         {

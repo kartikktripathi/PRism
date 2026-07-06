@@ -5,7 +5,10 @@ interface AnimatedCounterProps {
   duration?: number;
 }
 
-export function AnimatedCounter({ value, duration = 3000 }: AnimatedCounterProps) {
+export function AnimatedCounter({
+  value,
+  duration = 3000,
+}: AnimatedCounterProps) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {

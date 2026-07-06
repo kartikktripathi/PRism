@@ -379,8 +379,7 @@ export type LineHoverVariant =
   | "arc"
   | "scribble";
 
-export interface LineHoverLinkProps
-  extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+export interface LineHoverLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   variant?: LineHoverVariant;
   children: React.ReactNode;
   className?: string;

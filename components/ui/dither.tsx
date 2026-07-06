@@ -158,20 +158,15 @@ class RetroEffectImpl extends Effect {
   }
 }
 
-const RetroEffect = forwardRef<
-  any,
-  { colorNum: number; pixelSize: number }
->((props, ref) => {
-  const { colorNum, pixelSize } = props;
-  const WrappedRetroEffect = wrapEffect(RetroEffectImpl);
-  return (
-    <WrappedRetroEffect
-      ref={ref}
-      colorNum={colorNum}
-      pixelSize={pixelSize}
-    />
-  );
-});
+const RetroEffect = forwardRef<any, { colorNum: number; pixelSize: number }>(
+  (props, ref) => {
+    const { colorNum, pixelSize } = props;
+    const WrappedRetroEffect = wrapEffect(RetroEffectImpl);
+    return (
+      <WrappedRetroEffect ref={ref} colorNum={colorNum} pixelSize={pixelSize} />
+    );
+  },
+);
 
 RetroEffect.displayName = "RetroEffect";
 
@@ -348,7 +343,10 @@ export function Dither({
   className,
 }: DitherProps) {
   return (
-    <div className={className} style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div
+      className={className}
+      style={{ width: "100%", height: "100%", position: "relative" }}
+    >
       <Canvas
         camera={{ position: [0, 0, 6] }}
         dpr={1}

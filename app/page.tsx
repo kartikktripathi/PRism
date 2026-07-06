@@ -83,12 +83,17 @@ export default function Home() {
   });
   const [selectedTab, setSelectedTab] = useState("Dashboard");
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
-  const [quoteData, setQuoteData] = useState<{ quote: string; author: string } | null>(null);
+  const [quoteData, setQuoteData] = useState<{
+    quote: string;
+    author: string;
+  } | null>(null);
 
   useEffect(() => {
     async function fetchQuote() {
       try {
-        const res = await fetch("https://raw.githubusercontent.com/mudroljub/programming-quotes-api/master/data/quotes.json");
+        const res = await fetch(
+          "https://raw.githubusercontent.com/mudroljub/programming-quotes-api/master/data/quotes.json",
+        );
         if (!res.ok) throw new Error("Failed to fetch quotes database");
         const quotesList = await res.json();
         if (Array.isArray(quotesList) && quotesList.length > 0) {
@@ -458,15 +463,15 @@ export default function Home() {
 
       processWeeks(
         y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-        [],
+          [],
       );
       processWeeks(
         y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-        [],
+          [],
       );
       processWeeks(
         y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-        [],
+          [],
       );
 
       const uniqueContributionsMap: { [date: string]: number } = {};
@@ -616,8 +621,8 @@ export default function Home() {
                 : "mentioned you in";
           let url = n.subject.url
             ? n.subject.url
-              .replace("api.github.com/repos", "github.com")
-              .replace("/pulls/", "/pull/")
+                .replace("api.github.com/repos", "github.com")
+                .replace("/pulls/", "/pull/")
             : `https://github.com/${n.repository.full_name}`;
 
           if (
@@ -971,12 +976,16 @@ export default function Home() {
                 className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
                 title={`${streak} day contribution streak`}
               >
-                <span className={`${outfit.className} text-lg`}>{streak >= 1000 ? "1000+" : streak}</span>
+                <span className={`${outfit.className} text-lg`}>
+                  {streak >= 1000 ? "1000+" : streak}
+                </span>
                 <img className="w-6 h-6 object-contain" src="/fire.gif" />
               </div>
             )}
 
-            <div className={`${outfit.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}>
+            <div
+              className={`${outfit.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}
+            >
               <span className="text-zinc-300 text-xs font-medium">
                 {session?.user?.name || "Open Sourcerer"}
               </span>
@@ -990,7 +999,9 @@ export default function Home() {
                 src={session.user.image}
                 className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
                 alt="avatar"
-                onClick={() => window.open(`https://github.com/${username}`, "_blank")}
+                onClick={() =>
+                  window.open(`https://github.com/${username}`, "_blank")
+                }
               />
             ) : (
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono text-zinc-400">
@@ -1031,8 +1042,11 @@ export default function Home() {
         >
           {/* Dither Background Shader */}
           <div
-            className={`absolute inset-0 z-0 transition-all duration-700 ease-in-out ${isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-25 scale-100"
-              }`}
+            className={`absolute inset-0 z-0 transition-all duration-700 ease-in-out ${
+              isSidebarHovered
+                ? "opacity-0 scale-95 pointer-events-none"
+                : "opacity-25 scale-100"
+            }`}
           >
             <Dither
               waveSpeed={0.03}
@@ -1054,13 +1068,18 @@ export default function Home() {
             {/* Programming Quote (visible when sidebar is not hovered) */}
             {quoteData && (
               <div
-                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${isSidebarHovered ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
-                  }`}
+                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${
+                  isSidebarHovered
+                    ? "opacity-0 scale-95 pointer-events-none"
+                    : "opacity-100 scale-100"
+                }`}
               >
                 <p className="text-[13px] font-mono leading-relaxed text-zinc-400 tracking-tight italic select-text">
                   "{quoteData.quote}"
                 </p>
-                <p className={`${outfit.className} text-[9px] uppercase tracking-wider text-zinc-500 mt-2 select-text`}>
+                <p
+                  className={`${outfit.className} text-[9px] uppercase tracking-wider text-zinc-500 mt-2 select-text`}
+                >
                   {quoteData.author}
                 </p>
               </div>
@@ -1077,28 +1096,33 @@ export default function Home() {
                       transition: {
                         staggerChildren: 0.08,
                         staggerDirection: -1,
-                      }
+                      },
                     },
                     hidden: {
                       transition: {
                         staggerChildren: 0.05,
                         staggerDirection: 1,
-                      }
-                    }
+                      },
+                    },
                   }}
                   className="space-y-6 mb-8 flex flex-col items-center justify-end pointer-events-auto"
                 >
                   {tabs.map((tab) => {
                     const isActive = selectedTab === tab;
-                    const isMultiLine = tab === "Issues & PRs" || tab === "Reviews & Comments";
+                    const isMultiLine =
+                      tab === "Issues & PRs" || tab === "Reviews & Comments";
                     return (
                       <motion.div
                         key={tab}
                         variants={{
                           hidden: { opacity: 0, y: 180, scale: 0.8 },
-                          visible: { opacity: 1, y: 0, scale: 1 }
+                          visible: { opacity: 1, y: 0, scale: 1 },
                         }}
-                        transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 220,
+                          damping: 20,
+                        }}
                         className="w-full flex justify-center py-1"
                       >
                         <LineHoverLink
@@ -1107,8 +1131,11 @@ export default function Home() {
                             handleTabChange(tab);
                           }}
                           variant={tab === "GitStats" ? "scribble" : "pulse"}
-                          className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${isActive ? "text-white font-bold" : "text-zinc-500 hover:text-zinc-300"
-                            } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
+                          className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${
+                            isActive
+                              ? "text-white font-bold"
+                              : "text-zinc-500 hover:text-zinc-300"
+                          } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
                         >
                           {tab === "Issues & PRs" ? (
                             <>
