@@ -9,13 +9,17 @@ import ReviewsAndComments from "@/components/pages/ReviewsAndComments";
 import Organizations from "@/components/pages/Organizations";
 import GitWrapped from "@/components/pages/GitStats";
 import { DashboardLoader, LoadStates } from "@/components/ui/dashboard-loader";
-import { Outfit } from "next/font/google";
+import { Outfit, Montserrat } from "next/font/google";
 import { LineHoverLink } from "@/components/ui/line-hover-link";
 import { FolderPreview } from "@/components/ui/folder-preview";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dither } from "@/components/ui/dither";
 
 const outfit = Outfit({
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
   subsets: ["latin"],
 });
 
@@ -984,7 +988,7 @@ export default function Home() {
             )}
 
             <div
-              className={`${outfit.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}
+              className={`${montserrat.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}
             >
               <span className="text-zinc-300 text-xs font-medium">
                 {session?.user?.name || "Open Sourcerer"}

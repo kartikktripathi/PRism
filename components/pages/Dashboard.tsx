@@ -20,17 +20,15 @@ ChartJS.register(
   Filler,
 );
 
-import { Cormorant_Garamond, League_Spartan } from "next/font/google";
+import { League_Spartan, Montserrat } from "next/font/google";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 
-const cormorantGaramond = Cormorant_Garamond({
-  weight: ["300", "400", "500", "600", "700"],
-  style: ["normal", "italic"],
+const leagueSpartan = League_Spartan({
   subsets: ["latin"],
 });
 
-const leagueSpartan = League_Spartan({
+const montserrat = Montserrat({
   subsets: ["latin"],
 });
 
@@ -199,7 +197,7 @@ export default function Dashboard({
     <div className="space-y-8">
       <div>
         <h1
-          className={`text-6xl text-white font-300 ${leagueSpartan.className}`}
+          className={`text-6xl text-white font-bold ${montserrat.className}`}
         >
           Welcome, {session?.user?.name?.split(" ")[0]}.
         </h1>
