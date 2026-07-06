@@ -21,6 +21,8 @@ ChartJS.register(
 );
 
 import { Cormorant_Garamond, League_Spartan } from "next/font/google";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
 
 const cormorantGaramond = Cormorant_Garamond({
   weight: ["300", "400", "500", "600", "700"],
@@ -69,19 +71,22 @@ export default function Dashboard({
 
   const stats = [
     {
-      title: "Open Pull Requests",
-      value: newPRs.filter((pr) => pr.state == "open").length,
-      numColor: "#ff6a6aff"
-    },
-    {
-      title: "Merged Pull Requests",
-      value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
-      numColor: "#9447cbff"
-    },
-    {
       title: "Repositories Contributed To",
       value: userReposOwned.length,
-      numColor: "#84bce4ff"
+      numColor: "#84bce4",
+      description: "Active repositories in workspace."
+    },
+    {
+      title: "Pull Requests Created",
+      value: newPRs.filter((pr) => pr.state == "merged").length + newPRs.filter((pr) => pr.state == "open").length + newPRs.filter((pr) => pr.state == "closed").length,
+      numColor: "#ff6a6a",
+      description: "Total PR lifecycles submitted."
+    },
+    {
+      title: "Pull Requests Merged",
+      value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
+      numColor: "#9f67c6",
+      description: "Completed and merged codebases."
     },
   ];
 
@@ -190,7 +195,7 @@ export default function Dashboard({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className={`text-6xl text-white font-300 ${cormorantGaramond.className}`}>
+        <h1 className={`text-6xl text-white font-300 ${leagueSpartan.className}`}>
           Welcome, {session?.user?.name?.split(" ")[0]}.
         </h1>
 
@@ -201,18 +206,37 @@ export default function Dashboard({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat) => (
-          <div
+          <SpotlightCard
             key={stat.title}
-            className="rounded-lg bg-zinc-950/30 p-4"
+            spotlightColor={stat.numColor}
+            className="h-[145px] transition-all duration-300 hover:translate-y-[-2px]"
           >
-            <p 
-              className="text-6xl font-semibold mt-2"
-              style={{ color: stat.numColor }}
-            >
-              {stat.value}
-              <span className="text-xs text-zinc-500 ml-2 font-normal font-sans tracking-wide">{stat.title}</span>
-            </p>
-          </div>
+            {/* Top Row: Title + Status Dot + Icon */}
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: stat.numColor,
+                    boxShadow: `0 0 8px ${stat.numColor}`,
+                  }}
+                />
+                <span className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}>
+                  {stat.title}
+                </span>
+              </div>
+            </div>
+
+            {/* Middle Row: Animated Value */}
+            <div className="mt-3 flex items-baseline gap-1.5">
+              <span
+                className={`text-7xl font-semibold tracking-tight ${leagueSpartan.className}`}
+                style={{ color: stat.numColor }}
+              >
+                <AnimatedCounter value={stat.value} />
+              </span>
+            </div>
+          </SpotlightCard>
         ))}
       </div>
 

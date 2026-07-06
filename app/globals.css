@@ -58,3 +58,19 @@ body {
   scrollbar-width: none;
   /* Firefox */
 }
+
+@property --mouse-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --mouse-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+.spotlight-card-transition {
+  transition: --mouse-x 0.35s cubic-bezier(0.25, 1, 0.5, 1), --mouse-y 2s cubic-bezier(0.25, 1, 0.5, 1);
+}
