@@ -268,7 +268,7 @@ export default function Dashboard({
 
       {/* Commit Graph Section */}
       <div className="border-t border-zinc-800/60 pt-8">
-        <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
+        <h3 className={`text-2xl font-semibold tracking-wide ${leagueSpartan.className} uppercase`}>
           Contribution Activity
         </h3>
         <p className="text-xs text-zinc-500 mt-1 mb-6">
@@ -317,7 +317,7 @@ export default function Dashboard({
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-6 h-[300px]">
+          <div className="rounded-lg bg-zinc-950/30 p-6 h-[300px]">
             <Line data={chartData} options={chartOptions} />
           </div>
         )}
