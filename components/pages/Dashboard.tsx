@@ -53,6 +53,7 @@ export default function Dashboard({
   notifications = [],
 }: DashboardProps) {
   const [duration, setDuration] = useState<"week" | "month" | "year">("month");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const filteredContributionData = (() => {
     if (!contributionData || contributionData.length === 0) return [];
@@ -119,10 +120,10 @@ export default function Dashboard({
       {
         label: "Contributions",
         data: chartCounts,
-        borderColor: "#10b981",
+        borderColor: "#5e5e5eff",
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+          const gradient = ctx.createLinearGradient(0, 0, 0, 0);
           gradient.addColorStop(0, "rgba(16, 185, 129, 0.15)");
           gradient.addColorStop(1, "rgba(16, 185, 129, 0)");
           return gradient;
@@ -130,12 +131,12 @@ export default function Dashboard({
         fill: true,
         tension: 0.4,
         borderWidth: 2,
-        pointBackgroundColor: "#10b981",
+        pointBackgroundColor: "#ffffffff",
         pointBorderColor: "transparent",
-        pointHoverBackgroundColor: "#10b981",
-        pointHoverBorderColor: "#ffffff",
-        pointRadius: 2,
-        pointHoverRadius: 6,
+        pointHoverBackgroundColor: "#ffffffff",
+        pointHoverBorderColor: "#ffffffff",
+        pointRadius: duration === "year" ? 1 : 3,
+        pointHoverRadius: duration === "year" ? 1 : 7,
         pointHitRadius: 10,
       },
     ],
@@ -144,6 +145,15 @@ export default function Dashboard({
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animations: {
+      x: {
+        duration: 0,
+      },
+      y: {
+        duration: 400,
+        easing: "easeOutQuart" as const,
+      },
+    },
     plugins: {
       legend: {
         display: false,
@@ -263,15 +273,41 @@ export default function Dashboard({
         </h3>
         <p className="text-xs text-zinc-500 mt-1 mb-6">
           A daily breakdown of your contributions in the past{" "}
-          <select
-            value={duration}
-            onChange={(e) => setDuration(e.target.value as any)}
-            className="bg-transparent border-none font-semibold cursor-pointer focus:outline-none hover:text-white transition-colors underline underline-offset-3 appearance-none"
-          >
-            <option value="week" className="bg-zinc-950 text-zinc-300">week</option>
-            <option value="month" className="bg-zinc-950 text-zinc-300">month</option>
-            <option value="year" className="bg-zinc-950 text-zinc-300">year</option>
-          </select>
+          <span className="relative inline-block z-30">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="font-semibold text-white hover:text-white focus:outline-none transition-colors underline underline-offset-4 cursor-pointer inline-flex items-center gap-1.5 align-baseline"
+            >
+              {duration}
+            </button>
+
+            {isDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+                <div className="absolute left-0 mt-1.5 w-24 bg-zinc-950/95 backdrop-blur-md border border-zinc-800/80 rounded-lg shadow-xl shadow-black/80 z-50 overflow-hidden py-1">
+                  {(["week", "month", "year"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        setDuration(opt);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${
+                        duration === opt
+                          ? "bg-gray-600 text-white font-semibold"
+                          : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </span>
         </p>
 
         {(filteredContributionData || []).length === 0 ? (
