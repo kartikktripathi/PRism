@@ -129,7 +129,7 @@ export default function Dashboard({
           return gradient;
         },
         fill: true,
-        tension: 0.4,
+        tension: 0.2,
         borderWidth: 2,
         pointBackgroundColor: "#ffffffff",
         pointBorderColor: "transparent",
@@ -268,10 +268,10 @@ export default function Dashboard({
 
       {/* Commit Graph Section */}
       <div className="border-t border-zinc-800/60 pt-8">
-        <h3 className={`text-2xl font-semibold tracking-wide ${leagueSpartan.className} uppercase`}>
+        <h3 className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}>
           Contribution Activity
         </h3>
-        <p className="text-xs text-zinc-500 mt-1 mb-6">
+        <p className="text-xs text-zinc-500 mt-1">
           A daily breakdown of your contributions in the past{" "}
           <span className="relative inline-block z-30">
             <button
