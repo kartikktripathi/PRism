@@ -393,10 +393,6 @@ export default function Dashboard({
           <div>
             <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase flex items-center gap-2">
               Notifications
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-70"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-300"></span>
-              </span>
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
               System alerts, repository updates, and event notifications.
