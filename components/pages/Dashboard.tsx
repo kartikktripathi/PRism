@@ -352,30 +352,37 @@ export default function Dashboard({
                   href={repo.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative block rounded-lg border border-zinc-800 bg-zinc-950/30 p-5 hover:bg-zinc-900/30 hover:border-zinc-700 transition-all duration-150"
+                  className="group block"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[10px] font-mono text-zinc-600 group-hover:text-zinc-500 transition-colors duration-150">
-                        0{idx + 1}
-                      </span>
-                      <span className="text-xs font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors duration-150 truncate font-mono">
-                        {repo.name}
-                      </span>
+                  <SpotlightCard
+                    spotlightColor="#ffffff"
+                    className="rounded-lg transition-all duration-300 group-hover:-translate-y-0.5"
+                  >
+                    <div className="flex flex-col justify-between h-full w-full">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-[10px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors duration-150">
+                            0{idx + 1}
+                          </span>
+                          <span className="text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors duration-150 truncate font-mono">
+                            {repo.name}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-medium text-zinc-400 bg-zinc-900/40 border border-zinc-800/80 px-2 py-0.5 rounded font-mono group-hover:text-zinc-200 group-hover:border-zinc-700/80 transition-all duration-150">
+                          {repo.count} {repo.count === 1 ? "commit" : "commits"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 truncate mb-4 font-mono group-hover:text-zinc-400 transition-colors duration-150">
+                        {repo.fullName}
+                      </p>
+                      <div className="w-full bg-zinc-900/60 rounded-full h-[2px] overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-zinc-700 to-zinc-500 h-full rounded-full transition-all duration-500 ease-out group-hover:from-zinc-400 group-hover:to-zinc-100"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold text-zinc-300 bg-zinc-900/60 border border-zinc-850 px-2 py-0.5 rounded-full font-mono">
-                      {repo.count} {repo.count === 1 ? "commit" : "commits"}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-zinc-500 truncate mb-4 font-mono">
-                    {repo.fullName}
-                  </p>
-                  <div className="w-full bg-zinc-900/60 rounded-full h-1 overflow-hidden">
-                    <div
-                      className="bg-emerald-500/80 h-full rounded-full transition-all duration-500 ease-out group-hover:bg-emerald-400"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
+                  </SpotlightCard>
                 </a>
               );
             })}
