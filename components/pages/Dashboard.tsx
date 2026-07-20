@@ -267,7 +267,7 @@ export default function Dashboard({
       </div>
 
       {/* Commit Graph Section */}
-      <div className="border-t border-zinc-800/60 pt-8">
+      <div>
         <h3 className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}>
           Contribution Activity
         </h3>
@@ -324,7 +324,7 @@ export default function Dashboard({
       </div>
 
       {/* Top Repositories Section */}
-      <div className="border-t border-zinc-850 pt-8">
+      <div>
         <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
           Top Repositories{" "}
           <span className="text-zinc-500 text-xs font-normal font-sans capitalize">
@@ -391,7 +391,7 @@ export default function Dashboard({
       </div>
 
       {/* Notifications Section */}
-      <div className="border-t border-zinc-850 pt-8">
+      <div>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase flex items-center gap-2">
