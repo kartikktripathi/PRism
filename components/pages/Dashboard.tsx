@@ -82,7 +82,7 @@ export default function Dashboard({
     {
       title: "Repositories Contributed To",
       value: userReposOwned.length,
-      numColor: "#84bce4",
+      numColor: "#a1a1aa",
       description: "Active repositories in workspace.",
     },
     {
@@ -91,13 +91,13 @@ export default function Dashboard({
         newPRs.filter((pr) => pr.state == "merged").length +
         newPRs.filter((pr) => pr.state == "open").length +
         newPRs.filter((pr) => pr.state == "closed").length,
-      numColor: "#ff6a6a",
+      numColor: "#d4d4d8",
       description: "Total PR lifecycles submitted.",
     },
     {
       title: "Pull Requests Merged",
       value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
-      numColor: "#9f67c6",
+      numColor: "#ffffff",
       description: "Completed and merged codebases.",
     },
   ];
