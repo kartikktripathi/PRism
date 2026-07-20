@@ -397,8 +397,8 @@ export default function Dashboard({
             <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase flex items-center gap-2">
               Notifications
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-70"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-300"></span>
               </span>
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
@@ -416,63 +416,67 @@ export default function Dashboard({
         ) : (
           <div className="space-y-3">
             {notifications.map((notif: any) => (
-              <div
-                key={notif.id}
-                className="flex items-start justify-between p-4 rounded-lg border border-zinc-850 bg-zinc-950/20 hover:bg-zinc-900/10 transition-colors duration-150 text-xs font-mono"
-              >
-                <div className="flex items-center gap-3">
-                  {notif.actor?.avatarUrl && (
-                    <img
-                      src={notif.actor.avatarUrl}
-                      className="w-6 h-6 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
-                      alt={notif.actor.login}
-                    />
-                  )}
-                  <div className="space-y-0.5">
-                    <div className="text-zinc-300">
-                      <span className="font-semibold text-zinc-200">
-                        {notif.actor?.login || "Someone"}
-                      </span>{" "}
-                      <span className="text-zinc-500">
-                        {notif.type === "star" || notif.type === "fork"
-                          ? notif.title
-                          : notif.actionText || notif.type}
-                      </span>{" "}
-                      {notif.type !== "star" && notif.type !== "fork" ? (
-                        <a
-                          href={notif.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-500 hover:underline hover:text-emerald-400 transition-colors font-medium"
-                        >
-                          {notif.title}
-                        </a>
-                      ) : (
-                        <a
-                          href={notif.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-500 hover:underline hover:text-emerald-400 transition-colors font-medium"
-                        >
-                          {notif.repo}
-                        </a>
+              <div key={notif.id} className="group block">
+                <SpotlightCard
+                  spotlightColor="#ffffff"
+                  className="rounded-lg transition-all duration-300"
+                >
+                  <div className="flex items-start justify-between w-full text-xs font-mono">
+                    <div className="flex items-center gap-3">
+                      {notif.actor?.avatarUrl && (
+                        <img
+                          src={notif.actor.avatarUrl}
+                          className="w-6 h-6 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
+                          alt={notif.actor.login}
+                        />
                       )}
+                      <div className="space-y-0.5">
+                        <div className="text-zinc-400">
+                          <span className="font-semibold text-zinc-300 group-hover:text-zinc-200 transition-colors">
+                            {notif.actor?.login || "Someone"}
+                          </span>{" "}
+                          <span className="text-zinc-500">
+                            {notif.type === "star" || notif.type === "fork"
+                              ? notif.title
+                              : notif.actionText || notif.type}
+                          </span>{" "}
+                          {notif.type !== "star" && notif.type !== "fork" ? (
+                            <a
+                              href={notif.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
+                            >
+                              {notif.title}
+                            </a>
+                          ) : (
+                            <a
+                              href={notif.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
+                            >
+                              {notif.repo}
+                            </a>
+                          )}
+                        </div>
+                        {notif.type !== "star" && notif.type !== "fork" && (
+                          <span className="text-[10px] text-zinc-600 group-hover:text-zinc-500 block transition-colors">
+                            in {notif.repo}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    {notif.type !== "star" && notif.type !== "fork" && (
-                      <span className="text-[10px] text-zinc-600 block">
-                        in {notif.repo}
-                      </span>
-                    )}
+                    <span className="text-[10px] text-zinc-500 whitespace-nowrap ml-4 font-mono group-hover:text-zinc-400 transition-colors">
+                      {new Date(notif.createdAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
-                </div>
-                <span className="text-[10px] text-zinc-600 whitespace-nowrap ml-4">
-                  {new Date(notif.createdAt).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
+                </SpotlightCard>
               </div>
             ))}
           </div>
