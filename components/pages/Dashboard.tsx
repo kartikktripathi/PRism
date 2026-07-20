@@ -409,67 +409,63 @@ export default function Dashboard({
         ) : (
           <div className="space-y-3">
             {notifications.map((notif: any) => (
-              <div key={notif.id} className="group block">
-                <SpotlightCard
-                  spotlightColor="#ffffff"
-                  className="rounded-lg transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between w-full text-xs font-mono">
-                    <div className="flex items-center gap-3">
-                      {notif.actor?.avatarUrl && (
-                        <img
-                          src={notif.actor.avatarUrl}
-                          className="w-6 h-6 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
-                          alt={notif.actor.login}
-                        />
+              <div
+                key={notif.id}
+                className="group flex items-start justify-between py-2 text-xs font-mono transition-colors duration-150"
+              >
+                <div className="flex items-center gap-3">
+                  {notif.actor?.avatarUrl && (
+                    <img
+                      src={notif.actor.avatarUrl}
+                      className="w-6 h-6 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
+                      alt={notif.actor.login}
+                    />
+                  )}
+                  <div className="space-y-0.5">
+                    <div className="text-zinc-400 group-hover:text-zinc-300 transition-colors duration-150">
+                      <span className="font-semibold text-zinc-300 group-hover:text-zinc-200 transition-colors">
+                        {notif.actor?.login || "Someone"}
+                      </span>{" "}
+                      <span className="text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                        {notif.type === "star" || notif.type === "fork"
+                          ? notif.title
+                          : notif.actionText || notif.type}
+                      </span>{" "}
+                      {notif.type !== "star" && notif.type !== "fork" ? (
+                        <a
+                          href={notif.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
+                        >
+                          {notif.title}
+                        </a>
+                      ) : (
+                        <a
+                          href={notif.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
+                        >
+                          {notif.repo}
+                        </a>
                       )}
-                      <div className="space-y-0.5">
-                        <div className="text-zinc-400">
-                          <span className="font-semibold text-zinc-300 group-hover:text-zinc-200 transition-colors">
-                            {notif.actor?.login || "Someone"}
-                          </span>{" "}
-                          <span className="text-zinc-500">
-                            {notif.type === "star" || notif.type === "fork"
-                              ? notif.title
-                              : notif.actionText || notif.type}
-                          </span>{" "}
-                          {notif.type !== "star" && notif.type !== "fork" ? (
-                            <a
-                              href={notif.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
-                            >
-                              {notif.title}
-                            </a>
-                          ) : (
-                            <a
-                              href={notif.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
-                            >
-                              {notif.repo}
-                            </a>
-                          )}
-                        </div>
-                        {notif.type !== "star" && notif.type !== "fork" && (
-                          <span className="text-[10px] text-zinc-600 group-hover:text-zinc-500 block transition-colors">
-                            in {notif.repo}
-                          </span>
-                        )}
-                      </div>
                     </div>
-                    <span className="text-[10px] text-zinc-500 whitespace-nowrap ml-4 font-mono group-hover:text-zinc-400 transition-colors">
-                      {new Date(notif.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                    {notif.type !== "star" && notif.type !== "fork" && (
+                      <span className="text-[10px] text-zinc-600 group-hover:text-zinc-500 block transition-colors">
+                        in {notif.repo}
+                      </span>
+                    )}
                   </div>
-                </SpotlightCard>
+                </div>
+                <span className="text-[10px] text-zinc-500 whitespace-nowrap ml-4 font-mono group-hover:text-zinc-400 transition-colors">
+                  {new Date(notif.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
               </div>
             ))}
           </div>
