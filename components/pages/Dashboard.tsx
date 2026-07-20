@@ -327,9 +327,6 @@ export default function Dashboard({
       <div>
         <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
           Top Repositories{" "}
-          <span className="text-zinc-500 text-xs font-normal font-sans capitalize">
-            (Past Week)
-          </span>
         </h3>
         <p className="text-xs text-zinc-500 mt-1 mb-6">
           Based on your commit activity over the last 7 days.
