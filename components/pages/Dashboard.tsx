@@ -41,6 +41,8 @@ type DashboardProps = {
   topRepos: any[];
   contributionData: any[];
   notifications?: any[];
+  commitDuration: "week" | "month" | "year";
+  setCommitDuration: (val: "week" | "month" | "year") => void;
 };
 
 export default function Dashboard({
@@ -51,9 +53,12 @@ export default function Dashboard({
   topRepos,
   contributionData,
   notifications = [],
+  commitDuration,
+  setCommitDuration,
 }: DashboardProps) {
   const [duration, setDuration] = useState<"week" | "month" | "year">("month");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCommitDropdownOpen, setIsCommitDropdownOpen] = useState(false);
 
   const filteredContributionData = (() => {
     if (!contributionData || contributionData.length === 0) return [];
@@ -120,12 +125,12 @@ export default function Dashboard({
       {
         label: "Contributions",
         data: chartCounts,
-        borderColor: "#5e5e5eff",
+        borderColor: "#ffffff",
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 0);
-          gradient.addColorStop(0, "rgba(16, 185, 129, 0.15)");
-          gradient.addColorStop(1, "rgba(16, 185, 129, 0)");
+          gradient.addColorStop(0, "rgba(255, 255, 255, 0.12)");
+          gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
           return gradient;
         },
         fill: true,
@@ -295,11 +300,10 @@ export default function Dashboard({
                         setDuration(opt);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${
-                        duration === opt
+                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${duration === opt
                           ? "bg-gray-600 text-white font-semibold"
                           : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
-                      }`}
+                        }`}
                     >
                       {opt}
                     </button>
@@ -325,17 +329,52 @@ export default function Dashboard({
 
       {/* Top Repositories Section */}
       <div>
-        <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
+        <h3 className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}>
           Top Repositories{" "}
         </h3>
         <p className="text-xs text-zinc-500 mt-1 mb-6">
-          Based on your commit activity over the last 7 days.
+          Based on your commit activity over the past{" "}
+          <span className="relative inline-block z-30">
+            <button
+              onClick={() => setIsCommitDropdownOpen(!isCommitDropdownOpen)}
+              className="font-semibold text-white hover:text-white focus:outline-none transition-colors underline underline-offset-4 cursor-pointer inline-flex items-center gap-1.5 align-baseline"
+            >
+              {commitDuration}
+            </button>
+
+            {isCommitDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={() => setIsCommitDropdownOpen(false)}
+                />
+                <div className="absolute left-0 mt-1.5 w-24 bg-zinc-950/95 backdrop-blur-md border border-zinc-800/80 rounded-lg shadow-xl shadow-black/80 z-50 overflow-hidden py-1">
+                  {(["week", "month", "year"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        setCommitDuration(opt);
+                        setIsCommitDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${
+                        commitDuration === opt
+                          ? "bg-gray-600 text-white font-semibold"
+                          : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </span>
         </p>
 
         {topRepos.length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
-              No commits recorded on GitHub in the past 7 days.
+              No commits recorded on GitHub in the past {commitDuration === "week" ? "7" : commitDuration === "month" ? "30" : "365"} days.
             </p>
           </div>
         ) : (

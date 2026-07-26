@@ -66,6 +66,7 @@ export default function Home() {
   const [githubUser, setGithubUser] = useState<any>(null);
   const [userRepos, setUserRepos] = useState<any[]>([]);
   const [topRepos, setTopRepos] = useState<any[]>([]);
+  const [commitDuration, setCommitDuration] = useState<"week" | "month" | "year">("week");
   const [contributionData, setContributionData] = useState<any[]>([]);
   const [streak, setStreak] = useState<number>(0);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -152,7 +153,6 @@ export default function Home() {
     if (username) {
       if (loadStates.repos.status === "idle") fetchReposWithRetry();
       if (loadStates.prs.status === "idle") fetchPRsWithRetry();
-      if (loadStates.topRepos.status === "idle") fetchRecentCommitsWithRetry();
       if (loadStates.contributions.status === "idle")
         fetchContributionCalendarWithRetry();
       if (loadStates.notifications.status === "idle")
@@ -162,10 +162,15 @@ export default function Home() {
     username,
     loadStates.repos.status,
     loadStates.prs.status,
-    loadStates.topRepos.status,
     loadStates.contributions.status,
     loadStates.notifications.status,
   ]);
+
+  useEffect(() => {
+    if (username) {
+      fetchRecentCommitsWithRetry();
+    }
+  }, [username, commitDuration]);
 
   useEffect(() => {
     if (
@@ -301,8 +306,15 @@ export default function Home() {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const sevenDaysAgo = new Date(now);
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      let daysAgo = 7;
+      if (commitDuration === "month") {
+        daysAgo = 30;
+      } else if (commitDuration === "year") {
+        daysAgo = 365;
+      }
+
+      const sinceDate = new Date(now);
+      sinceDate.setDate(sinceDate.getDate() - daysAgo);
 
       const res = await fetch("https://api.github.com/graphql", {
         method: "POST",
@@ -331,7 +343,7 @@ export default function Home() {
           `,
           variables: {
             LOGIN: username,
-            FROM: sevenDaysAgo.toISOString(),
+            FROM: sinceDate.toISOString(),
             TO: tomorrow.toISOString(),
           },
         }),
@@ -1181,6 +1193,8 @@ export default function Home() {
                 topRepos={topRepos}
                 contributionData={contributionData}
                 notifications={notifications}
+                commitDuration={commitDuration}
+                setCommitDuration={setCommitDuration}
               />
             )}
             {selectedTab === "Issues & PRs" && (
