@@ -125,12 +125,12 @@ export default function Dashboard({
       {
         label: "Contributions",
         data: chartCounts,
-        borderColor: "#ffffff",
+        borderColor: "#5e5e5eff",
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 0);
-          gradient.addColorStop(0, "rgba(255, 255, 255, 0.12)");
-          gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+          gradient.addColorStop(0, "rgba(16, 185, 129, 0.15)");
+          gradient.addColorStop(1, "rgba(16, 185, 129, 0)");
           return gradient;
         },
         fill: true,
