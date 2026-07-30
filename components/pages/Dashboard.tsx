@@ -430,7 +430,7 @@ export default function Dashboard({
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase flex items-center gap-2">
+            <h3 className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}>
               Notifications
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
