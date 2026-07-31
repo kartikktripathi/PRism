@@ -542,9 +542,9 @@ export default function Home() {
       notifications: { ...prev.notifications, status: "loading" },
     }));
     try {
-      const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-      const sinceISO = oneDayAgo.toISOString();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sinceISO = thirtyDaysAgo.toISOString();
 
       const headers = {
         Authorization: `Bearer ${session.accessToken}`,
@@ -606,7 +606,7 @@ export default function Home() {
             "subscribed",
             "assign",
           ];
-          if (notifDate < oneDayAgo || !allowedReasons.includes(n.reason)) {
+          if (notifDate < thirtyDaysAgo || !allowedReasons.includes(n.reason)) {
             return null;
           }
 
@@ -703,7 +703,7 @@ export default function Home() {
       if (Array.isArray(events)) {
         events.forEach((e: any) => {
           const eventDate = new Date(e.created_at);
-          if (eventDate >= oneDayAgo) {
+          if (eventDate >= thirtyDaysAgo) {
             if (e.type === "WatchEvent" && e.payload?.action === "started") {
               const repoOwner = e.repo.name.split("/")[0];
               if (repoOwner.toLowerCase() === username.toLowerCase()) {
@@ -749,7 +749,7 @@ export default function Home() {
           const prMergedAt =
             pr.pull_request?.merged_at || pr.closed_at || pr.updated_at;
           const prMergedDate = new Date(prMergedAt);
-          if (prMergedDate >= oneDayAgo) {
+          if (prMergedDate >= thirtyDaysAgo) {
             const repoFullName = pr.repository_url.replace(
               "https://api.github.com/repos/",
               "",
@@ -776,7 +776,7 @@ export default function Home() {
         openedPRs.forEach((pr: any) => {
           const prCreatedAt = pr.created_at;
           const prCreatedDate = new Date(prCreatedAt);
-          if (prCreatedDate >= oneDayAgo) {
+          if (prCreatedDate >= thirtyDaysAgo) {
             const repoFullName = pr.repository_url.replace(
               "https://api.github.com/repos/",
               "",
