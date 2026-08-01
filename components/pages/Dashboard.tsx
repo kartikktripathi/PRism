@@ -125,7 +125,7 @@ export default function Dashboard({
       {
         label: "Contributions",
         data: chartCounts,
-        borderColor: "#5e5e5eff",
+        borderColor: "#ffffffff",
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 0);
@@ -137,7 +137,7 @@ export default function Dashboard({
         tension: 0.2,
         borderWidth: 2,
         pointBackgroundColor: "#ffffffff",
-        pointBorderColor: "transparent",
+        pointBorderColor: "#e0e0e0ff",
         pointHoverBackgroundColor: "#ffffffff",
         pointHoverBorderColor: "#ffffffff",
         pointRadius: duration === "year" ? 1 : 3,
