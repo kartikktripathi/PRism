@@ -66,6 +66,7 @@ export default function Home() {
   const [githubUser, setGithubUser] = useState<any>(null);
   const [userRepos, setUserRepos] = useState<any[]>([]);
   const [topRepos, setTopRepos] = useState<any[]>([]);
+  const [commitsCount30Days, setCommitsCount30Days] = useState<number>(0);
   const [commitDuration, setCommitDuration] = useState<"week" | "month" | "year">("week");
   const [contributionData, setContributionData] = useState<any[]>([]);
   const [streak, setStreak] = useState<number>(0);
@@ -316,6 +317,9 @@ export default function Home() {
       const sinceDate = new Date(now);
       sinceDate.setDate(sinceDate.getDate() - daysAgo);
 
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
       const res = await fetch("https://api.github.com/graphql", {
         method: "POST",
         headers: {
@@ -324,7 +328,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           query: `
-            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!, $FROM_30: DateTime!) {
               user(login: $LOGIN) {
                 contributionsCollection(from: $FROM, to: $TO) {
                   commitContributionsByRepository(maxRepositories: 100) {
@@ -338,6 +342,9 @@ export default function Home() {
                     }
                   }
                 }
+                contributions30Days: contributionsCollection(from: $FROM_30, to: $TO) {
+                  totalCommitContributions
+                }
               }
             }
           `,
@@ -345,6 +352,7 @@ export default function Home() {
             LOGIN: username,
             FROM: sinceDate.toISOString(),
             TO: tomorrow.toISOString(),
+            FROM_30: thirtyDaysAgo.toISOString(),
           },
         }),
       });
@@ -357,6 +365,12 @@ export default function Home() {
       if (json.errors) {
         throw new Error(JSON.stringify(json.errors));
       }
+
+      console.log("GraphQL Response json.data:", json.data);
+
+      const totalCommits30Days =
+        json.data?.user?.contributions30Days?.totalCommitContributions || 0;
+      setCommitsCount30Days(totalCommits30Days);
 
       const reposList =
         json.data?.user?.contributionsCollection
@@ -1195,6 +1209,7 @@ export default function Home() {
                 notifications={notifications}
                 commitDuration={commitDuration}
                 setCommitDuration={setCommitDuration}
+                commitsCount30Days={commitsCount30Days}
               />
             )}
             {selectedTab === "Issues & PRs" && (

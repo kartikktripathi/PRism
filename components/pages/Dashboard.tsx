@@ -43,6 +43,7 @@ type DashboardProps = {
   notifications?: any[];
   commitDuration: "week" | "month" | "year";
   setCommitDuration: (val: "week" | "month" | "year") => void;
+  commitsCount30Days?: number;
 };
 
 export default function Dashboard({
@@ -55,6 +56,7 @@ export default function Dashboard({
   notifications = [],
   commitDuration,
   setCommitDuration,
+  commitsCount30Days = 0,
 }: DashboardProps) {
   const [duration, setDuration] = useState<"week" | "month" | "year">("month");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -91,13 +93,10 @@ export default function Dashboard({
       description: "Active repositories in workspace.",
     },
     {
-      title: "Pull Requests Created",
-      value:
-        newPRs.filter((pr) => pr.state == "merged").length +
-        newPRs.filter((pr) => pr.state == "open").length +
-        newPRs.filter((pr) => pr.state == "closed").length,
+      title: "Commits in Last 30 Days",
+      value: commitsCount30Days,
       numColor: "#d4d4d8",
-      description: "Total PR lifecycles submitted.",
+      description: "Total commit contributions made.",
     },
     {
       title: "Pull Requests Merged",
