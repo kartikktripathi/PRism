@@ -1215,13 +1215,13 @@ export default function Home() {
             {selectedTab === "Issues & PRs" && (
               <IssuesAndPRs session={session} username={username} />
             )}
-            {selectedTab === "Reviews and Comments" && (
+            {selectedTab === "Reviews & Comments" && (
               <ReviewsAndComments session={session} username={username} />
             )}
             {selectedTab === "Organizations" && (
               <Organizations session={session} username={username} />
             )}
-            {selectedTab === "GitWrapped" && (
+            {selectedTab === "GitStats" && (
               <GitWrapped session={session} username={username} />
             )}
           </main>
