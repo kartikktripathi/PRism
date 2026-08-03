@@ -1064,9 +1064,9 @@ export default function Home() {
         >
           {/* Dither Background Shader */}
           <div
-            className={`absolute inset-0 z-0 transition-all duration-700 ease-in-out ${isSidebarHovered
-              ? "opacity-0 scale-95 pointer-events-none"
-              : "opacity-25 scale-100"
+            className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out ${isSidebarHovered
+              ? "opacity-0 pointer-events-none"
+              : "opacity-25"
               }`}
           >
             <Dither
