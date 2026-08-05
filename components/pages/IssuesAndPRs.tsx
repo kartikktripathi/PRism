@@ -4,6 +4,15 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { League_Spartan, Montserrat } from "next/font/google";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
+import {
+  GitPullRequestIcon,
+  GitPullRequestClosedIcon,
+  GitMergeIcon,
+  IssueOpenedIcon,
+  IssueClosedIcon,
+  CommentIcon,
+  SyncIcon,
+} from "@primer/octicons-react";
 
 const leagueSpartan = League_Spartan({
   subsets: ["latin"],
@@ -416,19 +425,10 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
           disabled={loading || isRefreshing}
           className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
         >
-          <svg
+          <SyncIcon
             className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-white" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
-            />
-          </svg>
+            size={14}
+          />
           {isRefreshing ? "Refreshing..." : "Sync GitHub"}
         </button>
       </div>
@@ -740,91 +740,19 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full h-full">
                     {/* Left Side: Status Icon, Title, and Meta */}
                     <div className="flex items-start gap-3.5 min-w-0">
-                      <span className="mt-1 flex-shrink-0">
+                      <span className="mt-1 flex-shrink-0 flex items-center justify-center">
                         {isPR ? (
                           isMerged ? (
-                            // Merged PR - Silver/Gray instead of Purple
-                            <svg
-                              className="w-4 h-4 text-zinc-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="18" cy="18" r="2.5" />
-                              <circle cx="12" cy="6" r="2.5" />
-                              <path d="M12 8.5V13a3 3 0 0 1-3 3h-.5m0 0L6 18.5M8.5 16l-2-2.5" />
-                              <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
-                            </svg>
+                            <GitMergeIcon size={16} className="text-zinc-400" />
                           ) : isOpen ? (
-                            // Open PR - White/Zinc-100 instead of Green
-                            <svg
-                              className="w-4 h-4 text-white"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                            </svg>
+                            <GitPullRequestIcon size={16} className="text-white" />
                           ) : (
-                            // Closed PR - Muted Dark Gray instead of Red
-                            <svg
-                              className="w-4 h-4 text-zinc-600"
-                              style={{ color: '#4b5563' }}
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                              <line
-                                x1="4"
-                                y1="4"
-                                x2="20"
-                                y2="20"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                              />
-                            </svg>
+                            <GitPullRequestClosedIcon size={16} className="text-zinc-600" />
                           )
                         ) : isOpen ? (
-                          // Open Issue - White instead of Green
-                          <svg
-                            className="w-4 h-4 text-white"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <circle cx="12" cy="16" r="0.8" fill="currentColor" />
-                          </svg>
+                          <IssueOpenedIcon size={16} className="text-white" />
                         ) : (
-                          // Closed Issue - Muted Dark Gray instead of Purple
-                          <svg
-                            className="w-4 h-4 text-zinc-600"
-                            style={{ color: '#4b5563' }}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M9 12l2 2 4-4"
-                            />
-                          </svg>
+                          <IssueClosedIcon size={16} className="text-zinc-600" />
                         )}
                       </span>
 
@@ -904,19 +832,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                       {/* Comments Indicator */}
                       {item.comments > 0 && (
                         <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-400 transition-colors font-mono text-[10px]">
-                          <svg
-                            className="w-3.5 h-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                            />
-                          </svg>
+                          <CommentIcon size={14} />
                           <span>{item.comments}</span>
                         </div>
                       )}

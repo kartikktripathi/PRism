@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { GitPullRequestIcon, IssueOpenedIcon } from "@primer/octicons-react";
 
 interface GitStatsProps {
   session: {
@@ -190,18 +191,9 @@ function MonthlyStatCard({
         {/* Pull Requests */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg
-              className="w-4 h-4 text-purple-400 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="6" cy="18" r="2.5" />
-              <circle cx="6" cy="6" r="2.5" />
-              <circle cx="18" cy="6" r="2.5" />
-              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-            </svg>
+            <span className="flex items-center justify-center w-4 h-4 text-purple-400 flex-shrink-0">
+              <GitPullRequestIcon size={16} />
+            </span>
             <span>Pull Requests</span>
           </div>
           <span className="font-bold text-purple-400">{stat.pullRequests}</span>
@@ -210,17 +202,9 @@ function MonthlyStatCard({
         {/* Issues */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg
-              className="w-4 h-4 text-rose-500 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <circle cx="12" cy="16" r="0.8" fill="currentColor" />
-            </svg>
+            <span className="flex items-center justify-center w-4 h-4 text-rose-500 flex-shrink-0">
+              <IssueOpenedIcon size={16} />
+            </span>
             <span>Issues Opened</span>
           </div>
           <span className="font-bold text-rose-400">{stat.issues}</span>

@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import {
+  GitPullRequestIcon,
+  GitPullRequestClosedIcon,
+  GitMergeIcon,
+  CommentIcon,
+  SyncIcon,
+} from "@primer/octicons-react";
 
 interface ReviewsAndCommentsProps {
   session: {
@@ -203,19 +210,10 @@ export default function ReviewsAndComments({
           disabled={loading || isRefreshing}
           className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
         >
-          <svg
+          <SyncIcon
             className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
-            />
-          </svg>
+            size={14}
+          />
           {isRefreshing ? "Refreshing..." : "Sync GitHub"}
         </button>
       </div>
@@ -287,20 +285,8 @@ export default function ReviewsAndComments({
                     >
                       {/* Left Side: Status Icon, Title, and Meta */}
                       <div className="flex items-start gap-3.5 min-w-0">
-                        <span className="mt-1 flex-shrink-0">
-                          {/* Open PR - Green */}
-                          <svg
-                            className="w-4 h-4 text-emerald-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <circle cx="6" cy="18" r="2.5" />
-                            <circle cx="6" cy="6" r="2.5" />
-                            <circle cx="18" cy="6" r="2.5" />
-                            <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                          </svg>
+                        <span className="mt-1 flex-shrink-0 flex items-center justify-center">
+                          <GitPullRequestIcon size={16} className="text-emerald-500" />
                         </span>
 
                         <div className="space-y-1.5 min-w-0">
@@ -371,19 +357,7 @@ export default function ReviewsAndComments({
                       <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
                         {item.comments > 0 && (
                           <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
+                            <CommentIcon size={14} />
                             <span>{item.comments}</span>
                           </div>
                         )}
@@ -468,55 +442,13 @@ export default function ReviewsAndComments({
                     >
                       {/* Left Side: Status Icon, Title, and Meta */}
                       <div className="flex items-start gap-3.5 min-w-0">
-                        <span className="mt-1 flex-shrink-0">
+                        <span className="mt-1 flex-shrink-0 flex items-center justify-center">
                           {isMerged ? (
-                            <svg
-                              className="w-4 h-4 text-purple-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="18" cy="18" r="2.5" />
-                              <circle cx="12" cy="6" r="2.5" />
-                              <path d="M12 8.5V13a3 3 0 0 1-3 3h-.5m0 0L6 18.5M8.5 16l-2-2.5" />
-                              <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
-                            </svg>
+                            <GitMergeIcon size={16} className="text-purple-400" />
                           ) : isOpen ? (
-                            <svg
-                              className="w-4 h-4 text-emerald-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                            </svg>
+                            <GitPullRequestIcon size={16} className="text-emerald-500" />
                           ) : (
-                            <svg
-                              className="w-4 h-4 text-rose-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                              <line
-                                x1="4"
-                                y1="4"
-                                x2="20"
-                                y2="20"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                              />
-                            </svg>
+                            <GitPullRequestClosedIcon size={16} className="text-rose-500" />
                           )}
                         </span>
 
@@ -596,19 +528,7 @@ export default function ReviewsAndComments({
                       <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
                         {item.comments > 0 && (
                           <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
+                            <CommentIcon size={14} />
                             <span>{item.comments}</span>
                           </div>
                         )}
@@ -693,58 +613,13 @@ export default function ReviewsAndComments({
                     >
                       {/* Left Side: Status Icon, Title, and Meta */}
                       <div className="flex items-start gap-3.5 min-w-0">
-                        <span className="mt-1 flex-shrink-0">
+                        <span className="mt-1 flex-shrink-0 flex items-center justify-center">
                           {isMerged ? (
-                            // Merged PR - Purple
-                            <svg
-                              className="w-4 h-4 text-purple-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="18" cy="18" r="2.5" />
-                              <circle cx="12" cy="6" r="2.5" />
-                              <path d="M12 8.5V13a3 3 0 0 1-3 3h-.5m0 0L6 18.5M8.5 16l-2-2.5" />
-                              <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
-                            </svg>
+                            <GitMergeIcon size={16} className="text-purple-400" />
                           ) : isOpen ? (
-                            // Open PR - Green
-                            <svg
-                              className="w-4 h-4 text-emerald-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                            </svg>
+                            <GitPullRequestIcon size={16} className="text-emerald-500" />
                           ) : (
-                            // Closed PR - Red
-                            <svg
-                              className="w-4 h-4 text-rose-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                              <line
-                                x1="4"
-                                y1="4"
-                                x2="20"
-                                y2="20"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                              />
-                            </svg>
+                            <GitPullRequestClosedIcon size={16} className="text-rose-500" />
                           )}
                         </span>
 
@@ -824,19 +699,7 @@ export default function ReviewsAndComments({
                       <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
                         {item.comments > 0 && (
                           <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
+                            <CommentIcon size={14} />
                             <span>{item.comments}</span>
                           </div>
                         )}
