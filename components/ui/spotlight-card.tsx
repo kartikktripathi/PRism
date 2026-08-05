@@ -49,7 +49,7 @@ export function SpotlightCard({
       />
 
       {/* Inner Content Box */}
-      <div className="relative h-full w-full bg-black/95 p-5 z-10 flex flex-col justify-between">
+      <div className="relative h-full w-full bg-black/95 p-5 z-10 flex flex-col justify-between rounded-[inherit]">
         {children}
       </div>
     </div>
