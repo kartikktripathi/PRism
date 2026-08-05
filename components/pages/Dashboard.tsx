@@ -116,7 +116,9 @@ export default function Dashboard({
     });
   });
 
-  const chartCounts = (filteredContributionData || []).map((day: any) => day.count);
+  const chartCounts = (filteredContributionData || []).map(
+    (day: any) => day.count,
+  );
 
   const chartData = {
     labels: chartLabels,
@@ -220,9 +222,7 @@ export default function Dashboard({
   return (
     <div className="space-y-8">
       <div>
-        <h1
-          className={`text-6xl text-white font-bold ${montserrat.className}`}
-        >
+        <h1 className={`text-6xl text-white font-bold ${montserrat.className}`}>
           Welcome, {session?.user?.name?.split(" ")[0]}.
         </h1>
 
@@ -272,7 +272,9 @@ export default function Dashboard({
 
       {/* Commit Graph Section */}
       <div>
-        <h3 className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}>
+        <h3
+          className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+        >
           Contribution Activity
         </h3>
         <p className="text-xs text-zinc-500 mt-1">
@@ -299,10 +301,11 @@ export default function Dashboard({
                         setDuration(opt);
                         setIsDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${duration === opt
+                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${
+                        duration === opt
                           ? "bg-gray-600 text-white font-semibold"
                           : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
-                        }`}
+                      }`}
                     >
                       {opt}
                     </button>
@@ -316,7 +319,9 @@ export default function Dashboard({
         {(filteredContributionData || []).length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
-              No contributions recorded on GitHub in the past {duration === "week" ? "7" : duration === "month" ? "30" : "365"} days.
+              No contributions recorded on GitHub in the past{" "}
+              {duration === "week" ? "7" : duration === "month" ? "30" : "365"}{" "}
+              days.
             </p>
           </div>
         ) : (
@@ -328,7 +333,9 @@ export default function Dashboard({
 
       {/* Top Repositories Section */}
       <div>
-        <h3 className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}>
+        <h3
+          className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+        >
           Top Repositories{" "}
         </h3>
         <p className="text-xs text-zinc-500 mt-1 mb-6">
@@ -373,7 +380,13 @@ export default function Dashboard({
         {topRepos.length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
-              No commits recorded on GitHub in the past {commitDuration === "week" ? "7" : commitDuration === "month" ? "30" : "365"} days.
+              No commits recorded on GitHub in the past{" "}
+              {commitDuration === "week"
+                ? "7"
+                : commitDuration === "month"
+                  ? "30"
+                  : "365"}{" "}
+              days.
             </p>
           </div>
         ) : (
@@ -429,7 +442,9 @@ export default function Dashboard({
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}>
+            <h3
+              className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+            >
               Notifications
             </h3>
             <p className="text-xs text-zinc-500 mt-1">

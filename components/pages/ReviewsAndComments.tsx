@@ -286,7 +286,10 @@ export default function ReviewsAndComments({
                       {/* Left Side: Status Icon, Title, and Meta */}
                       <div className="flex items-start gap-3.5 min-w-0">
                         <span className="mt-1 flex-shrink-0 flex items-center justify-center">
-                          <GitPullRequestIcon size={16} className="text-emerald-500" />
+                          <GitPullRequestIcon
+                            size={16}
+                            className="text-emerald-500"
+                          />
                         </span>
 
                         <div className="space-y-1.5 min-w-0">
@@ -444,11 +447,20 @@ export default function ReviewsAndComments({
                       <div className="flex items-start gap-3.5 min-w-0">
                         <span className="mt-1 flex-shrink-0 flex items-center justify-center">
                           {isMerged ? (
-                            <GitMergeIcon size={16} className="text-purple-400" />
+                            <GitMergeIcon
+                              size={16}
+                              className="text-purple-400"
+                            />
                           ) : isOpen ? (
-                            <GitPullRequestIcon size={16} className="text-emerald-500" />
+                            <GitPullRequestIcon
+                              size={16}
+                              className="text-emerald-500"
+                            />
                           ) : (
-                            <GitPullRequestClosedIcon size={16} className="text-rose-500" />
+                            <GitPullRequestClosedIcon
+                              size={16}
+                              className="text-rose-500"
+                            />
                           )}
                         </span>
 
@@ -615,11 +627,20 @@ export default function ReviewsAndComments({
                       <div className="flex items-start gap-3.5 min-w-0">
                         <span className="mt-1 flex-shrink-0 flex items-center justify-center">
                           {isMerged ? (
-                            <GitMergeIcon size={16} className="text-purple-400" />
+                            <GitMergeIcon
+                              size={16}
+                              className="text-purple-400"
+                            />
                           ) : isOpen ? (
-                            <GitPullRequestIcon size={16} className="text-emerald-500" />
+                            <GitPullRequestIcon
+                              size={16}
+                              className="text-emerald-500"
+                            />
                           ) : (
-                            <GitPullRequestClosedIcon size={16} className="text-rose-500" />
+                            <GitPullRequestClosedIcon
+                              size={16}
+                              className="text-rose-500"
+                            />
                           )}
                         </span>
 

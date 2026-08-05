@@ -413,11 +413,16 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
       {/* Header and Sync Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
+          <h1
+            className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}
+          >
             Issues & Pull Requests
           </h1>
-          <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
-            Track conversations, code review requests, and assignments from your active repositories.
+          <p
+            className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}
+          >
+            Track conversations, code review requests, and assignments from your
+            active repositories.
           </p>
         </div>
         <button
@@ -488,7 +493,9 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                   style={{ color: stat.color }}
                 >
                   {loading ? (
-                    <span className="text-2xl font-mono text-zinc-500">...</span>
+                    <span className="text-2xl font-mono text-zinc-500">
+                      ...
+                    </span>
                   ) : (
                     <AnimatedCounter value={stat.value} />
                   )}
@@ -745,14 +752,23 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
                           isMerged ? (
                             <GitMergeIcon size={16} className="text-zinc-400" />
                           ) : isOpen ? (
-                            <GitPullRequestIcon size={16} className="text-white" />
+                            <GitPullRequestIcon
+                              size={16}
+                              className="text-white"
+                            />
                           ) : (
-                            <GitPullRequestClosedIcon size={16} className="text-zinc-600" />
+                            <GitPullRequestClosedIcon
+                              size={16}
+                              className="text-zinc-600"
+                            />
                           )
                         ) : isOpen ? (
                           <IssueOpenedIcon size={16} className="text-white" />
                         ) : (
-                          <IssueClosedIcon size={16} className="text-zinc-600" />
+                          <IssueClosedIcon
+                            size={16}
+                            className="text-zinc-600"
+                          />
                         )}
                       </span>
 
