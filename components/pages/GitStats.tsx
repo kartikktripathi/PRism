@@ -761,7 +761,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
         </div>
 
         {/* Developer Persona & Contribution Time Analyzer */}
-        <div className="rounded-lg border border-zinc-850 bg-zinc-950/40 p-6 space-y-6 max-w-lg">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-6 space-y-6 max-w-lg">
           <div className="flex flex-col gap-1.5 border-b border-zinc-900/60 pb-4">
             <h3 className="text-lg font-semibold text-white font-sans tracking-wide">
               Developer Persona
@@ -849,7 +849,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.day}%` }}
                       className="h-full bg-amber-500 transition-all duration-500"
@@ -868,7 +868,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.afternoon}%` }}
                       className="h-full bg-orange-500 transition-all duration-500"
@@ -887,7 +887,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.evening}%` }}
                       className="h-full bg-purple-500 transition-all duration-500"
@@ -906,7 +906,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.night}%` }}
                       className="h-full bg-indigo-500 transition-all duration-500"
@@ -942,7 +942,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           <button
             onClick={handleRefresh}
             disabled={loading || isRefreshing}
-            className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
+            className="self-start sm:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
           >
             <svg
               className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}

@@ -427,7 +427,7 @@ export default function Organizations({
         <button
           onClick={handleRefresh}
           disabled={loading || isRefreshing}
-          className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
+          className="self-start sm:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
         >
           <svg
             className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
@@ -472,7 +472,7 @@ export default function Organizations({
                 placeholder="Search organizations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-zinc-950/40 border border-zinc-850 hover:border-zinc-800 focus:border-zinc-700 text-zinc-300 placeholder-zinc-600 rounded text-xs font-mono outline-none transition-all"
+                className="w-full pl-9 pr-4 py-2.5 bg-zinc-950/40 border border-zinc-800/50 hover:border-zinc-700/80 focus:border-zinc-600 text-zinc-300 placeholder-zinc-600 rounded text-xs font-mono outline-none transition-all"
               />
               {searchQuery && (
                 <button
@@ -502,7 +502,7 @@ export default function Organizations({
               className={`flex items-center gap-2 border px-3.5 py-2.5 rounded transition-all cursor-pointer ${
                 filterActiveOnly
                   ? "bg-emerald-950/30 border-emerald-800 text-emerald-400"
-                  : "bg-zinc-900/10 border-zinc-850 hover:border-zinc-800 text-zinc-500 hover:text-zinc-300"
+                  : "bg-zinc-900/10 border-zinc-800/80 hover:border-zinc-800 text-zinc-500 hover:text-zinc-300"
               }`}
             >
               <span
@@ -521,7 +521,7 @@ export default function Organizations({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-zinc-950 border border-zinc-850 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-2.5 px-3 cursor-pointer font-mono"
+              className="bg-zinc-950 border border-zinc-800/80 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-2.5 px-3 cursor-pointer font-mono"
             >
               <option value="total">Total Contributions</option>
               <option value="commits">Commits</option>
@@ -557,7 +557,7 @@ export default function Organizations({
               ))}
             </div>
           ) : filteredAndSortedOrgs.length === 0 ? (
-            <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-12 text-center font-mono">
+            <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-12 text-center font-mono">
               <svg
                 className="w-8 h-8 text-zinc-700 mx-auto mb-3"
                 fill="none"

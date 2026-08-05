@@ -208,7 +208,7 @@ export default function ReviewsAndComments({
         <button
           onClick={handleRefresh}
           disabled={loading || isRefreshing}
-          className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
+          className="self-start sm:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
         >
           <SyncIcon
             className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
@@ -255,7 +255,7 @@ export default function ReviewsAndComments({
                   <SkeletonCard key={i} />
                 ))
               ) : pendingPrs.length === 0 ? (
-                <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
+                <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
                   <svg
                     className="w-8 h-8 text-zinc-700 mx-auto mb-3"
                     fill="none"
@@ -396,7 +396,7 @@ export default function ReviewsAndComments({
                 Recently Reviewed
               </h2>
               {!loading && reviewedPrs.length > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-mono text-zinc-400">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800/80 font-mono text-zinc-400">
                   {reviewedPrs.length} total
                 </span>
               )}
@@ -411,7 +411,7 @@ export default function ReviewsAndComments({
                   <SkeletonCard key={i} />
                 ))
               ) : reviewedPrs.length === 0 ? (
-                <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
+                <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
                   <svg
                     className="w-8 h-8 text-zinc-700 mx-auto mb-3"
                     fill="none"
@@ -567,7 +567,7 @@ export default function ReviewsAndComments({
                 Commented Pull Requests
               </h2>
               {!loading && commentedPrs.length > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-mono text-zinc-400">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800/80 font-mono text-zinc-400">
                   {commentedPrs.length} total
                 </span>
               )}
@@ -582,7 +582,7 @@ export default function ReviewsAndComments({
                   <SkeletonCard key={i} />
                 ))
               ) : commentedPrs.length === 0 ? (
-                <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
+                <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
                   <svg
                     className="w-8 h-8 text-zinc-700 mx-auto mb-3"
                     fill="none"
