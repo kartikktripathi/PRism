@@ -13,7 +13,6 @@ interface OrganizationData {
   login: string;
   name: string;
   avatarUrl: string;
-  description: string;
   commits: number;
   issues: number;
   pullRequests: number;
@@ -81,7 +80,6 @@ export default function Organizations({
                   login
                   name
                   avatarUrl
-                  description
                 }
               }
               contributionsCollection(from: $FROM, to: $TO) {
@@ -197,7 +195,6 @@ export default function Organizations({
         login: string,
         name?: string,
         avatarUrl?: string,
-        description?: string,
       ) => {
         const key = login.toLowerCase();
         let org = orgsMap.get(key);
@@ -206,7 +203,6 @@ export default function Organizations({
             login,
             name: name || login,
             avatarUrl: avatarUrl || `https://github.com/${login}.png`,
-            description: description || "",
             commits: 0,
             issues: 0,
             pullRequests: 0,
@@ -223,7 +219,7 @@ export default function Organizations({
 
       // Initialize with user's official memberships
       userOrgs.forEach((o: any) => {
-        getOrCreateOrg(o.login, o.name, o.avatarUrl, o.description);
+        getOrCreateOrg(o.login, o.name, o.avatarUrl);
       });
 
       // Parse Commit Contributions
@@ -306,7 +302,6 @@ export default function Organizations({
           login: org.login,
           name: org.name,
           avatarUrl: org.avatarUrl,
-          description: org.description,
           commits: org.commits,
           issues: org.issues,
           pullRequests: org.pullRequests,
@@ -355,8 +350,7 @@ export default function Organizations({
       result = result.filter(
         (o) =>
           o.name.toLowerCase().includes(q) ||
-          o.login.toLowerCase().includes(q) ||
-          o.description.toLowerCase().includes(q),
+          o.login.toLowerCase().includes(q),
       );
     }
 
@@ -625,15 +619,6 @@ export default function Organizations({
                             @{org.login}
                           </span>
                         </div>
-                        {org.description ? (
-                          <p className="text-[11px] text-zinc-500 font-sans line-clamp-2 leading-relaxed pr-2">
-                            {org.description}
-                          </p>
-                        ) : (
-                          <p className="text-[11px] text-zinc-650 font-sans italic">
-                            No organization description provided.
-                          </p>
-                        )}
                       </div>
                     </div>
 
