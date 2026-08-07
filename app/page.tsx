@@ -1212,7 +1212,7 @@ export default function Home() {
             smoothWheel: true,
           }}
         >
-          <main className="w-full">
+          <main className="w-full" style={{ visibility: isTabLoading ? "hidden" : "visible" }}>
             {selectedTab === "Dashboard" && (
               <Dashboard
                 prs={prs}
