@@ -7,6 +7,7 @@ interface OrganizationsProps {
     accessToken?: string;
   } | null;
   username: string | null;
+  onLoadComplete?: () => void;
 }
 
 interface OrganizationData {
@@ -25,6 +26,7 @@ interface OrganizationData {
 export default function Organizations({
   session,
   username,
+  onLoadComplete,
 }: OrganizationsProps) {
   const [orgs, setOrgs] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -50,6 +52,7 @@ export default function Organizations({
     if (!username || !session?.accessToken) {
       setError("Please authenticate with GitHub to view organizations.");
       setLoading(false);
+      onLoadComplete?.();
       return;
     }
 
@@ -323,6 +326,7 @@ export default function Organizations({
     } finally {
       setLoading(false);
       setIsRefreshing(false);
+      onLoadComplete?.();
     }
   }, [username, session]);
 

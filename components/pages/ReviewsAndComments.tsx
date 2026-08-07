@@ -14,6 +14,7 @@ interface ReviewsAndCommentsProps {
     accessToken?: string;
   } | null;
   username: string | null;
+  onLoadComplete?: () => void;
 }
 
 interface GitHubLabel {
@@ -51,6 +52,7 @@ interface PendingReviewPR {
 export default function ReviewsAndComments({
   session,
   username,
+  onLoadComplete,
 }: ReviewsAndCommentsProps) {
   const [pendingPrs, setPendingPrs] = useState<PendingReviewPR[]>([]);
   const [commentedPrs, setCommentedPrs] = useState<PendingReviewPR[]>([]);
@@ -65,6 +67,7 @@ export default function ReviewsAndComments({
     if (!username || !session?.accessToken) {
       setError("Please authenticate with GitHub to load reviews and comments.");
       setLoading(false);
+      onLoadComplete?.();
       return;
     }
 
@@ -106,6 +109,7 @@ export default function ReviewsAndComments({
     } finally {
       setLoading(false);
       setIsRefreshing(false);
+      onLoadComplete?.();
     }
   }, [username, session]);
 

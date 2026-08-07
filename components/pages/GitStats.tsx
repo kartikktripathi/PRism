@@ -8,6 +8,7 @@ interface GitStatsProps {
     accessToken?: string;
   } | null;
   username: string | null;
+  onLoadComplete?: () => void;
 }
 
 interface MonthlyStat {
@@ -271,7 +272,11 @@ function SkeletonCard() {
   );
 }
 
-export default function GitWrapped({ session, username }: GitStatsProps) {
+export default function GitWrapped({
+  session,
+  username,
+  onLoadComplete,
+}: GitStatsProps) {
   const [stats, setStats] = useState<MonthlyStat[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -284,6 +289,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     if (!username || !session?.accessToken) {
       setError("Please authenticate with GitHub to load your Git stats.");
       setLoading(false);
+      onLoadComplete?.();
       return;
     }
 
@@ -451,6 +457,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     } finally {
       setLoading(false);
       setIsRefreshing(false);
+      onLoadComplete?.();
     }
   }, [username, session]);
 

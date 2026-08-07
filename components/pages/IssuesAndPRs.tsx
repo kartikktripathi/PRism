@@ -27,6 +27,7 @@ interface IssuesAndPRsProps {
     accessToken?: string;
   } | null;
   username: string | null;
+  onLoadComplete?: () => void;
 }
 
 interface GitHubLabel {
@@ -89,7 +90,11 @@ interface GitHubRawItem {
   };
 }
 
-export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
+export default function IssuesAndPRs({
+  session,
+  username,
+  onLoadComplete,
+}: IssuesAndPRsProps) {
   const [items, setItems] = useState<IssueOrPR[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +121,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     if (!username || !session?.accessToken) {
       setError("Please authenticate with GitHub to load issues and PRs.");
       setLoading(false);
+      onLoadComplete?.();
       return;
     }
 
@@ -228,6 +234,7 @@ export default function IssuesAndPRs({ session, username }: IssuesAndPRsProps) {
     } finally {
       setLoading(false);
       setIsRefreshing(false);
+      onLoadComplete?.();
     }
   }, [username, session]);
 
