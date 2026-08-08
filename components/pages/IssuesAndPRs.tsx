@@ -11,7 +11,6 @@ import {
   IssueOpenedIcon,
   IssueClosedIcon,
   CommentIcon,
-  SyncIcon,
 } from "@primer/octicons-react";
 
 const leagueSpartan = League_Spartan({
@@ -432,17 +431,6 @@ export default function IssuesAndPRs({
             active repositories.
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={loading || isRefreshing}
-          className="self-start sm:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
-        >
-          <SyncIcon
-            className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-white" : ""}`}
-            size={14}
-          />
-          {isRefreshing ? "Refreshing..." : "Sync GitHub"}
-        </button>
       </div>
 
       {/* Summary Widgets */}
