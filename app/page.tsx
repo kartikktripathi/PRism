@@ -60,7 +60,7 @@ function calculateStreak(contributions: { count: number; date: string }[]) {
 }
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [prs, setPrs] = useState<any[]>([]);
   const [username, setUsername] = useState<string | null>(null);
   const [githubUser, setGithubUser] = useState<any>(null);
@@ -82,6 +82,17 @@ export default function Home() {
     notifications: { status: "idle", errorCount: 0 },
   });
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+
+  const [minimumTimeElapsed, setMinimumTimeElapsed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinimumTimeElapsed(true);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const isSessionChecking = status === "loading" || !minimumTimeElapsed;
 
   const [position, setPosition] = useState({
     x: 0,
@@ -872,6 +883,10 @@ export default function Home() {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragging, dragOffset]);
+
+  if (isSessionChecking) {
+    return <DashboardLoader loadStates={loadStates} />;
+  }
 
   if (!session) {
     return (
