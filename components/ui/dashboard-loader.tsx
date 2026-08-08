@@ -40,12 +40,17 @@ export function DashboardLoader({ loadStates }: DashboardLoaderProps) {
         }
       `}</style>
 
-      <div className="relative animate-scale-pulse">
-        <img
-          src="/logo.png"
-          className="w-64 h-32 object-contain"
-          alt="PRism Logo"
-        />
+      <div className="flex flex-col items-center">
+        <div className="relative animate-scale-pulse">
+          <img
+            src="/logo.png"
+            className="w-64 h-32 object-contain"
+            alt="PRism Logo"
+          />
+        </div>
+        <p className="text-zinc-500 font-mono text-[11px] tracking-wider uppercase">
+          Hit the PRism logo to sync your GitHub data
+        </p>
       </div>
     </div>
   );
