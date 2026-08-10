@@ -9,7 +9,6 @@ import {
   GitPullRequestClosedIcon,
   GitMergeIcon,
   CommentIcon,
-  SyncIcon,
 } from "@primer/octicons-react";
 
 const leagueSpartan = League_Spartan({
@@ -70,7 +69,6 @@ export default function ReviewsAndComments({
   const [reviewedPrs, setReviewedPrs] = useState<PendingReviewPR[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const fetchReviewsAndComments = useCallback(async () => {
     await Promise.resolve();
@@ -119,7 +117,6 @@ export default function ReviewsAndComments({
       setError(errMsg);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
       onLoadComplete?.();
     }
   }, [username, session, onLoadComplete]);
@@ -134,7 +131,6 @@ export default function ReviewsAndComments({
   }, [username, session, fetchReviewsAndComments]);
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     await fetchReviewsAndComments();
   };
 
@@ -213,7 +209,7 @@ export default function ReviewsAndComments({
   return (
     <div className="space-y-8 select-none">
       {/* Header and Sync Control */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
           <h1
             className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}
@@ -226,17 +222,6 @@ export default function ReviewsAndComments({
             Manage incoming code reviews and actions assigned directly to you.
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={loading || isRefreshing}
-          className="self-start sm:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
-        >
-          <SyncIcon
-            className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
-            size={14}
-          />
-          {isRefreshing ? "Refreshing..." : "Sync GitHub"}
-        </button>
       </div>
 
       {/* Summary Widgets */}
