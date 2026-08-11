@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -20,16 +21,29 @@ ChartJS.register(
   Filler,
 );
 
+import { League_Spartan, Montserrat } from "next/font/google";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+
+const leagueSpartan = League_Spartan({
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+});
+
 type DashboardProps = {
   prs: any[];
   session: any;
   data: any;
   repos: any[];
   topRepos: any[];
-  loadingTopRepos: boolean;
   contributionData: any[];
-  loadingContribution: boolean;
   notifications?: any[];
+  commitDuration: "week" | "month" | "year";
+  setCommitDuration: (val: "week" | "month" | "year") => void;
+  commitsCount30Days?: number;
 };
 
 export default function Dashboard({
@@ -38,12 +52,27 @@ export default function Dashboard({
   data,
   repos,
   topRepos,
-  loadingTopRepos,
   contributionData,
-  loadingContribution,
   notifications = [],
+  commitDuration,
+  setCommitDuration,
+  commitsCount30Days = 0,
 }: DashboardProps) {
-  console.log("notifs:", notifications);
+  const [duration, setDuration] = useState<"week" | "month" | "year">("month");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCommitDropdownOpen, setIsCommitDropdownOpen] = useState(false);
+
+  const filteredContributionData = (() => {
+    if (!contributionData || contributionData.length === 0) return [];
+    if (duration === "week") {
+      return contributionData.slice(-7);
+    } else if (duration === "month") {
+      return contributionData.slice(-30);
+    } else {
+      return contributionData.slice(-365);
+    }
+  })();
+
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const userReposOwned = repos
@@ -55,25 +84,30 @@ export default function Dashboard({
   const newPRs = prs.filter((pr) => {
     return new Date(pr.created_at) >= thirtyDaysAgo;
   });
-  console.log(newPRs);
 
   const stats = [
     {
-      title: "Open PRs",
-      value: newPRs.filter((pr) => pr.state == "open").length,
-    },
-    {
-      title: "Merged PRs",
-      value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
-    },
-    {
-      title: "Repositories",
+      title: "Repositories Contributed To",
       value: userReposOwned.length,
+      numColor: "#a1a1aa",
+      description: "Active repositories in workspace.",
+    },
+    {
+      title: "Commits in Last 30 Days",
+      value: commitsCount30Days,
+      numColor: "#d4d4d8",
+      description: "Total commit contributions made.",
+    },
+    {
+      title: "Pull Requests Merged",
+      value: newPRs.filter((pr: any) => pr.pull_request?.merged_at).length,
+      numColor: "#ffffff",
+      description: "Completed and merged codebases.",
     },
   ];
 
   // Format labels and dataset for the line chart
-  const chartLabels = (contributionData || []).map((day: any) => {
+  const chartLabels = (filteredContributionData || []).map((day: any) => {
     const dateObj = new Date(day.date);
     return dateObj.toLocaleDateString("en-US", {
       month: "short",
@@ -82,7 +116,9 @@ export default function Dashboard({
     });
   });
 
-  const chartCounts = (contributionData || []).map((day: any) => day.count);
+  const chartCounts = (filteredContributionData || []).map(
+    (day: any) => day.count,
+  );
 
   const chartData = {
     labels: chartLabels,
@@ -90,23 +126,23 @@ export default function Dashboard({
       {
         label: "Contributions",
         data: chartCounts,
-        borderColor: "#10b981",
+        borderColor: "#ffffffff",
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+          const gradient = ctx.createLinearGradient(0, 0, 0, 0);
           gradient.addColorStop(0, "rgba(16, 185, 129, 0.15)");
           gradient.addColorStop(1, "rgba(16, 185, 129, 0)");
           return gradient;
         },
         fill: true,
-        tension: 0.4,
+        tension: 0.2,
         borderWidth: 2,
-        pointBackgroundColor: "#10b981",
-        pointBorderColor: "transparent",
-        pointHoverBackgroundColor: "#10b981",
-        pointHoverBorderColor: "#ffffff",
-        pointRadius: 2,
-        pointHoverRadius: 6,
+        pointBackgroundColor: "#ffffffff",
+        pointBorderColor: "#e0e0e0ff",
+        pointHoverBackgroundColor: "#ffffffff",
+        pointHoverBorderColor: "#ffffffff",
+        pointRadius: duration === "year" ? 1 : 3,
+        pointHoverRadius: duration === "year" ? 1 : 7,
         pointHitRadius: 10,
       },
     ],
@@ -115,6 +151,15 @@ export default function Dashboard({
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animations: {
+      x: {
+        duration: 0,
+      },
+      y: {
+        duration: 400,
+        easing: "easeOutQuart" as const,
+      },
+    },
     plugins: {
       legend: {
         display: false,
@@ -177,96 +222,171 @@ export default function Dashboard({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-semibold text-white">
-          Welcome, {session?.user?.name?.split(" ")[0]}
+        <h1 className={`text-6xl text-white font-bold ${montserrat.className}`}>
+          Welcome, {session?.user?.name?.split(" ")[0]}.
         </h1>
 
-        <p className="text-zinc-500 mt-2">
-          Here's what's happening across your GitHub activity.
+        <p
+          className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}
+        >
+          Here's what's happening across your GitHub in the past 30 days.
         </p>
-
-        <h2 className="text-zinc-400 mt-4 text-sm font-semibold tracking-wide font-mono uppercase">
-          Activity stats of last 30 days
-        </h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat) => (
-          <div
+          <SpotlightCard
             key={stat.title}
-            className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-4"
+            spotlightColor={stat.numColor}
+            className="h-[145px] transition-all duration-300 hover:translate-y-[-2px]"
           >
-            <p className="text-xs text-zinc-500">{stat.title}</p>
+            {/* Top Row: Title + Status Dot + Icon */}
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: stat.numColor,
+                    boxShadow: `0 0 8px ${stat.numColor}`,
+                  }}
+                />
+                <span
+                  className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
+                >
+                  {stat.title}
+                </span>
+              </div>
+            </div>
 
-            <p className="text-2xl font-semibold text-white mt-2">
-              {stat.value}
-            </p>
-          </div>
+            {/* Middle Row: Animated Value */}
+            <div className="mt-3 flex items-baseline gap-1.5">
+              <span
+                className={`text-7xl font-semibold tracking-tight ${leagueSpartan.className}`}
+                style={{ color: stat.numColor }}
+              >
+                <AnimatedCounter value={stat.value} />
+              </span>
+            </div>
+          </SpotlightCard>
         ))}
       </div>
 
       {/* Commit Graph Section */}
-      <div className="border-t border-zinc-800/60 pt-8">
-        <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
-          Commit & Contribution Activity{" "}
-          <span className="text-zinc-500 text-xs font-normal font-sans capitalize">
-            (Past 30 Days)
-          </span>
+      <div>
+        <h3
+          className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+        >
+          Contribution Activity
         </h3>
-        <p className="text-xs text-zinc-500 mt-1 mb-6">
-          A daily breakdown of your commits, pull requests, issues, and reviews.
+        <p className="text-xs text-zinc-500 mt-1">
+          A daily breakdown of your contributions in the past{" "}
+          <span className="relative inline-block z-30">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="font-semibold text-white hover:text-white focus:outline-none transition-colors underline underline-offset-4 cursor-pointer inline-flex items-center gap-1.5 align-baseline"
+            >
+              {duration}
+            </button>
+
+            {isDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+                <div className="absolute left-0 mt-1.5 w-24 bg-zinc-950/95 backdrop-blur-md border border-zinc-800/80 rounded-lg shadow-xl shadow-black/80 z-50 overflow-hidden py-1">
+                  {(["week", "month", "year"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        setDuration(opt);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${
+                        duration === opt
+                          ? "bg-gray-600 text-white font-semibold"
+                          : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </span>
         </p>
 
-        {loadingContribution ? (
-          <div className="animate-pulse rounded-lg border border-zinc-800 bg-zinc-950/20 p-6 h-[300px] flex items-center justify-center">
-            <span className="text-xs text-zinc-500 font-mono animate-pulse">
-              Fetching contribution history...
-            </span>
-          </div>
-        ) : (contributionData || []).length === 0 ? (
+        {(filteredContributionData || []).length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
-              No contributions recorded on GitHub in the past 30 days.
+              No contributions recorded on GitHub in the past{" "}
+              {duration === "week" ? "7" : duration === "month" ? "30" : "365"}{" "}
+              days.
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-zinc-800 bg-zinc-950/30 p-6 h-[300px]">
+          <div className="rounded-lg bg-zinc-950/30 p-6 h-[300px]">
             <Line data={chartData} options={chartOptions} />
           </div>
         )}
       </div>
 
       {/* Top Repositories Section */}
-      <div className="border-t border-zinc-850 pt-8">
-        <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase">
+      <div>
+        <h3
+          className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+        >
           Top Repositories{" "}
-          <span className="text-zinc-500 text-xs font-normal font-sans capitalize">
-            (Past Week)
-          </span>
         </h3>
         <p className="text-xs text-zinc-500 mt-1 mb-6">
-          Based on your commit activity over the last 7 days.
+          Based on your commit activity over the past{" "}
+          <span className="relative inline-block z-30">
+            <button
+              onClick={() => setIsCommitDropdownOpen(!isCommitDropdownOpen)}
+              className="font-semibold text-white hover:text-white focus:outline-none transition-colors underline underline-offset-4 cursor-pointer inline-flex items-center gap-1.5 align-baseline"
+            >
+              {commitDuration}
+            </button>
+
+            {isCommitDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={() => setIsCommitDropdownOpen(false)}
+                />
+                <div className="absolute left-0 mt-1.5 w-24 bg-zinc-950/95 backdrop-blur-md border border-zinc-800/80 rounded-lg shadow-xl shadow-black/80 z-50 overflow-hidden py-1">
+                  {(["week", "month", "year"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        setCommitDuration(opt);
+                        setIsCommitDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${
+                        commitDuration === opt
+                          ? "bg-gray-600 text-white font-semibold"
+                          : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </span>
         </p>
 
-        {loadingTopRepos ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="animate-pulse rounded-lg border border-zinc-800 bg-zinc-950/20 p-5 h-28 flex flex-col justify-between"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="h-4 bg-zinc-800 rounded w-1/2" />
-                  <div className="h-5 bg-zinc-800 rounded w-1/4" />
-                </div>
-                <div className="h-3 bg-zinc-800 rounded w-1/3" />
-                <div className="h-1 bg-zinc-800 rounded w-full" />
-              </div>
-            ))}
-          </div>
-        ) : topRepos.length === 0 ? (
+        {topRepos.length === 0 ? (
           <div className="rounded-lg border border-zinc-800 border-dashed bg-zinc-950/10 p-8 text-center">
             <p className="text-xs text-zinc-500 font-mono">
-              No commits recorded on GitHub in the past 7 days.
+              No commits recorded on GitHub in the past{" "}
+              {commitDuration === "week"
+                ? "7"
+                : commitDuration === "month"
+                  ? "30"
+                  : "365"}{" "}
+              days.
             </p>
           </div>
         ) : (
@@ -280,30 +400,37 @@ export default function Dashboard({
                   href={repo.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative block rounded-lg border border-zinc-800 bg-zinc-950/30 p-5 hover:bg-zinc-900/30 hover:border-zinc-700 transition-all duration-150"
+                  className="group block"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[10px] font-mono text-zinc-600 group-hover:text-zinc-500 transition-colors duration-150">
-                        0{idx + 1}
-                      </span>
-                      <span className="text-xs font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors duration-150 truncate font-mono">
-                        {repo.name}
-                      </span>
+                  <SpotlightCard
+                    spotlightColor="#ffffff"
+                    className="rounded-lg transition-all duration-300 group-hover:-translate-y-0.5"
+                  >
+                    <div className="flex flex-col justify-between h-full w-full">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-[10px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors duration-150">
+                            0{idx + 1}
+                          </span>
+                          <span className="text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors duration-150 truncate font-mono">
+                            {repo.name}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-medium text-zinc-400 bg-zinc-900/40 border border-zinc-800/80 px-2 py-0.5 rounded font-mono group-hover:text-zinc-200 group-hover:border-zinc-700/80 transition-all duration-150">
+                          {repo.count} {repo.count === 1 ? "commit" : "commits"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 truncate mb-4 font-mono group-hover:text-zinc-400 transition-colors duration-150">
+                        {repo.fullName}
+                      </p>
+                      <div className="w-full bg-zinc-900/60 rounded-full h-[2px] overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-zinc-700 to-zinc-500 h-full rounded-full transition-all duration-500 ease-out group-hover:from-zinc-400 group-hover:to-zinc-100"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold text-zinc-300 bg-zinc-900/60 border border-zinc-850 px-2 py-0.5 rounded-full font-mono">
-                      {repo.count} {repo.count === 1 ? "commit" : "commits"}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-zinc-500 truncate mb-4 font-mono">
-                    {repo.fullName}
-                  </p>
-                  <div className="w-full bg-zinc-900/60 rounded-full h-1 overflow-hidden">
-                    <div
-                      className="bg-emerald-500/80 h-full rounded-full transition-all duration-500 ease-out group-hover:bg-emerald-400"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
+                  </SpotlightCard>
                 </a>
               );
             })}
@@ -312,15 +439,13 @@ export default function Dashboard({
       </div>
 
       {/* Notifications Section */}
-      <div className="border-t border-zinc-850 pt-8">
+      <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-base text-zinc-300 font-semibold tracking-wide font-mono uppercase flex items-center gap-2">
+            <h3
+              className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+            >
               Notifications
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
               System alerts, repository updates, and event notifications.
@@ -339,7 +464,7 @@ export default function Dashboard({
             {notifications.map((notif: any) => (
               <div
                 key={notif.id}
-                className="flex items-start justify-between p-4 rounded-lg border border-zinc-850 bg-zinc-950/20 hover:bg-zinc-900/10 transition-colors duration-150 text-xs font-mono"
+                className="group flex items-start justify-between py-2 text-xs font-mono transition-colors duration-150"
               >
                 <div className="flex items-center gap-3">
                   {notif.actor?.avatarUrl && (
@@ -350,11 +475,11 @@ export default function Dashboard({
                     />
                   )}
                   <div className="space-y-0.5">
-                    <div className="text-zinc-300">
-                      <span className="font-semibold text-zinc-200">
+                    <div className="text-zinc-400 group-hover:text-zinc-300 transition-colors duration-150">
+                      <span className="font-semibold text-zinc-300 group-hover:text-zinc-200 transition-colors">
                         {notif.actor?.login || "Someone"}
                       </span>{" "}
-                      <span className="text-zinc-500">
+                      <span className="text-zinc-500 group-hover:text-zinc-400 transition-colors">
                         {notif.type === "star" || notif.type === "fork"
                           ? notif.title
                           : notif.actionText || notif.type}
@@ -364,7 +489,7 @@ export default function Dashboard({
                           href={notif.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-emerald-500 hover:underline hover:text-emerald-400 transition-colors font-medium"
+                          className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
                         >
                           {notif.title}
                         </a>
@@ -373,20 +498,20 @@ export default function Dashboard({
                           href={notif.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-emerald-500 hover:underline hover:text-emerald-400 transition-colors font-medium"
+                          className="text-zinc-300 hover:text-white transition-colors hover:underline font-medium"
                         >
                           {notif.repo}
                         </a>
                       )}
                     </div>
                     {notif.type !== "star" && notif.type !== "fork" && (
-                      <span className="text-[10px] text-zinc-600 block">
+                      <span className="text-[10px] text-zinc-600 group-hover:text-zinc-500 block transition-colors">
                         in {notif.repo}
                       </span>
                     )}
                   </div>
                 </div>
-                <span className="text-[10px] text-zinc-600 whitespace-nowrap ml-4">
+                <span className="text-[10px] text-zinc-500 whitespace-nowrap ml-4 font-mono group-hover:text-zinc-400 transition-colors">
                   {new Date(notif.createdAt).toLocaleDateString(undefined, {
                     month: "short",
                     day: "numeric",

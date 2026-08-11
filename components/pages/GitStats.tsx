@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { GitPullRequestIcon, IssueOpenedIcon } from "@primer/octicons-react";
 
 interface GitStatsProps {
   session: {
     accessToken?: string;
   } | null;
   username: string | null;
+  onLoadComplete?: () => void;
 }
 
 interface MonthlyStat {
@@ -190,18 +192,9 @@ function MonthlyStatCard({
         {/* Pull Requests */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg
-              className="w-4 h-4 text-purple-400 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="6" cy="18" r="2.5" />
-              <circle cx="6" cy="6" r="2.5" />
-              <circle cx="18" cy="6" r="2.5" />
-              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-            </svg>
+            <span className="flex items-center justify-center w-4 h-4 text-purple-400 flex-shrink-0">
+              <GitPullRequestIcon size={16} />
+            </span>
             <span>Pull Requests</span>
           </div>
           <span className="font-bold text-purple-400">{stat.pullRequests}</span>
@@ -210,17 +203,9 @@ function MonthlyStatCard({
         {/* Issues */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-zinc-500">
-            <svg
-              className="w-4 h-4 text-rose-500 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <circle cx="12" cy="16" r="0.8" fill="currentColor" />
-            </svg>
+            <span className="flex items-center justify-center w-4 h-4 text-rose-500 flex-shrink-0">
+              <IssueOpenedIcon size={16} />
+            </span>
             <span>Issues Opened</span>
           </div>
           <span className="font-bold text-rose-400">{stat.issues}</span>
@@ -287,7 +272,11 @@ function SkeletonCard() {
   );
 }
 
-export default function GitWrapped({ session, username }: GitStatsProps) {
+export default function GitWrapped({
+  session,
+  username,
+  onLoadComplete,
+}: GitStatsProps) {
   const [stats, setStats] = useState<MonthlyStat[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -300,6 +289,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     if (!username || !session?.accessToken) {
       setError("Please authenticate with GitHub to load your Git stats.");
       setLoading(false);
+      onLoadComplete?.();
       return;
     }
 
@@ -467,6 +457,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
     } finally {
       setLoading(false);
       setIsRefreshing(false);
+      onLoadComplete?.();
     }
   }, [username, session]);
 
@@ -777,7 +768,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
         </div>
 
         {/* Developer Persona & Contribution Time Analyzer */}
-        <div className="rounded-lg border border-zinc-850 bg-zinc-950/40 p-6 space-y-6 max-w-lg">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-6 space-y-6 max-w-lg">
           <div className="flex flex-col gap-1.5 border-b border-zinc-900/60 pb-4">
             <h3 className="text-lg font-semibold text-white font-sans tracking-wide">
               Developer Persona
@@ -865,7 +856,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.day}%` }}
                       className="h-full bg-amber-500 transition-all duration-500"
@@ -884,7 +875,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.afternoon}%` }}
                       className="h-full bg-orange-500 transition-all duration-500"
@@ -903,7 +894,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.evening}%` }}
                       className="h-full bg-purple-500 transition-all duration-500"
@@ -922,7 +913,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
                       </span>
                     </span>
                   </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-850 rounded overflow-hidden">
+                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
                     <div
                       style={{ width: `${timeStats.percentages.night}%` }}
                       className="h-full bg-indigo-500 transition-all duration-500"
@@ -958,7 +949,7 @@ export default function GitWrapped({ session, username }: GitStatsProps) {
           <button
             onClick={handleRefresh}
             disabled={loading || isRefreshing}
-            className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
+            className="self-start sm:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
           >
             <svg
               className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}

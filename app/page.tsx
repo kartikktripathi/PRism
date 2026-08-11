@@ -2,12 +2,27 @@
 
 import { useState, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
+import { ReactLenis } from "lenis/react";
 import { LiquidOcean } from "@/components/ui/liquid-ocean";
 import Dashboard from "@/components/pages/Dashboard";
 import IssuesAndPRs from "@/components/pages/IssuesAndPRs";
 import ReviewsAndComments from "@/components/pages/ReviewsAndComments";
 import Organizations from "@/components/pages/Organizations";
 import GitWrapped from "@/components/pages/GitStats";
+import { DashboardLoader, LoadStates } from "@/components/ui/dashboard-loader";
+import { Outfit, Montserrat } from "next/font/google";
+import { LineHoverLink } from "@/components/ui/line-hover-link";
+import { FolderPreview } from "@/components/ui/folder-preview";
+import { motion, AnimatePresence } from "framer-motion";
+import { Dither } from "@/components/ui/dither";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+});
 
 function calculateStreak(contributions: { count: number; date: string }[]) {
   if (!contributions || contributions.length === 0) return 0;
@@ -45,26 +60,71 @@ function calculateStreak(contributions: { count: number; date: string }[]) {
 }
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [prs, setPrs] = useState<any[]>([]);
   const [username, setUsername] = useState<string | null>(null);
   const [githubUser, setGithubUser] = useState<any>(null);
   const [userRepos, setUserRepos] = useState<any[]>([]);
   const [topRepos, setTopRepos] = useState<any[]>([]);
-  const [loadingTopRepos, setLoadingTopRepos] = useState<boolean>(false);
+  const [commitsCount30Days, setCommitsCount30Days] = useState<number>(0);
+  const [commitDuration, setCommitDuration] = useState<
+    "week" | "month" | "year"
+  >("week");
   const [contributionData, setContributionData] = useState<any[]>([]);
-  const [loadingContribution, setLoadingContribution] =
-    useState<boolean>(false);
   const [streak, setStreak] = useState<number>(0);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [loadingNotifications, setLoadingNotifications] =
-    useState<boolean>(false);
+  const [loadStates, setLoadStates] = useState<LoadStates>({
+    user: { status: "idle", errorCount: 0 },
+    repos: { status: "idle", errorCount: 0 },
+    prs: { status: "idle", errorCount: 0 },
+    topRepos: { status: "idle", errorCount: 0 },
+    contributions: { status: "idle", errorCount: 0 },
+    notifications: { status: "idle", errorCount: 0 },
+  });
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+
+  const [minimumTimeElapsed, setMinimumTimeElapsed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinimumTimeElapsed(true);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const isSessionChecking = status === "loading" || !minimumTimeElapsed;
 
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
   });
   const [selectedTab, setSelectedTab] = useState("Dashboard");
+  const [isTabLoading, setIsTabLoading] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [quoteData, setQuoteData] = useState<{
+    quote: string;
+    author: string;
+  } | null>(null);
+
+  useEffect(() => {
+    async function fetchQuote() {
+      try {
+        const res = await fetch(
+          "https://raw.githubusercontent.com/mudroljub/programming-quotes-api/master/data/quotes.json",
+        );
+        if (!res.ok) throw new Error("Failed to fetch quotes database");
+        const quotesList = await res.json();
+        if (Array.isArray(quotesList) && quotesList.length > 0) {
+          const randomIndex = Math.floor(Math.random() * quotesList.length);
+          const item = quotesList[randomIndex];
+          setQuoteData({ quote: item.text, author: item.author });
+        }
+      } catch (error) {
+        console.error("Error fetching programming quotes:", error);
+      }
+    }
+    fetchQuote();
+  }, []);
 
   const [dragging, setDragging] = useState(false);
 
@@ -74,12 +134,31 @@ export default function Home() {
   });
 
   function handleTabChange(tab: string) {
+    if (tab !== "Dashboard") {
+      setIsTabLoading(true);
+    } else {
+      setIsTabLoading(false);
+    }
     setSelectedTab(tab);
   }
 
   useEffect(() => {
     if (session) {
-      fetchUser();
+      if (loadStates.user.status === "idle") {
+        fetchUserWithRetry();
+      }
+    } else {
+      setLoadStates({
+        user: { status: "idle", errorCount: 0 },
+        repos: { status: "idle", errorCount: 0 },
+        prs: { status: "idle", errorCount: 0 },
+        topRepos: { status: "idle", errorCount: 0 },
+        contributions: { status: "idle", errorCount: 0 },
+        notifications: { status: "idle", errorCount: 0 },
+      });
+      setUsername(null);
+      setGithubUser(null);
+      setInitialLoadComplete(false);
     }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
@@ -90,330 +169,188 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [session]);
 
-  async function fetchRepos() {
-    const res = await fetch(
-      "https://api.github.com/user/repos?per_page=100&type=all",
-      {
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-      },
-    );
-
-    const data = await res.json();
-
-    setUserRepos(data);
-  }
+  useEffect(() => {
+    if (username) {
+      if (loadStates.repos.status === "idle") fetchReposWithRetry();
+      if (loadStates.prs.status === "idle") fetchPRsWithRetry();
+      if (loadStates.contributions.status === "idle")
+        fetchContributionCalendarWithRetry();
+      if (loadStates.notifications.status === "idle")
+        fetchNotificationsWithRetry();
+    }
+  }, [
+    username,
+    loadStates.repos.status,
+    loadStates.prs.status,
+    loadStates.contributions.status,
+    loadStates.notifications.status,
+  ]);
 
   useEffect(() => {
     if (username) {
-      fetchPRs();
-      fetchRepos();
-      fetchRecentCommits();
-      fetchContributionCalendar();
-      fetchNotifications();
-      console.log(userRepos);
+      fetchRecentCommitsWithRetry();
     }
-  }, [username]);
+  }, [username, commitDuration]);
 
-  async function fetchNotifications() {
-    if (!username || !session?.accessToken) return;
-    setLoadingNotifications(true);
+  useEffect(() => {
+    if (
+      loadStates.user.status === "success" &&
+      loadStates.repos.status === "success" &&
+      loadStates.prs.status === "success" &&
+      loadStates.topRepos.status === "success" &&
+      loadStates.contributions.status === "success" &&
+      loadStates.notifications.status === "success"
+    ) {
+      setInitialLoadComplete(true);
+    }
+  }, [
+    loadStates.user.status,
+    loadStates.repos.status,
+    loadStates.prs.status,
+    loadStates.topRepos.status,
+    loadStates.contributions.status,
+    loadStates.notifications.status,
+  ]);
+
+  async function fetchUserWithRetry() {
+    if (!session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      user: { ...prev.user, status: "loading" },
+    }));
     try {
-      const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 7);
-      const sinceISO = oneDayAgo.toISOString();
-
-      const headers = {
-        Authorization: `Bearer ${session.accessToken}`,
-        Accept: "application/vnd.github+json",
-      };
-
-      // 1. Fetch Inbox Notifications
-      const notifsRes = await fetch(
-        `https://api.github.com/notifications?all=true&since=${sinceISO}`,
-        { headers },
-      );
-      const notifs = notifsRes.ok ? await notifsRes.json() : [];
-
-      // 2. Fetch Received Events (stars, forks)
-      const eventsRes = await fetch(
-        `https://api.github.com/users/${username}/received_events?per_page=100`,
-        { headers },
-      );
-      const events = eventsRes.ok ? await eventsRes.json() : [];
-
-      // 3. Fetch Followers
-      const followersRes = await fetch(
-        `https://api.github.com/users/${username}/followers?per_page=10`,
-        { headers },
-      );
-      const followers = followersRes.ok ? await followersRes.json() : [];
-
-      // 4. Fetch User's Own Events (for repo creation, etc.)
-      const userEventsRes = await fetch(
-        `https://api.github.com/users/${username}/events?per_page=100`,
-        { headers },
-      );
-      const userEvents = userEventsRes.ok ? await userEventsRes.json() : [];
-
-      // 5. Fetch User's Merged PRs
-      const sinceDateOnly = sinceISO.split("T")[0];
-      const mergedPRsRes = await fetch(
-        `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`,
-        { headers },
-      );
-      const mergedPRsData = mergedPRsRes.ok ? await mergedPRsRes.json() : null;
-      const mergedPRs = mergedPRsData?.items || [];
-
-      // 6. Fetch User's Opened PRs
-      const openedPRsRes = await fetch(
-        `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`,
-        { headers },
-      );
-      const openedPRsData = openedPRsRes.ok ? await openedPRsRes.json() : null;
-      const openedPRs = openedPRsData?.items || [];
-
-      const feed: any[] = [];
-
-      // Parse Inbox Notifications
-      if (Array.isArray(notifs)) {
-        const notifPromises = notifs.map(async (n: any) => {
-          const notifDate = new Date(n.updated_at);
-          const allowedReasons = [
-            "mention",
-            "review_requested",
-            "author",
-            "comment",
-            "subscribed",
-            "assign",
-          ];
-          if (notifDate < oneDayAgo || !allowedReasons.includes(n.reason)) {
-            return null;
-          }
-
-          // Default actor is the repository owner (fallback)
-          let actor = {
-            login: n.repository.owner.login,
-            avatarUrl: n.repository.owner.avatar_url,
-          };
-          let type =
-            n.reason === "review_requested"
-              ? "review_requested"
-              : n.reason === "assign"
-                ? "assign"
-                : "mention";
-          let actionText =
-            n.reason === "review_requested"
-              ? "requested your review on"
-              : n.reason === "assign"
-                ? "assigned you to"
-                : "mentioned you in";
-          let url = n.subject.url
-            ? n.subject.url
-                .replace("api.github.com/repos", "github.com")
-                .replace("/pulls/", "/pull/")
-            : `https://github.com/${n.repository.full_name}`;
-
-          if (
-            n.reason === "author" ||
-            n.reason === "comment" ||
-            n.reason === "subscribed"
-          ) {
-            type = "comment";
-            actionText = "commented on your pull request";
-          }
-
-          // Try to fetch the latest comment details to get the actual actor and type
-          if (n.subject.latest_comment_url) {
-            try {
-              const commentRes = await fetch(n.subject.latest_comment_url, {
-                headers,
-              });
-              if (commentRes.ok) {
-                const commentData = await commentRes.json();
-                if (commentData.user) {
-                  // Skip if the user commented/reviewed their own thread
-                  if (
-                    commentData.user.login.toLowerCase() ===
-                    username.toLowerCase()
-                  ) {
-                    return null;
-                  }
-                  actor = {
-                    login: commentData.user.login,
-                    avatarUrl: commentData.user.avatar_url,
-                  };
-                }
-                if (commentData.html_url) {
-                  url = commentData.html_url;
-                  if (url.includes("#pullrequestreview")) {
-                    type = "review";
-                    actionText = "reviewed your pull request";
-                  } else if (url.includes("#discussion_r")) {
-                    type = "comment";
-                    actionText = "commented on your pull request";
-                  } else if (url.includes("#issuecomment")) {
-                    type = "comment";
-                    actionText = "commented on your pull request";
-                  }
-                }
-              }
-            } catch (e) {
-              console.error("Error fetching latest comment details:", e);
-            }
-          }
-
-          return {
-            id: `notif-${n.id}`,
-            type,
-            reason: n.reason,
-            title: n.subject.title,
-            actionText,
-            repo: n.repository.full_name,
-            actor,
-            createdAt: n.updated_at,
-            url,
-          };
-        });
-
-        const parsedNotifs = (await Promise.all(notifPromises)).filter(Boolean);
-        feed.push(...parsedNotifs);
+      const res = await fetch("https://api.github.com/user", {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch user: ${res.status}`);
       }
-
-      // Parse Events (Stars & Forks)
-      if (Array.isArray(events)) {
-        events.forEach((e: any) => {
-          const eventDate = new Date(e.created_at);
-          if (eventDate >= oneDayAgo) {
-            if (e.type === "WatchEvent" && e.payload?.action === "started") {
-              const repoOwner = e.repo.name.split("/")[0];
-              if (repoOwner.toLowerCase() === username.toLowerCase()) {
-                feed.push({
-                  id: `event-${e.id}`,
-                  type: "star",
-                  title: "starred your repository",
-                  repo: e.repo.name,
-                  actor: {
-                    login: e.actor.login,
-                    avatarUrl: e.actor.avatar_url,
-                  },
-                  createdAt: e.created_at,
-                  url: `https://github.com/${e.repo.name}`,
-                });
-              }
-            } else if (e.type === "ForkEvent") {
-              const repoOwner = e.repo.name.split("/")[0];
-              if (repoOwner.toLowerCase() === username.toLowerCase()) {
-                feed.push({
-                  id: `event-${e.id}`,
-                  type: "fork",
-                  title: "forked your repository",
-                  repo: e.repo.name,
-                  actor: {
-                    login: e.actor.login,
-                    avatarUrl: e.actor.avatar_url,
-                  },
-                  createdAt: e.created_at,
-                  url:
-                    e.payload?.forkee?.html_url ||
-                    `https://github.com/${e.repo.name}`,
-                });
-              }
-            }
-          }
-        });
-      }
-
-      // Parse Merged PRs
-      if (Array.isArray(mergedPRs)) {
-        mergedPRs.forEach((pr: any) => {
-          const prMergedAt =
-            pr.pull_request?.merged_at || pr.closed_at || pr.updated_at;
-          const prMergedDate = new Date(prMergedAt);
-          if (prMergedDate >= oneDayAgo) {
-            const repoFullName = pr.repository_url.replace(
-              "https://api.github.com/repos/",
-              "",
-            );
-            const owner = repoFullName.split("/")[0];
-            feed.push({
-              id: `merged-${pr.id}`,
-              type: "merged",
-              title: pr.title,
-              repo: repoFullName,
-              actor: {
-                login: owner,
-                avatarUrl: `https://github.com/${owner}.png`,
-              },
-              createdAt: prMergedAt,
-              url: pr.html_url,
-            });
-          }
-        });
-      }
-
-      // Parse Opened PRs
-      if (Array.isArray(openedPRs)) {
-        openedPRs.forEach((pr: any) => {
-          const prCreatedAt = pr.created_at;
-          const prCreatedDate = new Date(prCreatedAt);
-          if (prCreatedDate >= oneDayAgo) {
-            const repoFullName = pr.repository_url.replace(
-              "https://api.github.com/repos/",
-              "",
-            );
-            feed.push({
-              id: `opened-${pr.id}`,
-              type: "opened",
-              title: pr.title,
-              repo: repoFullName,
-              actor: {
-                login: pr.user.login,
-                avatarUrl: pr.user.avatar_url,
-              },
-              createdAt: prCreatedAt,
-              url: pr.html_url,
-            });
-          }
-        });
-      }
-
-      feed.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-      setNotifications(feed);
-    } catch (error) {
-      console.error("Error fetching notifications feed:", error);
-    } finally {
-      setLoadingNotifications(false);
+      const data = await res.json();
+      setGithubUser(data);
+      setUsername(data.login);
+      setLoadStates((prev) => ({
+        ...prev,
+        user: { status: "success", errorCount: 0 },
+      }));
+    } catch (err) {
+      console.error("fetchUser failed, retrying in 3s...", err);
+      setLoadStates((prev) => ({
+        ...prev,
+        user: { status: "error", errorCount: prev.user.errorCount + 1 },
+      }));
+      setTimeout(fetchUserWithRetry, 3000);
     }
   }
 
-  async function fetchRecentCommits() {
+  async function fetchReposWithRetry() {
+    if (!session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      repos: { ...prev.repos, status: "loading" },
+    }));
+    try {
+      const res = await fetch(
+        "https://api.github.com/user/repos?per_page=100&type=all",
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        },
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to fetch repos: ${res.status}`);
+      }
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        throw new Error("Expected array for repos");
+      }
+      setUserRepos(data);
+      setLoadStates((prev) => ({
+        ...prev,
+        repos: { status: "success", errorCount: 0 },
+      }));
+    } catch (err) {
+      console.error("fetchRepos failed, retrying in 3s...", err);
+      setLoadStates((prev) => ({
+        ...prev,
+        repos: { status: "error", errorCount: prev.repos.errorCount + 1 },
+      }));
+      setTimeout(fetchReposWithRetry, 3000);
+    }
+  }
+
+  async function fetchPRsWithRetry() {
     if (!username || !session?.accessToken) return;
-    setLoadingTopRepos(true);
+    setLoadStates((prev) => ({
+      ...prev,
+      prs: { ...prev.prs, status: "loading" },
+    }));
+    try {
+      const res = await fetch(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        },
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to fetch PRs: ${res.status}`);
+      }
+      const data = await res.json();
+      setPrs(data.items || []);
+      setLoadStates((prev) => ({
+        ...prev,
+        prs: { status: "success", errorCount: 0 },
+      }));
+    } catch (err) {
+      console.error("fetchPRs failed, retrying in 3s...", err);
+      setLoadStates((prev) => ({
+        ...prev,
+        prs: { status: "error", errorCount: prev.prs.errorCount + 1 },
+      }));
+      setTimeout(fetchPRsWithRetry, 3000);
+    }
+  }
+
+  async function fetchRecentCommitsWithRetry() {
+    if (!username || !session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      topRepos: { ...prev.topRepos, status: "loading" },
+    }));
     try {
       const now = new Date();
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const sevenDaysAgo = new Date(now);
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      let daysAgo = 7;
+      if (commitDuration === "month") {
+        daysAgo = 30;
+      } else if (commitDuration === "year") {
+        daysAgo = 365;
+      }
+
+      const sinceDate = new Date(now);
+      sinceDate.setDate(sinceDate.getDate() - daysAgo);
+
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const res = await fetch("https://api.github.com/graphql", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
+          Authorization: `Bearer ${session.accessToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           query: `
-            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!) {
+            query userTopRepos($LOGIN: String!, $FROM: DateTime!, $TO: DateTime!, $FROM_30: DateTime!) {
               user(login: $LOGIN) {
                 contributionsCollection(from: $FROM, to: $TO) {
-                  commitContributionsByRepository(maxRepositories: 25) {
+                  commitContributionsByRepository(maxRepositories: 100) {
                     repository {
                       name
                       nameWithOwner
@@ -424,13 +361,17 @@ export default function Home() {
                     }
                   }
                 }
+                contributions30Days: contributionsCollection(from: $FROM_30, to: $TO) {
+                  totalCommitContributions
+                }
               }
             }
           `,
           variables: {
             LOGIN: username,
-            FROM: sevenDaysAgo.toISOString(),
+            FROM: sinceDate.toISOString(),
             TO: tomorrow.toISOString(),
+            FROM_30: thirtyDaysAgo.toISOString(),
           },
         }),
       });
@@ -444,6 +385,12 @@ export default function Home() {
         throw new Error(JSON.stringify(json.errors));
       }
 
+      console.log("GraphQL Response json.data:", json.data);
+
+      const totalCommits30Days =
+        json.data?.user?.contributions30Days?.totalCommitContributions || 0;
+      setCommitsCount30Days(totalCommits30Days);
+
       const reposList =
         json.data?.user?.contributionsCollection
           ?.commitContributionsByRepository || [];
@@ -454,22 +401,34 @@ export default function Home() {
         count: item.contributions.totalCount,
       }));
 
-      // Sort by commit count descending and take the top 3
       const sorted = repoCounts
         .sort((a: any, b: any) => b.count - a.count)
         .slice(0, 3);
 
       setTopRepos(sorted);
+      setLoadStates((prev) => ({
+        ...prev,
+        topRepos: { status: "success", errorCount: 0 },
+      }));
     } catch (error) {
-      console.error("Error fetching top repos from GraphQL:", error);
-    } finally {
-      setLoadingTopRepos(false);
+      console.error(
+        "Error fetching top repos from GraphQL, retrying in 3s...",
+        error,
+      );
+      setLoadStates((prev) => ({
+        ...prev,
+        topRepos: { status: "error", errorCount: prev.topRepos.errorCount + 1 },
+      }));
+      setTimeout(fetchRecentCommitsWithRetry, 3000);
     }
   }
 
-  async function fetchContributionCalendar() {
+  async function fetchContributionCalendarWithRetry() {
     if (!username || !session?.accessToken) return;
-    setLoadingContribution(true);
+    setLoadStates((prev) => ({
+      ...prev,
+      contributions: { ...prev.contributions, status: "loading" },
+    }));
     try {
       const now = new Date();
 
@@ -547,15 +506,15 @@ export default function Home() {
 
       processWeeks(
         y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
+        [],
       );
       processWeeks(
         y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
+        [],
       );
       processWeeks(
         y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-          [],
+        [],
       );
 
       const uniqueContributionsMap: { [date: string]: number } = {};
@@ -578,55 +537,319 @@ export default function Home() {
       setStreak(streakValue);
 
       const today = new Date();
-      const past30Days = uniqueContributions.filter((c: any) => {
+      const past365Days = uniqueContributions.filter((c: any) => {
         const cDate = new Date(c.date);
         const timeDiff = today.getTime() - cDate.getTime();
         const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        return diffDays >= 0 && diffDays <= 30;
+        return diffDays >= 0 && diffDays <= 365;
       });
 
-      past30Days.sort(
+      past365Days.sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
       );
-      setContributionData(past30Days);
+      setContributionData(past365Days);
+      setLoadStates((prev) => ({
+        ...prev,
+        contributions: { status: "success", errorCount: 0 },
+      }));
     } catch (error) {
-      console.error("Error fetching contribution calendar:", error);
-    } finally {
-      setLoadingContribution(false);
-    }
-  }
-
-  async function fetchUser() {
-    const res = await fetch("https://api.github.com/user", {
-      headers: {
-        Authorization: `Bearer ${session?.accessToken}`,
-      },
-    });
-
-    const data = await res.json();
-    console.log("User:", data);
-    setGithubUser(data);
-    setUsername(data.login);
-  }
-
-  async function fetchPRs() {
-    if (!username) {
-      alert("Fetch user first");
-      return;
-    }
-
-    const res = await fetch(
-      `https://api.github.com/search/issues?q=is:pr+author:${username}`,
-      {
-        headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
+      console.error(
+        "Error fetching contribution calendar, retrying in 3s...",
+        error,
+      );
+      setLoadStates((prev) => ({
+        ...prev,
+        contributions: {
+          status: "error",
+          errorCount: prev.contributions.errorCount + 1,
         },
-      },
-    );
+      }));
+      setTimeout(fetchContributionCalendarWithRetry, 3000);
+    }
+  }
 
-    const data = await res.json();
-    console.log("PRs:", data);
-    setPrs(data.items || []);
+  async function fetchNotificationsWithRetry() {
+    if (!username || !session?.accessToken) return;
+    setLoadStates((prev) => ({
+      ...prev,
+      notifications: { ...prev.notifications, status: "loading" },
+    }));
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sinceISO = thirtyDaysAgo.toISOString();
+
+      const headers = {
+        Authorization: `Bearer ${session.accessToken}`,
+        Accept: "application/vnd.github+json",
+      };
+
+      const fetchWithCheck = async (url: string) => {
+        const res = await fetch(url, { headers });
+        if (!res.ok) {
+          throw new Error(`Failed to fetch ${url}: Status ${res.status}`);
+        }
+        return res.json();
+      };
+
+      // 1. Fetch Inbox Notifications
+      const notifs = await fetchWithCheck(
+        `https://api.github.com/notifications?all=true&since=${sinceISO}`,
+      );
+
+      // 2. Fetch Received Events (stars, forks)
+      const events = await fetchWithCheck(
+        `https://api.github.com/users/${username}/received_events?per_page=100`,
+      );
+
+      // 3. Fetch Followers
+      const followers = await fetchWithCheck(
+        `https://api.github.com/users/${username}/followers?per_page=10`,
+      );
+
+      // 4. Fetch User's Own Events (for repo creation, etc.)
+      const userEvents = await fetchWithCheck(
+        `https://api.github.com/users/${username}/events?per_page=100`,
+      );
+
+      // 5. Fetch User's Merged PRs
+      const sinceDateOnly = sinceISO.split("T")[0];
+      const mergedPRsData = await fetchWithCheck(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`,
+      );
+      const mergedPRs = mergedPRsData?.items || [];
+
+      // 6. Fetch User's Opened PRs
+      const openedPRsData = await fetchWithCheck(
+        `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`,
+      );
+      const openedPRs = openedPRsData?.items || [];
+
+      const feed: any[] = [];
+
+      // Parse Inbox Notifications
+      if (Array.isArray(notifs)) {
+        const notifPromises = notifs.map(async (n: any) => {
+          const notifDate = new Date(n.updated_at);
+          const allowedReasons = [
+            "mention",
+            "review_requested",
+            "author",
+            "comment",
+            "subscribed",
+            "assign",
+          ];
+          if (notifDate < thirtyDaysAgo || !allowedReasons.includes(n.reason)) {
+            return null;
+          }
+
+          // Default actor is the repository owner (fallback)
+          let actor = {
+            login: n.repository.owner.login,
+            avatarUrl: n.repository.owner.avatar_url,
+          };
+          let type =
+            n.reason === "review_requested"
+              ? "review_requested"
+              : n.reason === "assign"
+                ? "assign"
+                : "mention";
+          let actionText =
+            n.reason === "review_requested"
+              ? "requested your review on"
+              : n.reason === "assign"
+                ? "assigned you to"
+                : "mentioned you in";
+          let url = n.subject.url
+            ? n.subject.url
+              .replace("api.github.com/repos", "github.com")
+              .replace("/pulls/", "/pull/")
+            : `https://github.com/${n.repository.full_name}`;
+
+          if (
+            n.reason === "author" ||
+            n.reason === "comment" ||
+            n.reason === "subscribed"
+          ) {
+            type = "comment";
+            actionText = "commented on your pull request";
+          }
+
+          // Try to fetch the latest comment details to get the actual actor and type
+          if (n.subject.latest_comment_url) {
+            try {
+              const commentRes = await fetch(n.subject.latest_comment_url, {
+                headers,
+              });
+              if (commentRes.ok) {
+                const commentData = await commentRes.json();
+                if (commentData.user) {
+                  // Skip if the user commented/reviewed their own thread
+                  if (
+                    commentData.user.login.toLowerCase() ===
+                    username.toLowerCase()
+                  ) {
+                    return null;
+                  }
+                  actor = {
+                    login: commentData.user.login,
+                    avatarUrl: commentData.user.avatar_url,
+                  };
+                }
+                if (commentData.html_url) {
+                  url = commentData.html_url;
+                  if (url.includes("#pullrequestreview")) {
+                    type = "review";
+                    actionText = "reviewed your pull request";
+                  } else if (url.includes("#discussion_r")) {
+                    type = "comment";
+                    actionText = "commented on your pull request";
+                  } else if (url.includes("#issuecomment")) {
+                    type = "comment";
+                    actionText = "commented on your pull request";
+                  }
+                }
+              }
+            } catch (e) {
+              console.error("Error fetching latest comment details:", e);
+            }
+          }
+
+          return {
+            id: `notif-${n.id}`,
+            type,
+            reason: n.reason,
+            title: n.subject.title,
+            actionText,
+            repo: n.repository.full_name,
+            actor,
+            createdAt: n.updated_at,
+            url,
+          };
+        });
+
+        const parsedNotifs = (await Promise.all(notifPromises)).filter(Boolean);
+        feed.push(...parsedNotifs);
+      }
+
+      // Parse Events (Stars & Forks)
+      if (Array.isArray(events)) {
+        events.forEach((e: any) => {
+          const eventDate = new Date(e.created_at);
+          if (eventDate >= thirtyDaysAgo) {
+            if (e.type === "WatchEvent" && e.payload?.action === "started") {
+              const repoOwner = e.repo.name.split("/")[0];
+              if (repoOwner.toLowerCase() === username.toLowerCase()) {
+                feed.push({
+                  id: `event-${e.id}`,
+                  type: "star",
+                  title: "starred your repository",
+                  repo: e.repo.name,
+                  actor: {
+                    login: e.actor.login,
+                    avatarUrl: e.actor.avatar_url,
+                  },
+                  createdAt: e.created_at,
+                  url: `https://github.com/${e.repo.name}`,
+                });
+              }
+            } else if (e.type === "ForkEvent") {
+              const repoOwner = e.repo.name.split("/")[0];
+              if (repoOwner.toLowerCase() === username.toLowerCase()) {
+                feed.push({
+                  id: `event-${e.id}`,
+                  type: "fork",
+                  title: "forked your repository",
+                  repo: e.repo.name,
+                  actor: {
+                    login: e.actor.login,
+                    avatarUrl: e.actor.avatar_url,
+                  },
+                  createdAt: e.created_at,
+                  url:
+                    e.payload?.forkee?.html_url ||
+                    `https://github.com/${e.repo.name}`,
+                });
+              }
+            }
+          }
+        });
+      }
+
+      // Parse Merged PRs
+      if (Array.isArray(mergedPRs)) {
+        mergedPRs.forEach((pr: any) => {
+          const prMergedAt =
+            pr.pull_request?.merged_at || pr.closed_at || pr.updated_at;
+          const prMergedDate = new Date(prMergedAt);
+          if (prMergedDate >= thirtyDaysAgo) {
+            const repoFullName = pr.repository_url.replace(
+              "https://api.github.com/repos/",
+              "",
+            );
+            const owner = repoFullName.split("/")[0];
+            feed.push({
+              id: `merged-${pr.id}`,
+              type: "merged",
+              title: pr.title,
+              repo: repoFullName,
+              actor: {
+                login: owner,
+                avatarUrl: `https://github.com/${owner}.png`,
+              },
+              createdAt: prMergedAt,
+              url: pr.html_url,
+            });
+          }
+        });
+      }
+
+      // Parse Opened PRs
+      if (Array.isArray(openedPRs)) {
+        openedPRs.forEach((pr: any) => {
+          const prCreatedAt = pr.created_at;
+          const prCreatedDate = new Date(prCreatedAt);
+          if (prCreatedDate >= thirtyDaysAgo) {
+            const repoFullName = pr.repository_url.replace(
+              "https://api.github.com/repos/",
+              "",
+            );
+            feed.push({
+              id: `opened-${pr.id}`,
+              type: "opened",
+              title: pr.title,
+              repo: repoFullName,
+              actor: {
+                login: pr.user.login,
+                avatarUrl: pr.user.avatar_url,
+              },
+              createdAt: prCreatedAt,
+              url: pr.html_url,
+            });
+          }
+        });
+      }
+
+      feed.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      setNotifications(feed);
+      setLoadStates((prev) => ({
+        ...prev,
+        notifications: { status: "success", errorCount: 0 },
+      }));
+    } catch (error) {
+      console.error("Error fetching notifications, retrying in 3s...", error);
+      setLoadStates((prev) => ({
+        ...prev,
+        notifications: {
+          status: "error",
+          errorCount: prev.notifications.errorCount + 1,
+        },
+      }));
+      setTimeout(fetchNotificationsWithRetry, 3000);
+    }
   }
 
   function handleMouseDown(e: React.MouseEvent) {
@@ -661,6 +884,10 @@ export default function Home() {
     };
   }, [dragging, dragOffset]);
 
+  if (isSessionChecking) {
+    return <DashboardLoader loadStates={loadStates} />;
+  }
+
   if (!session) {
     return (
       <main className="relative min-h-screen bg-[#09090b] text-[#a1a1aa] font-mono flex flex-col items-center justify-center p-4 overflow-hidden select-none">
@@ -687,9 +914,9 @@ export default function Home() {
               className="cursor-move flex items-center justify-between px-4 py-3 border-b border-zinc-800/60 bg-zinc-900/20"
             >
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-red-500 cursor-pointer" />
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-yellow-500 cursor-pointer" />
-                <span className="w-2.5 h-2.5 rounded-full bg-zinc-800 hover:bg-green-500 cursor-pointer" />
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 cursor-pointer" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 cursor-pointer" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500 cursor-pointer" />
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 justify-center">
                 <span>http://localhost:3000/</span>
@@ -761,64 +988,77 @@ export default function Home() {
     );
   }
 
+  if (session && !initialLoadComplete) {
+    return <DashboardLoader loadStates={loadStates} />;
+  }
+
   const tabs = [
     "Dashboard",
     "Issues & PRs",
-    "Reviews and Comments",
+    "Reviews & Comments",
     "Organizations",
-    "GitWrapped",
+    "GitStats",
   ];
 
   return (
-    <main className="h-screen w-screen bg-[#09090b] text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
+    <main className="h-screen w-screen bg-black text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
       {/* Top Header */}
-      <header className="h-14 border-b border-zinc-800/60 bg-zinc-950/20 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10">
+      <header className="h-16 bg-black backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10 shadow-2xl shadow-[#000000]">
         {/* Left Side: PRism Logo */}
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-sm tracking-wider font-semibold text-white">
-            PRism
-          </span>
-          <span className="px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900/40 text-[9px] font-mono text-zinc-500">
-            v0.1.0
-          </span>
+        <div
+          onClick={() => window.location.reload()}
+          className="flex justify-start -ml-15 translate-y-[13px] hover:cursor-pointer hover:scale-130 duration-500"
+        >
+          <img src="/logo.png" className="w-36 h-16 object-contain" />
         </div>
 
         {/* Right Side: GitHub Avatar & Name */}
-        <div className="flex items-center gap-3.5">
-          {streak > 0 && (
-            <div
-              className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
-              title={`${streak} day contribution streak`}
-            >
-              <span>🔥</span>
-              <span>{streak >= 1000 ? "1000+" : streak}</span>
-            </div>
-          )}
+        <div className="group/profile relative flex items-center h-full pr-1">
+          {/* Sliding wrapper containing Streak, Name, and Avatar */}
+          <div className="flex items-center gap-3.5 transition-transform duration-300 ease-out group-hover/profile:-translate-x-10 z-10">
+            {streak > 0 && (
+              <div
+                className="flex items-center gap-1 text-amber-500 font-mono text-xs font-semibold"
+                title={`${streak} day contribution streak`}
+              >
+                <span className={`${outfit.className} text-lg`}>
+                  {streak >= 1000 ? "1000+" : streak}
+                </span>
+                <img className="w-6 h-6 object-contain" src="/fire.gif" />
+              </div>
+            )}
 
-          <div className="flex flex-col items-end text-[11px] font-mono leading-none gap-0.5">
-            <span className="text-zinc-300 font-sans text-xs font-medium">
-              {session?.user?.name || "Open Sourcerer"}
-            </span>
-            <span className="text-zinc-500">
-              {session?.user?.email || "github-auth"}
-            </span>
+            <div
+              className={`${montserrat.className} flex flex-col items-end text-[8px] leading-none gap-0.5 uppercase`}
+            >
+              <span className="text-zinc-300 text-xs font-medium">
+                {session?.user?.name || "Open Sourcerer"}
+              </span>
+              <span className="text-zinc-500">
+                {username || "Username Unavailable"}
+              </span>
+            </div>
+
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                className="w-8 h-8 rounded-full object-cover hover:cursor-pointer"
+                alt="avatar"
+                onClick={() =>
+                  window.open(`https://github.com/${username}`, "_blank")
+                }
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono text-zinc-400">
+                {session?.user?.name?.[0] || "User"}
+              </div>
+            )}
           </div>
 
-          {session?.user?.image ? (
-            <img
-              src={session.user.image}
-              className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 object-cover"
-              alt="avatar"
-            />
-          ) : (
-            <div className="w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center text-xs font-mono text-zinc-400">
-              {session?.user?.name?.[0] || "U"}
-            </div>
-          )}
-
+          {/* Logout Button (Hidden behind/revealed on hover) */}
           <button
             onClick={() => signOut()}
-            className="p-1.5 rounded border border-zinc-800 bg-zinc-900/10 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer ml-1"
+            className="absolute right-1 z-0 w-8 h-8 rounded-full border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer flex items-center justify-center top-1/2 -translate-y-1/2"
             title="Sign out"
           >
             <svg
@@ -831,7 +1071,7 @@ export default function Home() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 01-3-3h4a3 3 0 013 3v1"
+                d="M5 12h14M12 5l7 7-7 7"
               />
             </svg>
           </button>
@@ -841,56 +1081,228 @@ export default function Home() {
       {/* Main Container */}
       <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar Nav */}
-        <aside className="w-60 border-r border-zinc-800/60 bg-zinc-950/10 py-6 px-4 flex flex-col justify-between h-full flex-shrink-0">
-          <nav className="space-y-1">
-            {tabs.map((tab) => {
-              const isActive = selectedTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => handleTabChange(tab)}
-                  className={`w-full flex items-center px-3 py-2 text-xs rounded transition-all cursor-pointer font-mono ${
-                    isActive
-                      ? "bg-zinc-900/60 border border-zinc-800/60 text-white font-medium"
-                      : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/10 border border-transparent"
+        <aside
+          onMouseLeave={() => setIsSidebarHovered(false)}
+          className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100vh-80px)] mt-4 flex-shrink-0 relative overflow-hidden border-r border-t rounded-tr-2xl border-zinc-900"
+        >
+          {/* Dither Background Shader */}
+          <div
+            className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out ${isSidebarHovered ? "opacity-0 pointer-events-none" : "opacity-25"
+              }`}
+          >
+            <Dither
+              waveSpeed={0.03}
+              waveFrequency={3.5}
+              waveAmplitude={0.35}
+              waveColor={[0.5, 0.5, 0.5]}
+              colorNum={6}
+              pixelSize={1}
+              disableAnimation={false}
+              enableMouseInteraction={false}
+              mouseRadius={0.1}
+              className="w-full h-full"
+            />
+            {/* Smooth gradient fade to black at the bottom to blend into the folder zone */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black pointer-events-none" />
+          </div>
+
+          <nav className="flex-1 flex flex-col justify-end w-full relative z-10 pointer-events-none">
+            {/* Programming Quote (visible when sidebar is not hovered) */}
+            {quoteData && (
+              <div
+                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${isSidebarHovered
+                    ? "opacity-0 scale-95 pointer-events-none"
+                    : "opacity-100 scale-100"
                   }`}
+              >
+                <p className="text-[13px] font-mono leading-relaxed text-zinc-400 tracking-tight italic select-text">
+                  "{quoteData.quote}"
+                </p>
+                <p
+                  className={`${outfit.className} text-[9px] uppercase tracking-wider text-zinc-500 mt-2 select-text`}
                 >
-                  {tab}
-                </button>
-              );
-            })}
+                  {quoteData.author}
+                </p>
+              </div>
+            )}
+
+            <AnimatePresence>
+              {isSidebarHovered && (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  variants={{
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.08,
+                        staggerDirection: -1,
+                      },
+                    },
+                    hidden: {
+                      transition: {
+                        staggerChildren: 0.05,
+                        staggerDirection: 1,
+                      },
+                    },
+                  }}
+                  className="space-y-6 mb-8 flex flex-col items-center justify-end pointer-events-auto"
+                >
+                  {tabs.map((tab) => {
+                    const isActive = selectedTab === tab;
+                    const isMultiLine =
+                      tab === "Issues & PRs" || tab === "Reviews & Comments";
+                    return (
+                      <motion.div
+                        key={tab}
+                        variants={{
+                          hidden: { opacity: 0, y: 180, scale: 0.8 },
+                          visible: { opacity: 1, y: 0, scale: 1 },
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 220,
+                          damping: 20,
+                        }}
+                        className="w-full flex justify-center py-1"
+                      >
+                        <LineHoverLink
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleTabChange(tab);
+                          }}
+                          variant={tab === "GitStats" ? "scribble" : "pulse"}
+                          className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${isActive
+                              ? "text-white font-bold"
+                              : "text-zinc-500 hover:text-zinc-300"
+                            } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
+                        >
+                          {tab === "Issues & PRs" ? (
+                            <>
+                              <span>Issues</span>
+                              <span className="text-[12px]">&</span>
+                              <span>PRs</span>
+                            </>
+                          ) : tab === "Reviews & Comments" ? (
+                            <>
+                              <span>Reviews</span>
+                              <span className="text-[12px]">&</span>
+                              <span>Comments</span>
+                            </>
+                          ) : (
+                            tab
+                          )}
+                        </LineHoverLink>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Folder at the bottom */}
+            <div
+              onMouseEnter={() => setIsSidebarHovered(true)}
+              className="flex flex-col items-center justify-center mt-auto pt-4 border-t border-zinc-900/40 w-full pointer-events-auto"
+            >
+              <FolderPreview
+                variant="ardra"
+                size="md"
+                label={isSidebarHovered ? "MENU" : "HOVER ME"}
+                isHovered={isSidebarHovered}
+                className="text-zinc-400"
+              />
+            </div>
           </nav>
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-8 bg-zinc-950/5">
-          {selectedTab === "Dashboard" && (
-            <Dashboard
-              prs={prs}
-              session={session}
-              data={githubUser}
-              repos={userRepos}
-              topRepos={topRepos}
-              loadingTopRepos={loadingTopRepos}
-              contributionData={contributionData}
-              loadingContribution={loadingContribution}
-              notifications={notifications}
-            />
-          )}
-          {selectedTab === "Issues & PRs" && (
-            <IssuesAndPRs session={session} username={username} />
-          )}
-          {selectedTab === "Reviews and Comments" && (
-            <ReviewsAndComments session={session} username={username} />
-          )}
-          {selectedTab === "Organizations" && (
-            <Organizations session={session} username={username} />
-          )}
-          {selectedTab === "GitWrapped" && (
-            <GitWrapped session={session} username={username} />
-          )}
-        </main>
+        <ReactLenis
+          root="asChild"
+          className="flex-1 overflow-y-auto p-8 bg-black"
+          options={{
+            autoRaf: true,
+            duration: 1.2,
+            lerp: 0.09,
+            smoothWheel: true,
+          }}
+        >
+          <main className="w-full" style={{ visibility: isTabLoading ? "hidden" : "visible" }}>
+            {selectedTab === "Dashboard" && (
+              <Dashboard
+                prs={prs}
+                session={session}
+                data={githubUser}
+                repos={userRepos}
+                topRepos={topRepos}
+                contributionData={contributionData}
+                notifications={notifications}
+                commitDuration={commitDuration}
+                setCommitDuration={setCommitDuration}
+                commitsCount30Days={commitsCount30Days}
+              />
+            )}
+            {selectedTab === "Issues & PRs" && (
+              <IssuesAndPRs
+                session={session}
+                username={username}
+                onLoadComplete={() => {
+                  if (selectedTab === "Issues & PRs") {
+                    setIsTabLoading(false);
+                  }
+                }}
+              />
+            )}
+            {selectedTab === "Reviews & Comments" && (
+              <ReviewsAndComments
+                session={session}
+                username={username}
+                onLoadComplete={() => {
+                  if (selectedTab === "Reviews & Comments") {
+                    setIsTabLoading(false);
+                  }
+                }}
+              />
+            )}
+            {selectedTab === "Organizations" && (
+              <Organizations
+                session={session}
+                username={username}
+                onLoadComplete={() => {
+                  if (selectedTab === "Organizations") {
+                    setIsTabLoading(false);
+                  }
+                }}
+              />
+            )}
+            {selectedTab === "GitStats" && (
+              <GitWrapped
+                session={session}
+                username={username}
+                onLoadComplete={() => {
+                  if (selectedTab === "GitStats") {
+                    setIsTabLoading(false);
+                  }
+                }}
+              />
+            )}
+          </main>
+        </ReactLenis>
       </div>
+
+      <AnimatePresence>
+        {isTabLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 pointer-events-auto"
+          >
+            <DashboardLoader loadStates={loadStates} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -1,12 +1,30 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { League_Spartan, Montserrat } from "next/font/google";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+import {
+  GitPullRequestIcon,
+  GitPullRequestClosedIcon,
+  GitMergeIcon,
+  CommentIcon,
+} from "@primer/octicons-react";
+
+const leagueSpartan = League_Spartan({
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+});
 
 interface ReviewsAndCommentsProps {
   session: {
     accessToken?: string;
   } | null;
   username: string | null;
+  onLoadComplete?: () => void;
 }
 
 interface GitHubLabel {
@@ -44,13 +62,13 @@ interface PendingReviewPR {
 export default function ReviewsAndComments({
   session,
   username,
+  onLoadComplete,
 }: ReviewsAndCommentsProps) {
   const [pendingPrs, setPendingPrs] = useState<PendingReviewPR[]>([]);
   const [commentedPrs, setCommentedPrs] = useState<PendingReviewPR[]>([]);
   const [reviewedPrs, setReviewedPrs] = useState<PendingReviewPR[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const fetchReviewsAndComments = useCallback(async () => {
     await Promise.resolve();
@@ -58,6 +76,7 @@ export default function ReviewsAndComments({
     if (!username || !session?.accessToken) {
       setError("Please authenticate with GitHub to load reviews and comments.");
       setLoading(false);
+      onLoadComplete?.();
       return;
     }
 
@@ -98,9 +117,9 @@ export default function ReviewsAndComments({
       setError(errMsg);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
+      onLoadComplete?.();
     }
-  }, [username, session]);
+  }, [username, session, onLoadComplete]);
 
   useEffect(() => {
     if (username && session) {
@@ -112,7 +131,6 @@ export default function ReviewsAndComments({
   }, [username, session, fetchReviewsAndComments]);
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     await fetchReviewsAndComments();
   };
 
@@ -126,18 +144,20 @@ export default function ReviewsAndComments({
     const g = parseInt(hex.substring(2, 4), 16) || 0;
     const b = parseInt(hex.substring(4, 6), 16) || 0;
 
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    const isDarkColor = yiq < 75;
+    // Grayscale calculation using standard weights
+    const gray = Math.round(r * 0.299 + g * 0.587 + b * 0.114);
 
-    let textColor = `#${hex}`;
-    if (isDarkColor) {
-      textColor = "#e4e4e7";
-    }
+    // Modern translucent dark-gray theme for label tags
+    const bgOpacity = 0.08;
+    const borderOpacity = 0.25;
+
+    // Ensure the text has high readability on a dark page (at least 180 out of 255)
+    const textGray = Math.max(gray, 180);
 
     return {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.15)`,
-      borderColor: `rgba(${r}, ${g}, ${b}, 0.4)`,
-      color: textColor,
+      backgroundColor: `rgba(${gray}, ${gray}, ${gray}, ${bgOpacity})`,
+      borderColor: `rgba(${gray}, ${gray}, ${gray}, ${borderOpacity})`,
+      color: `rgb(${textGray}, ${textGray}, ${textGray})`,
     };
   };
 
@@ -187,37 +207,84 @@ export default function ReviewsAndComments({
   );
 
   return (
-    <div className="space-y-12 select-none">
+    <div className="space-y-8 select-none">
       {/* Header and Sync Control */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">
+          <h1
+            className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}
+          >
             Reviews & Comments
           </h1>
-          <p className="text-xs text-zinc-500 mt-2 font-mono">
+          <p
+            className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}
+          >
             Manage incoming code reviews and actions assigned directly to you.
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={loading || isRefreshing}
-          className="self-start sm:self-center flex items-center gap-2 border border-zinc-850 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
-        >
-          <svg
-            className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
+      </div>
+
+      {/* Summary Widgets */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          {
+            title: "Awaiting Review",
+            value: pendingPrs.length,
+            color: "#ffffff",
+          },
+          {
+            title: "Recently Reviewed",
+            value: reviewedPrs.length,
+            color: "#e4e4e7",
+          },
+          {
+            title: "Commented PRs",
+            value: commentedPrs.length,
+            color: "#c4c4c7",
+          },
+        ].map((stat) => (
+          <SpotlightCard
+            key={stat.title}
+            spotlightColor={stat.color}
+            className="h-[140px] transition-all duration-300 hover:translate-y-[-2px]"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
-            />
-          </svg>
-          {isRefreshing ? "Refreshing..." : "Sync GitHub"}
-        </button>
+            <div className="flex flex-col justify-between h-full w-full">
+              {/* Top Row: Title + Status Dot */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{
+                      backgroundColor: stat.color,
+                      boxShadow: `0 0 8px ${stat.color}`,
+                    }}
+                  />
+                  <span
+                    className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
+                  >
+                    {stat.title}
+                  </span>
+                </div>
+              </div>
+
+              {/* Value Row with AnimatedCounter */}
+              <div className="mt-3 flex items-baseline gap-1.5">
+                <span
+                  className={`text-5xl font-semibold tracking-tight ${leagueSpartan.className}`}
+                  style={{ color: stat.color }}
+                >
+                  {loading ? (
+                    <span className="text-2xl font-mono text-zinc-500">
+                      ...
+                    </span>
+                  ) : (
+                    <AnimatedCounter value={stat.value} />
+                  )}
+                </span>
+              </div>
+            </div>
+          </SpotlightCard>
+        ))}
       </div>
 
       {error && (
@@ -233,11 +300,13 @@ export default function ReviewsAndComments({
       )}
 
       {!error && (
-        <div className="space-y-12">
+        <div className="space-y-8">
           {/* Review Requests Section */}
           <div className="border-t border-zinc-900/60 pt-6 space-y-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-zinc-200">
+              <h2
+                className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+              >
                 Awaiting Your Review
               </h2>
               {!loading && pendingPrs.length > 0 && (
@@ -246,7 +315,7 @@ export default function ReviewsAndComments({
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 font-mono">
+            <p className="text-xs text-zinc-500 mt-1">
               Pull requests where your review has been requested, and you have
               not submitted it yet.
             </p>
@@ -257,7 +326,7 @@ export default function ReviewsAndComments({
                   <SkeletonCard key={i} />
                 ))
               ) : pendingPrs.length === 0 ? (
-                <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
+                <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
                   <svg
                     className="w-8 h-8 text-zinc-700 mx-auto mb-3"
                     fill="none"
@@ -281,134 +350,116 @@ export default function ReviewsAndComments({
                   const repoName = getRepoName(item.repository_url);
 
                   return (
-                    <div
+                    <SpotlightCard
                       key={item.id}
-                      className="group relative flex flex-col md:flex-row md:items-center justify-between border border-zinc-900 hover:border-zinc-800 bg-zinc-950/20 hover:bg-zinc-900/10 p-4.5 rounded-lg gap-4 transition-all duration-200"
+                      spotlightColor="rgba(255, 255, 255, 0.08)"
+                      className="group rounded-lg transition-all duration-300"
                     >
-                      {/* Left Side: Status Icon, Title, and Meta */}
-                      <div className="flex items-start gap-3.5 min-w-0">
-                        <span className="mt-1 flex-shrink-0">
-                          {/* Open PR - Green */}
-                          <svg
-                            className="w-4 h-4 text-emerald-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <circle cx="6" cy="18" r="2.5" />
-                            <circle cx="6" cy="6" r="2.5" />
-                            <circle cx="18" cy="6" r="2.5" />
-                            <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                          </svg>
-                        </span>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full h-full">
+                        {/* Left Side: Status Icon, Title, and Meta */}
+                        <div className="flex items-start gap-3.5 min-w-0">
+                          <span className="mt-1 flex-shrink-0 flex items-center justify-center">
+                            <GitPullRequestIcon
+                              size={16}
+                              className="text-emerald-500"
+                            />
+                          </span>
 
-                        <div className="space-y-1.5 min-w-0">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-400 transition-colors">
-                              {repoName}
-                            </span>
-                            <span className="text-[11px] font-mono text-zinc-600">
-                              #{item.number}
-                            </span>
-                            <span className="text-[9px] bg-amber-950/40 border border-amber-800/40 text-amber-400 font-mono px-1.5 py-0.5 rounded-full">
-                              Pending Review
-                            </span>
-                          </div>
-
-                          <a
-                            href={item.html_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-xs font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors duration-150 leading-relaxed font-sans pr-4"
-                          >
-                            {item.title}
-                          </a>
-
-                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                            <span className="text-[10px] font-mono text-zinc-600">
-                              by{" "}
-                              <span className="text-zinc-500 font-medium">
-                                {item.user?.login}
+                          <div className="space-y-1.5 min-w-0">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                                {repoName}
                               </span>
-                            </span>
-                            <span className="text-zinc-700 text-[10px] font-mono">
-                              •
-                            </span>
-                            <span
-                              className="text-[10px] font-mono text-zinc-600"
-                              title={new Date(item.created_at).toLocaleString()}
+                              <span className="text-[11px] font-mono text-zinc-600">
+                                #{item.number}
+                              </span>
+                              <span className="text-[9px] bg-amber-950/40 border border-amber-800/40 text-amber-400 font-mono px-1.5 py-0.5 rounded-full">
+                                Pending Review
+                              </span>
+                            </div>
+
+                            <a
+                              href={item.html_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors duration-150 leading-relaxed font-sans pr-4"
                             >
-                              opened {formatRelativeTime(item.created_at)}
-                            </span>
-                            {item.labels && item.labels.length > 0 && (
-                              <>
-                                <span className="text-zinc-700 text-[10px] font-mono">
-                                  •
+                              {item.title}
+                            </a>
+
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                              <span className="text-[10px] font-mono text-zinc-600">
+                                by{" "}
+                                <span className="text-zinc-500 font-medium">
+                                  {item.user?.login}
                                 </span>
-                                <div className="flex flex-wrap gap-1">
-                                  {item.labels.slice(0, 5).map((label) => {
-                                    const styles = getLabelStyles(label.color);
-                                    return (
-                                      <span
-                                        key={label.id}
-                                        style={styles}
-                                        className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
-                                        title={label.description}
-                                      >
-                                        {label.name}
-                                      </span>
-                                    );
-                                  })}
-                                </div>
-                              </>
-                            )}
+                              </span>
+                              <span className="text-zinc-700 text-[10px] font-mono">
+                                •
+                              </span>
+                              <span
+                                className="text-[10px] font-mono text-zinc-600"
+                                title={new Date(item.created_at).toLocaleString()}
+                              >
+                                opened {formatRelativeTime(item.created_at)}
+                              </span>
+                              {item.labels && item.labels.length > 0 && (
+                                <>
+                                  <span className="text-zinc-700 text-[10px] font-mono">
+                                    •
+                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.labels.slice(0, 5).map((label) => {
+                                      const styles = getLabelStyles(label.color);
+                                      return (
+                                        <span
+                                          key={label.id}
+                                          style={styles}
+                                          className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
+                                          title={label.description}
+                                        >
+                                          {label.name}
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Right Side: Comments and Assignees */}
-                      <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
-                        {item.comments > 0 && (
-                          <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
-                            <span>{item.comments}</span>
-                          </div>
-                        )}
+                        {/* Right Side: Comments and Assignees */}
+                        <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
+                          {item.comments > 0 && (
+                            <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
+                              <CommentIcon size={14} />
+                              <span>{item.comments}</span>
+                            </div>
+                          )}
 
-                        {item.assignees && item.assignees.length > 0 && (
-                          <div className="flex -space-x-1.5 overflow-hidden">
-                            {item.assignees.slice(0, 3).map((assignee) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                key={assignee.login}
-                                src={assignee.avatar_url}
-                                className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
-                                alt={assignee.login}
-                                title={`Assigned to ${assignee.login}`}
-                              />
-                            ))}
-                            {item.assignees.length > 3 && (
-                              <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
-                                +{item.assignees.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          {item.assignees && item.assignees.length > 0 && (
+                            <div className="flex -space-x-1.5 overflow-hidden">
+                              {item.assignees.slice(0, 3).map((assignee) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  key={assignee.login}
+                                  src={assignee.avatar_url}
+                                  className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
+                                  alt={assignee.login}
+                                  title={`Assigned to ${assignee.login}`}
+                                />
+                              ))}
+                              {item.assignees.length > 3 && (
+                                <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
+                                  +{item.assignees.length - 3}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </SpotlightCard>
                   );
                 })
               )}
@@ -418,16 +469,18 @@ export default function ReviewsAndComments({
           {/* Recently Reviewed Section */}
           <div className="border-t border-zinc-900/60 pt-6 space-y-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-zinc-200">
+              <h2
+                className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+              >
                 Recently Reviewed
               </h2>
               {!loading && reviewedPrs.length > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-mono text-zinc-400">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800/80 font-mono text-zinc-400">
                   {reviewedPrs.length} total
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 font-mono">
+            <p className="text-xs text-zinc-500 mt-1">
               Pull requests you have reviewed and submitted feedback on.
             </p>
 
@@ -437,7 +490,7 @@ export default function ReviewsAndComments({
                   <SkeletonCard key={i} />
                 ))
               ) : reviewedPrs.length === 0 ? (
-                <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
+                <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
                   <svg
                     className="w-8 h-8 text-zinc-700 mx-auto mb-3"
                     fill="none"
@@ -462,178 +515,136 @@ export default function ReviewsAndComments({
                   const isOpen = item.state === "open" && !isMerged;
 
                   return (
-                    <div
+                    <SpotlightCard
                       key={item.id}
-                      className="group relative flex flex-col md:flex-row md:items-center justify-between border border-zinc-900 hover:border-zinc-800 bg-zinc-950/20 hover:bg-zinc-900/10 p-4.5 rounded-lg gap-4 transition-all duration-200"
+                      spotlightColor="rgba(255, 255, 255, 0.08)"
+                      className="group rounded-lg transition-all duration-300"
                     >
-                      {/* Left Side: Status Icon, Title, and Meta */}
-                      <div className="flex items-start gap-3.5 min-w-0">
-                        <span className="mt-1 flex-shrink-0">
-                          {isMerged ? (
-                            <svg
-                              className="w-4 h-4 text-purple-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="18" cy="18" r="2.5" />
-                              <circle cx="12" cy="6" r="2.5" />
-                              <path d="M12 8.5V13a3 3 0 0 1-3 3h-.5m0 0L6 18.5M8.5 16l-2-2.5" />
-                              <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
-                            </svg>
-                          ) : isOpen ? (
-                            <svg
-                              className="w-4 h-4 text-emerald-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                            </svg>
-                          ) : (
-                            <svg
-                              className="w-4 h-4 text-rose-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                              <line
-                                x1="4"
-                                y1="4"
-                                x2="20"
-                                y2="20"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full h-full">
+                        {/* Left Side: Status Icon, Title, and Meta */}
+                        <div className="flex items-start gap-3.5 min-w-0">
+                          <span className="mt-1 flex-shrink-0 flex items-center justify-center">
+                            {isMerged ? (
+                              <GitMergeIcon
+                                size={16}
+                                className="text-purple-400"
                               />
-                            </svg>
-                          )}
-                        </span>
-
-                        <div className="space-y-1.5 min-w-0">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-400 transition-colors">
-                              {repoName}
-                            </span>
-                            <span className="text-[11px] font-mono text-zinc-600">
-                              #{item.number}
-                            </span>
-                            <span
-                              className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
-                                isMerged
-                                  ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
-                                  : isOpen
-                                    ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
-                                    : "bg-red-950/40 border border-red-800/40 text-red-400"
-                              }`}
-                            >
-                              {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
-                            </span>
-                          </div>
-
-                          <a
-                            href={item.html_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-xs font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors duration-150 leading-relaxed font-sans pr-4"
-                          >
-                            {item.title}
-                          </a>
-
-                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                            <span className="text-[10px] font-mono text-zinc-600">
-                              by{" "}
-                              <span className="text-zinc-500 font-medium">
-                                {item.user?.login}
-                              </span>
-                            </span>
-                            <span className="text-zinc-700 text-[10px] font-mono">
-                              •
-                            </span>
-                            <span
-                              className="text-[10px] font-mono text-zinc-600"
-                              title={new Date(item.created_at).toLocaleString()}
-                            >
-                              opened {formatRelativeTime(item.created_at)}
-                            </span>
-                            {item.labels && item.labels.length > 0 && (
-                              <>
-                                <span className="text-zinc-700 text-[10px] font-mono">
-                                  •
-                                </span>
-                                <div className="flex flex-wrap gap-1">
-                                  {item.labels.slice(0, 5).map((label) => {
-                                    const styles = getLabelStyles(label.color);
-                                    return (
-                                      <span
-                                        key={label.id}
-                                        style={styles}
-                                        className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
-                                        title={label.description}
-                                      >
-                                        {label.name}
-                                      </span>
-                                    );
-                                  })}
-                                </div>
-                              </>
+                            ) : isOpen ? (
+                              <GitPullRequestIcon
+                                size={16}
+                                className="text-emerald-500"
+                              />
+                            ) : (
+                              <GitPullRequestClosedIcon
+                                size={16}
+                                className="text-rose-500"
+                              />
                             )}
+                          </span>
+
+                          <div className="space-y-1.5 min-w-0">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                                {repoName}
+                              </span>
+                              <span className="text-[11px] font-mono text-zinc-600">
+                                #{item.number}
+                              </span>
+                              <span
+                                className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
+                                  isMerged
+                                    ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
+                                    : isOpen
+                                      ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
+                                      : "bg-red-950/40 border border-red-800/40 text-red-400"
+                                }`}
+                              >
+                                {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
+                              </span>
+                            </div>
+
+                            <a
+                              href={item.html_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors duration-150 leading-relaxed font-sans pr-4"
+                            >
+                              {item.title}
+                            </a>
+
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                              <span className="text-[10px] font-mono text-zinc-600">
+                                by{" "}
+                                <span className="text-zinc-500 font-medium">
+                                  {item.user?.login}
+                                </span>
+                              </span>
+                              <span className="text-zinc-700 text-[10px] font-mono">
+                                •
+                              </span>
+                              <span
+                                className="text-[10px] font-mono text-zinc-600"
+                                title={new Date(item.created_at).toLocaleString()}
+                              >
+                                opened {formatRelativeTime(item.created_at)}
+                              </span>
+                              {item.labels && item.labels.length > 0 && (
+                                <>
+                                  <span className="text-zinc-700 text-[10px] font-mono">
+                                    •
+                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.labels.slice(0, 5).map((label) => {
+                                      const styles = getLabelStyles(label.color);
+                                      return (
+                                        <span
+                                          key={label.id}
+                                          style={styles}
+                                          className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
+                                          title={label.description}
+                                        >
+                                          {label.name}
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Right Side: Comments and Assignees */}
-                      <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
-                        {item.comments > 0 && (
-                          <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
-                            <span>{item.comments}</span>
-                          </div>
-                        )}
+                        {/* Right Side: Comments and Assignees */}
+                        <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
+                          {item.comments > 0 && (
+                            <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
+                              <CommentIcon size={14} />
+                              <span>{item.comments}</span>
+                            </div>
+                          )}
 
-                        {item.assignees && item.assignees.length > 0 && (
-                          <div className="flex -space-x-1.5 overflow-hidden">
-                            {item.assignees.slice(0, 3).map((assignee) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                key={assignee.login}
-                                src={assignee.avatar_url}
-                                className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
-                                alt={assignee.login}
-                                title={`Assigned to ${assignee.login}`}
-                              />
-                            ))}
-                            {item.assignees.length > 3 && (
-                              <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
-                                +{item.assignees.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          {item.assignees && item.assignees.length > 0 && (
+                            <div className="flex -space-x-1.5 overflow-hidden">
+                              {item.assignees.slice(0, 3).map((assignee) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  key={assignee.login}
+                                  src={assignee.avatar_url}
+                                  className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
+                                  alt={assignee.login}
+                                  title={`Assigned to ${assignee.login}`}
+                                />
+                              ))}
+                              {item.assignees.length > 3 && (
+                                <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
+                                  +{item.assignees.length - 3}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </SpotlightCard>
                   );
                 })
               )}
@@ -643,16 +654,18 @@ export default function ReviewsAndComments({
           {/* Commented PRs Section */}
           <div className="border-t border-zinc-900/60 pt-6 space-y-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-zinc-200">
+              <h2
+                className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+              >
                 Commented Pull Requests
               </h2>
               {!loading && commentedPrs.length > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-850 font-mono text-zinc-400">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800/80 font-mono text-zinc-400">
                   {commentedPrs.length} total
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 font-mono">
+            <p className="text-xs text-zinc-500 mt-1">
               Pull requests you have commented on or participated in.
             </p>
 
@@ -662,7 +675,7 @@ export default function ReviewsAndComments({
                   <SkeletonCard key={i} />
                 ))
               ) : commentedPrs.length === 0 ? (
-                <div className="rounded-lg border border-zinc-850 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
+                <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
                   <svg
                     className="w-8 h-8 text-zinc-700 mx-auto mb-3"
                     fill="none"
@@ -687,181 +700,136 @@ export default function ReviewsAndComments({
                   const isOpen = item.state === "open" && !isMerged;
 
                   return (
-                    <div
+                    <SpotlightCard
                       key={item.id}
-                      className="group relative flex flex-col md:flex-row md:items-center justify-between border border-zinc-900 hover:border-zinc-800 bg-zinc-950/20 hover:bg-zinc-900/10 p-4.5 rounded-lg gap-4 transition-all duration-200"
+                      spotlightColor="rgba(255, 255, 255, 0.08)"
+                      className="group rounded-lg transition-all duration-300"
                     >
-                      {/* Left Side: Status Icon, Title, and Meta */}
-                      <div className="flex items-start gap-3.5 min-w-0">
-                        <span className="mt-1 flex-shrink-0">
-                          {isMerged ? (
-                            // Merged PR - Purple
-                            <svg
-                              className="w-4 h-4 text-purple-400"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="18" cy="18" r="2.5" />
-                              <circle cx="12" cy="6" r="2.5" />
-                              <path d="M12 8.5V13a3 3 0 0 1-3 3h-.5m0 0L6 18.5M8.5 16l-2-2.5" />
-                              <path d="M18 15.5V13a3 3 0 0 0-3-3h-3.5" />
-                            </svg>
-                          ) : isOpen ? (
-                            // Open PR - Green
-                            <svg
-                              className="w-4 h-4 text-emerald-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                            </svg>
-                          ) : (
-                            // Closed PR - Red
-                            <svg
-                              className="w-4 h-4 text-rose-500"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <circle cx="6" cy="18" r="2.5" />
-                              <circle cx="6" cy="6" r="2.5" />
-                              <circle cx="18" cy="6" r="2.5" />
-                              <path d="M6 8.5V15.5M18 8.5V12a3 3 0 0 1-3 3H9" />
-                              <line
-                                x1="4"
-                                y1="4"
-                                x2="20"
-                                y2="20"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full h-full">
+                        {/* Left Side: Status Icon, Title, and Meta */}
+                        <div className="flex items-start gap-3.5 min-w-0">
+                          <span className="mt-1 flex-shrink-0 flex items-center justify-center">
+                            {isMerged ? (
+                              <GitMergeIcon
+                                size={16}
+                                className="text-purple-400"
                               />
-                            </svg>
-                          )}
-                        </span>
-
-                        <div className="space-y-1.5 min-w-0">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-400 transition-colors">
-                              {repoName}
-                            </span>
-                            <span className="text-[11px] font-mono text-zinc-600">
-                              #{item.number}
-                            </span>
-                            <span
-                              className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
-                                isMerged
-                                  ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
-                                  : isOpen
-                                    ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
-                                    : "bg-red-950/40 border border-red-800/40 text-red-400"
-                              }`}
-                            >
-                              {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
-                            </span>
-                          </div>
-
-                          <a
-                            href={item.html_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block text-xs font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors duration-150 leading-relaxed font-sans pr-4"
-                          >
-                            {item.title}
-                          </a>
-
-                          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                            <span className="text-[10px] font-mono text-zinc-600">
-                              by{" "}
-                              <span className="text-zinc-500 font-medium">
-                                {item.user?.login}
-                              </span>
-                            </span>
-                            <span className="text-zinc-700 text-[10px] font-mono">
-                              •
-                            </span>
-                            <span
-                              className="text-[10px] font-mono text-zinc-600"
-                              title={new Date(item.created_at).toLocaleString()}
-                            >
-                              opened {formatRelativeTime(item.created_at)}
-                            </span>
-                            {item.labels && item.labels.length > 0 && (
-                              <>
-                                <span className="text-zinc-700 text-[10px] font-mono">
-                                  •
-                                </span>
-                                <div className="flex flex-wrap gap-1">
-                                  {item.labels.slice(0, 5).map((label) => {
-                                    const styles = getLabelStyles(label.color);
-                                    return (
-                                      <span
-                                        key={label.id}
-                                        style={styles}
-                                        className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
-                                        title={label.description}
-                                      >
-                                        {label.name}
-                                      </span>
-                                    );
-                                  })}
-                                </div>
-                              </>
+                            ) : isOpen ? (
+                              <GitPullRequestIcon
+                                size={16}
+                                className="text-emerald-500"
+                              />
+                            ) : (
+                              <GitPullRequestClosedIcon
+                                size={16}
+                                className="text-rose-500"
+                              />
                             )}
+                          </span>
+
+                          <div className="space-y-1.5 min-w-0">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                                {repoName}
+                              </span>
+                              <span className="text-[11px] font-mono text-zinc-600">
+                                #{item.number}
+                              </span>
+                              <span
+                                className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full ${
+                                  isMerged
+                                    ? "bg-purple-950/40 border border-purple-800/40 text-purple-300"
+                                    : isOpen
+                                      ? "bg-emerald-950/40 border border-emerald-800/40 text-emerald-400"
+                                      : "bg-red-950/40 border border-red-800/40 text-red-400"
+                                }`}
+                              >
+                                {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
+                              </span>
+                            </div>
+
+                            <a
+                              href={item.html_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors duration-150 leading-relaxed font-sans pr-4"
+                            >
+                              {item.title}
+                            </a>
+
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                              <span className="text-[10px] font-mono text-zinc-600">
+                                by{" "}
+                                <span className="text-zinc-500 font-medium">
+                                  {item.user?.login}
+                                </span>
+                              </span>
+                              <span className="text-zinc-700 text-[10px] font-mono">
+                                •
+                              </span>
+                              <span
+                                className="text-[10px] font-mono text-zinc-600"
+                                title={new Date(item.created_at).toLocaleString()}
+                              >
+                                opened {formatRelativeTime(item.created_at)}
+                              </span>
+                              {item.labels && item.labels.length > 0 && (
+                                <>
+                                  <span className="text-zinc-700 text-[10px] font-mono">
+                                    •
+                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.labels.slice(0, 5).map((label) => {
+                                      const styles = getLabelStyles(label.color);
+                                      return (
+                                        <span
+                                          key={label.id}
+                                          style={styles}
+                                          className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
+                                          title={label.description}
+                                        >
+                                          {label.name}
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Right Side: Comments and Assignees */}
-                      <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
-                        {item.comments > 0 && (
-                          <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
-                            <span>{item.comments}</span>
-                          </div>
-                        )}
+                        {/* Right Side: Comments and Assignees */}
+                        <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
+                          {item.comments > 0 && (
+                            <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
+                              <CommentIcon size={14} />
+                              <span>{item.comments}</span>
+                            </div>
+                          )}
 
-                        {item.assignees && item.assignees.length > 0 && (
-                          <div className="flex -space-x-1.5 overflow-hidden">
-                            {item.assignees.slice(0, 3).map((assignee) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                key={assignee.login}
-                                src={assignee.avatar_url}
-                                className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
-                                alt={assignee.login}
-                                title={`Assigned to ${assignee.login}`}
-                              />
-                            ))}
-                            {item.assignees.length > 3 && (
-                              <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
-                                +{item.assignees.length - 3}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                          {item.assignees && item.assignees.length > 0 && (
+                            <div className="flex -space-x-1.5 overflow-hidden">
+                              {item.assignees.slice(0, 3).map((assignee) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  key={assignee.login}
+                                  src={assignee.avatar_url}
+                                  className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
+                                  alt={assignee.login}
+                                  title={`Assigned to ${assignee.login}`}
+                                />
+                              ))}
+                              {item.assignees.length > 3 && (
+                                <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
+                                  +{item.assignees.length - 3}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    </SpotlightCard>
                   );
                 })
               )}
