@@ -1,6 +1,17 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { League_Spartan, Montserrat } from "next/font/google";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+
+const leagueSpartan = League_Spartan({
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+});
 
 interface OrganizationsProps {
   session: {
@@ -386,9 +397,19 @@ export default function Organizations({
     return result;
   }, [orgs, searchQuery, filterActiveOnly, sortBy]);
 
+  // Calculate dynamic counts based on currently loaded orgs
+  const counts = useMemo(() => {
+    return {
+      totalOrgs: orgs.length,
+      activeOrgs: orgs.filter((o) => o.totalContributions > 0).length,
+      totalContributions: orgs.reduce((acc, o) => acc + o.totalContributions, 0),
+      totalRepos: orgs.reduce((acc, o) => acc + o.reposCount, 0),
+    };
+  }, [orgs]);
+
   // Loading skeleton card matching the design style
   const SkeletonCard = () => (
-    <div className="border border-zinc-900 bg-zinc-950/20 rounded-lg p-5 flex flex-col gap-6 animate-pulse">
+    <div className="border border-zinc-900/60 bg-zinc-950/20 rounded-lg p-5 flex flex-col gap-6 animate-pulse">
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 bg-zinc-800 rounded flex-shrink-0" />
         <div className="space-y-2.5 w-full">
@@ -412,14 +433,13 @@ export default function Organizations({
   return (
     <div className="space-y-8 select-none">
       {/* Header and Sync Control */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">
+          <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
             Organizations
           </h1>
-          <p className="text-xs text-zinc-500 mt-2 font-mono">
-            Track and analyze your contributions (commits, PRs, issues, reviews,
-            comments) in organization codebases in the past year.
+          <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
+            Track and analyze your contributions (commits, PRs, issues, reviews, comments) in organization codebases in the past year.
           </p>
         </div>
         <button
@@ -442,6 +462,74 @@ export default function Organizations({
           </svg>
           {isRefreshing ? "Refreshing..." : "Sync GitHub"}
         </button>
+      </div>
+
+      {/* Summary Widgets */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          {
+            title: "Total Organizations",
+            value: counts.totalOrgs,
+            color: "#ffffff",
+          },
+          {
+            title: "Active Organizations",
+            value: counts.activeOrgs,
+            color: "#e4e4e7",
+          },
+          {
+            title: "Total Contributions",
+            value: counts.totalContributions,
+            color: "#c4c4c7",
+          },
+          {
+            title: "Active Repositories",
+            value: counts.totalRepos,
+            color: "#a1a1aa",
+          },
+        ].map((stat) => (
+          <SpotlightCard
+            key={stat.title}
+            spotlightColor={stat.color}
+            className="h-[140px] transition-all duration-300 hover:translate-y-[-2px]"
+          >
+            <div className="flex flex-col justify-between h-full w-full">
+              {/* Top Row: Title + Status Dot */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{
+                      backgroundColor: stat.color,
+                      boxShadow: `0 0 8px ${stat.color}`,
+                    }}
+                  />
+                  <span
+                    className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
+                  >
+                    {stat.title}
+                  </span>
+                </div>
+              </div>
+
+              {/* Value Row with AnimatedCounter */}
+              <div className="mt-3 flex items-baseline gap-1.5">
+                <span
+                  className={`text-5xl font-semibold tracking-tight ${leagueSpartan.className}`}
+                  style={{ color: stat.color }}
+                >
+                  {loading ? (
+                    <span className="text-2xl font-mono text-zinc-500">
+                      ...
+                    </span>
+                  ) : (
+                    <AnimatedCounter value={stat.value} />
+                  )}
+                </span>
+              </div>
+            </div>
+          </SpotlightCard>
+        ))}
       </div>
 
       {/* Sorter and Search Control Bar */}
@@ -598,13 +686,17 @@ export default function Organizations({
                   total > 0 ? (org.comments / total) * 100 : 0;
 
                 return (
-                  <a
+                  <SpotlightCard
                     key={org.login}
-                    href={`https://github.com/${org.login}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex flex-col justify-between border border-zinc-900 hover:border-zinc-800 bg-zinc-950/20 hover:bg-zinc-900/10 p-5 rounded-lg gap-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    spotlightColor="rgba(255, 255, 255, 0.08)"
+                    className="rounded-lg transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg"
                   >
+                    <a
+                      href={`https://github.com/${org.login}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex flex-col justify-between h-full w-full gap-6"
+                    >
                     {/* Header info */}
                     <div className="flex items-start gap-4">
                       {org.avatarUrl && (
@@ -772,7 +864,8 @@ export default function Organizations({
                         </div>
                       )}
                     </div>
-                  </a>
+                    </a>
+                  </SpotlightCard>
                 );
               })}
             </div>
