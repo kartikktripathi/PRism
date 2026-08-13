@@ -1,7 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { GitPullRequestIcon, IssueOpenedIcon } from "@primer/octicons-react";
+import { League_Spartan, Montserrat } from "next/font/google";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+
+const leagueSpartan = League_Spartan({
+  subsets: ["latin"],
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+});
 
 interface GitStatsProps {
   session: {
@@ -119,128 +130,133 @@ function MonthlyStatCard({
   onClick?: () => void;
 }) {
   return (
-    <div
-      onClick={onClick}
-      className={`rounded-lg border border-zinc-800 bg-zinc-950/30 p-5 flex flex-col font-sans transition-all duration-200 ${
-        onClick
-          ? "cursor-pointer hover:border-zinc-700 hover:bg-zinc-900/50 hover:scale-[1.01] active:scale-[0.99]"
-          : ""
+    <SpotlightCard
+      spotlightColor="rgba(255, 255, 255, 0.08)"
+      className={`rounded-lg transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg ${
+        onClick ? "cursor-pointer" : ""
       }`}
     >
-      {/* Card Header with Month Heading and subtle icon */}
-      <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60">
-        <h3 className="text-lg font-semibold text-white tracking-wide">
-          {stat.month}
-        </h3>
-        <svg
-          className="w-4 h-4 text-zinc-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
-          />
-        </svg>
+      <div
+        onClick={onClick}
+        className="flex flex-col justify-between h-full w-full font-sans"
+      >
+        {/* Card Header with Month Heading and subtle icon */}
+        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60 w-full">
+          <h3 className="text-lg font-semibold text-white tracking-wide">
+            {stat.month}
+          </h3>
+          <svg
+            className="w-4 h-4 text-zinc-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
+            />
+          </svg>
+        </div>
+
+        {/* Stats List */}
+        <div className="space-y-3.5 font-mono text-xs w-full">
+          {/* Commits */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <svg
+                className="w-4 h-4 text-emerald-500 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <line x1="12" y1="2" x2="12" y2="8" />
+                <line x1="12" y1="16" x2="12" y2="22" />
+              </svg>
+              <span>Commits</span>
+            </div>
+            <span className="font-bold text-emerald-400">{stat.commits}</span>
+          </div>
+
+          {/* Repositories */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <svg
+                className="w-4 h-4 text-zinc-400 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+              <span>Repositories</span>
+            </div>
+            <span className="font-bold text-zinc-200">{stat.repositories}</span>
+          </div>
+
+          {/* Pull Requests */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <span className="flex items-center justify-center w-4 h-4 text-purple-400 flex-shrink-0">
+                <GitPullRequestIcon size={16} />
+              </span>
+              <span>Pull Requests</span>
+            </div>
+            <span className="font-bold text-purple-400">{stat.pullRequests}</span>
+          </div>
+
+          {/* Issues */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <span className="flex items-center justify-center w-4 h-4 text-rose-500 flex-shrink-0">
+                <IssueOpenedIcon size={16} />
+              </span>
+              <span>Issues Opened</span>
+            </div>
+            <span className="font-bold text-rose-400">{stat.issues}</span>
+          </div>
+
+          {/* Reviews & Comments */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <svg
+                className="w-4 h-4 text-amber-500 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+              <span>Reviews & Comments</span>
+            </div>
+            <span className="font-bold text-amber-400">{stat.reviews}</span>
+          </div>
+        </div>
+
+        <div className="w-full">
+          <MiniBarChart data={stat.commitHistory} />
+        </div>
       </div>
-
-      {/* Stats List */}
-      <div className="space-y-3.5 font-mono text-xs">
-        {/* Commits */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-zinc-500">
-            <svg
-              className="w-4 h-4 text-emerald-500 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="4" />
-              <line x1="12" y1="2" x2="12" y2="8" />
-              <line x1="12" y1="16" x2="12" y2="22" />
-            </svg>
-            <span>Commits</span>
-          </div>
-          <span className="font-bold text-emerald-400">{stat.commits}</span>
-        </div>
-
-        {/* Repositories */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-zinc-500">
-            <svg
-              className="w-4 h-4 text-zinc-400 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-              />
-            </svg>
-            <span>Repositories</span>
-          </div>
-          <span className="font-bold text-zinc-200">{stat.repositories}</span>
-        </div>
-
-        {/* Pull Requests */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-zinc-500">
-            <span className="flex items-center justify-center w-4 h-4 text-purple-400 flex-shrink-0">
-              <GitPullRequestIcon size={16} />
-            </span>
-            <span>Pull Requests</span>
-          </div>
-          <span className="font-bold text-purple-400">{stat.pullRequests}</span>
-        </div>
-
-        {/* Issues */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-zinc-500">
-            <span className="flex items-center justify-center w-4 h-4 text-rose-500 flex-shrink-0">
-              <IssueOpenedIcon size={16} />
-            </span>
-            <span>Issues Opened</span>
-          </div>
-          <span className="font-bold text-rose-400">{stat.issues}</span>
-        </div>
-
-        {/* Reviews & Comments */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-zinc-500">
-            <svg
-              className="w-4 h-4 text-amber-500 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-            <span>Reviews & Comments</span>
-          </div>
-          <span className="font-bold text-amber-400">{stat.reviews}</span>
-        </div>
-      </div>
-
-      <MiniBarChart data={stat.commitHistory} />
-    </div>
+    </SpotlightCard>
   );
 }
 
 function SkeletonCard() {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/20 p-5 flex flex-col animate-pulse">
+    <div className="border border-zinc-900/60 bg-zinc-950/20 rounded-lg p-5 flex flex-col animate-pulse">
       <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60">
         <div className="h-5 bg-zinc-800 rounded w-1/3" />
         <div className="h-4 w-4 bg-zinc-800 rounded-full" />
@@ -285,9 +301,29 @@ export default function GitWrapped({
   const [timeStats, setTimeStats] = useState<TimeStats | null>(null);
   const [loadingTimeStats, setLoadingTimeStats] = useState<boolean>(false);
 
+  const counts = useMemo(() => {
+    if (!stats) {
+      return {
+        commits: 0,
+        pullRequests: 0,
+        issues: 0,
+        reviews: 0,
+      };
+    }
+    return stats.reduce(
+      (acc, curr) => ({
+        commits: acc.commits + curr.commits,
+        pullRequests: acc.pullRequests + curr.pullRequests,
+        issues: acc.issues + curr.issues,
+        reviews: acc.reviews + curr.reviews,
+      }),
+      { commits: 0, pullRequests: 0, issues: 0, reviews: 0 }
+    );
+  }, [stats]);
+
   const fetchMonthlyStats = useCallback(async () => {
     if (!username || !session?.accessToken) {
-      setError("Please authenticate with GitHub to load your Git stats.");
+      setError("Please authenticate with GitHub to load your GitStats.");
       setLoading(false);
       onLoadComplete?.();
       return;
@@ -452,7 +488,7 @@ export default function GitWrapped({
       const errMsg =
         err instanceof Error
           ? err.message
-          : "Something went wrong while loading Git stats.";
+          : "Something went wrong while loading GitStats.";
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -671,7 +707,7 @@ export default function GitWrapped({
 
   if (selectedMonth) {
     return (
-      <div className="space-y-8 select-none font-mono">
+      <div className="space-y-8 select-none">
         <div>
           <button
             onClick={() => setSelectedMonth(null)}
@@ -690,244 +726,272 @@ export default function GitWrapped({
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Back to Git Stats
+            Back to GitStats
           </button>
         </div>
 
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold text-white tracking-wide font-sans">
+        <div className="space-y-4">
+          <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
             {selectedMonth}
           </h1>
           {selectedStat !== undefined && (
-            <div className="space-y-1.5 text-sm text-zinc-400 font-mono">
-              <div>
-                Repositories worked on:{" "}
-                <span className="text-emerald-400 font-bold font-sans text-base">
-                  {selectedStat.repositories}
-                </span>
-              </div>
-              <div>
-                Repositories created:{" "}
-                <span className="text-teal-400 font-bold font-sans text-base">
-                  {selectedStat.reposCreated}
-                </span>
-              </div>
-              <div>
-                Pull requests opened:{" "}
-                <span className="text-purple-400 font-bold font-sans text-base">
-                  {selectedStat.pullRequests}
-                </span>
-              </div>
-              <div>
-                Most used language:{" "}
-                <span className="text-sky-400 font-bold font-sans text-base">
-                  {selectedStat.mostUsedLanguage}
-                </span>
-              </div>
-              {prevStat && (
-                <div className="text-xs mt-1.5 text-zinc-500 font-sans">
-                  {diffType === "more" && (
-                    <span>
-                      📈{" "}
-                      <span className="text-emerald-400 font-semibold">
-                        {diffPercent}% more
-                      </span>{" "}
-                      contributions than last month ({currentTotal} vs{" "}
-                      {prevTotal})
+            <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                <SpotlightCard spotlightColor="#10b981" className="h-[120px]">
+                  <div className="flex flex-col justify-between h-full w-full font-sans">
+                    <span className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}>
+                      Repositories Worked On
                     </span>
-                  )}
-                  {diffType === "less" && (
-                    <span>
-                      📉{" "}
-                      <span className="text-rose-400 font-semibold">
-                        {diffPercent}% less
-                      </span>{" "}
-                      contributions than last month ({currentTotal} vs{" "}
-                      {prevTotal})
+                    <span className={`text-4xl font-bold text-emerald-400 ${leagueSpartan.className}`}>
+                      {selectedStat.repositories}
                     </span>
-                  )}
-                  {diffType === "equal" && (
-                    <span>
-                      📊{" "}
-                      <span className="text-zinc-300 font-semibold">Equal</span>{" "}
-                      contributions as last month ({currentTotal})
+                  </div>
+                </SpotlightCard>
+
+                <SpotlightCard spotlightColor="#14b8a6" className="h-[120px]">
+                  <div className="flex flex-col justify-between h-full w-full font-sans">
+                    <span className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}>
+                      Repositories Created
                     </span>
-                  )}
-                </div>
-              )}
-              {mostActiveDayText && (
-                <div className="text-xs text-zinc-500 font-sans mt-0.5">
-                  ⭐ Most active day:{" "}
-                  <span className="text-amber-400 font-semibold">
-                    {mostActiveDayText}
-                  </span>
-                </div>
-              )}
+                    <span className={`text-4xl font-bold text-teal-400 ${leagueSpartan.className}`}>
+                      {selectedStat.reposCreated}
+                    </span>
+                  </div>
+                </SpotlightCard>
+
+                <SpotlightCard spotlightColor="#a78bfa" className="h-[120px]">
+                  <div className="flex flex-col justify-between h-full w-full font-sans">
+                    <span className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}>
+                      Pull Requests Opened
+                    </span>
+                    <span className={`text-4xl font-bold text-purple-400 ${leagueSpartan.className}`}>
+                      {selectedStat.pullRequests}
+                    </span>
+                  </div>
+                </SpotlightCard>
+
+                <SpotlightCard spotlightColor="#38bdf8" className="h-[120px]">
+                  <div className="flex flex-col justify-between h-full w-full font-sans">
+                    <span className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}>
+                      Most Used Language
+                    </span>
+                    <span className={`text-2xl font-bold text-sky-400 truncate ${leagueSpartan.className}`} title={selectedStat.mostUsedLanguage}>
+                      {selectedStat.mostUsedLanguage}
+                    </span>
+                  </div>
+                </SpotlightCard>
+              </div>
+
+              <div className="flex flex-col gap-1.5 mt-6 font-sans text-xs text-zinc-500">
+                {prevStat && (
+                  <div>
+                    {diffType === "more" && (
+                      <span>
+                        📈{" "}
+                        <span className="text-emerald-400 font-semibold">
+                          {diffPercent}% more
+                        </span>{" "}
+                        contributions than last month ({currentTotal} vs{" "}
+                        {prevTotal})
+                      </span>
+                    )}
+                    {diffType === "less" && (
+                      <span>
+                        📉{" "}
+                        <span className="text-rose-400 font-semibold">
+                          {diffPercent}% less
+                        </span>{" "}
+                        contributions than last month ({currentTotal} vs{" "}
+                        {prevTotal})
+                      </span>
+                    )}
+                    {diffType === "equal" && (
+                      <span>
+                        📊{" "}
+                        <span className="text-zinc-300 font-semibold">Equal</span>{" "}
+                        contributions as last month ({currentTotal})
+                      </span>
+                    )}
+                  </div>
+                )}
+                {mostActiveDayText && (
+                  <div>
+                    ⭐ Most active day:{" "}
+                    <span className="text-amber-400 font-semibold">
+                      {mostActiveDayText}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Developer Persona & Contribution Time Analyzer */}
-        <div className="rounded-lg border border-zinc-800 bg-zinc-950/40 p-6 space-y-6 max-w-lg">
-          <div className="flex flex-col gap-1.5 border-b border-zinc-900/60 pb-4">
-            <h3 className="text-lg font-semibold text-white font-sans tracking-wide">
-              Developer Persona
-            </h3>
-            <p className="text-xs text-zinc-500 font-mono">
-              Analyzing timezone-adjusted contribution hours for {selectedMonth}
-              .
-            </p>
+        {/* Developer Persona & Contribution Time Analyzer wrapped in SpotlightCard */}
+        <SpotlightCard
+          spotlightColor="rgba(255, 255, 255, 0.08)"
+          className="rounded-lg max-w-lg"
+        >
+          <div className="space-y-6 w-full h-full">
+            <div className="flex flex-col gap-1.5 border-b border-zinc-900/60 pb-4 w-full">
+              <h3 className="text-lg font-semibold text-white font-sans tracking-wide">
+                Developer Persona
+              </h3>
+              <p className="text-xs text-zinc-500 font-mono">
+                Analyzing timezone-adjusted contribution hours for {selectedMonth}.
+              </p>
+            </div>
+
+            {loadingTimeStats ? (
+              <div className="flex items-center gap-2 font-mono text-xs text-zinc-500 py-6">
+                <svg
+                  className="animate-spin h-4 w-4 text-emerald-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <span>Analyzing contribution times...</span>
+              </div>
+            ) : timeStats ? (
+              <div className="space-y-6 w-full">
+                {/* Persona Tag */}
+                <div className="flex flex-col gap-2">
+                  <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
+                    Result
+                  </div>
+                  <div className="flex">
+                    <div
+                      className={`px-4 py-2.5 rounded border font-mono text-xs font-semibold flex items-center gap-2 select-none shadow-lg ${
+                        timeStats.persona === "Early-Bird Engineer"
+                          ? "bg-amber-950/20 border-amber-500/30 text-amber-400 shadow-amber-500/5"
+                          : timeStats.persona === "Post-Lunch Programmer"
+                            ? "bg-orange-950/20 border-orange-500/30 text-orange-400 shadow-orange-500/5"
+                            : timeStats.persona === "Shadow Scripter"
+                              ? "bg-purple-950/20 border-purple-500/30 text-purple-400 shadow-purple-500/5"
+                              : timeStats.persona === "Nocturnal Developer"
+                                ? "bg-indigo-950/20 border-indigo-500/30 text-indigo-400 shadow-indigo-500/5"
+                                : "bg-zinc-900 border-zinc-800 text-zinc-300"
+                      }`}
+                    >
+                      <span>you are a/an</span>
+                      <span className="underline decoration-2 underline-offset-4 decoration-current">
+                        {timeStats.persona}
+                      </span>
+                      <span>
+                        {timeStats.persona === "Early-Bird Engineer" && "☀️"}
+                        {timeStats.persona === "Post-Lunch Programmer" && "☕"}
+                        {timeStats.persona === "Shadow Scripter" && "🌆"}
+                        {timeStats.persona === "Nocturnal Developer" && "🌙"}
+                        {timeStats.persona === "Silent Achiever" && "🤫"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Bars Breakdown */}
+                <div className="space-y-4 font-mono text-xs w-full">
+                  <div className="text-xs text-zinc-505 uppercase tracking-wider">
+                    Time-of-day breakdown
+                  </div>
+
+                  {/* Day */}
+                  <div className="space-y-1.5 w-full">
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Day (5am - 12pm)</span>
+                      <span className="font-semibold text-zinc-200">
+                        {timeStats.percentages.day}%{" "}
+                        <span className="text-[10px] text-zinc-500">
+                          ({timeStats.day})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                      <div
+                        style={{ width: `${timeStats.percentages.day}%` }}
+                        className="h-full bg-amber-500 transition-all duration-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Afternoon */}
+                  <div className="space-y-1.5 w-full">
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Afternoon (12pm - 5pm)</span>
+                      <span className="font-semibold text-zinc-200">
+                        {timeStats.percentages.afternoon}%{" "}
+                        <span className="text-[10px] text-zinc-500">
+                          ({timeStats.afternoon})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                      <div
+                        style={{ width: `${timeStats.percentages.afternoon}%` }}
+                        className="h-full bg-orange-500 transition-all duration-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Evening */}
+                  <div className="space-y-1.5 w-full">
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Evening (5pm - 9pm)</span>
+                      <span className="font-semibold text-zinc-200">
+                        {timeStats.percentages.evening}%{" "}
+                        <span className="text-[10px] text-zinc-500">
+                          ({timeStats.evening})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                      <div
+                        style={{ width: `${timeStats.percentages.evening}%` }}
+                        className="h-full bg-purple-500 transition-all duration-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Night */}
+                  <div className="space-y-1.5 w-full">
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Night (9pm - 5am)</span>
+                      <span className="font-semibold text-zinc-200">
+                        {timeStats.percentages.night}%{" "}
+                        <span className="text-[10px] text-zinc-500">
+                          ({timeStats.night})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                      <div
+                        style={{ width: `${timeStats.percentages.night}%` }}
+                        className="h-full bg-indigo-500 transition-all duration-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs text-zinc-500 font-mono py-6">
+                Could not determine contribution activity times for this month.
+              </div>
+            )}
           </div>
-
-          {loadingTimeStats ? (
-            <div className="flex items-center gap-2 font-mono text-xs text-zinc-500 py-6">
-              <svg
-                className="animate-spin h-4 w-4 text-emerald-400"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <span>Analyzing contribution times...</span>
-            </div>
-          ) : timeStats ? (
-            <div className="space-y-6">
-              {/* Persona Tag */}
-              <div className="flex flex-col gap-2">
-                <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
-                  Result
-                </div>
-                <div className="flex">
-                  <div
-                    className={`px-4 py-2.5 rounded border font-mono text-xs font-semibold flex items-center gap-2 select-none shadow-lg ${
-                      timeStats.persona === "Early-Bird Engineer"
-                        ? "bg-amber-950/20 border-amber-500/30 text-amber-400 shadow-amber-500/5"
-                        : timeStats.persona === "Post-Lunch Programmer"
-                          ? "bg-orange-950/20 border-orange-500/30 text-orange-400 shadow-orange-500/5"
-                          : timeStats.persona === "Shadow Scripter"
-                            ? "bg-purple-950/20 border-purple-500/30 text-purple-400 shadow-purple-500/5"
-                            : timeStats.persona === "Nocturnal Developer"
-                              ? "bg-indigo-950/20 border-indigo-500/30 text-indigo-400 shadow-indigo-500/5"
-                              : "bg-zinc-900 border-zinc-800 text-zinc-300"
-                    }`}
-                  >
-                    <span>you are a/an</span>
-                    <span className="underline decoration-2 underline-offset-4 decoration-current">
-                      {timeStats.persona}
-                    </span>
-                    <span>
-                      {timeStats.persona === "Early-Bird Engineer" && "☀️"}
-                      {timeStats.persona === "Post-Lunch Programmer" && "☕"}
-                      {timeStats.persona === "Shadow Scripter" && "🌆"}
-                      {timeStats.persona === "Nocturnal Developer" && "🌙"}
-                      {timeStats.persona === "Silent Achiever" && "🤫"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Progress Bars Breakdown */}
-              <div className="space-y-4 font-mono text-xs">
-                <div className="text-xs text-zinc-500 uppercase tracking-wider">
-                  Time-of-day breakdown
-                </div>
-
-                {/* Day */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-zinc-400">
-                    <span>Day (5am - 12pm)</span>
-                    <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.day}%{" "}
-                      <span className="text-[10px] text-zinc-500">
-                        ({timeStats.day})
-                      </span>
-                    </span>
-                  </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                    <div
-                      style={{ width: `${timeStats.percentages.day}%` }}
-                      className="h-full bg-amber-500 transition-all duration-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Afternoon */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-zinc-400">
-                    <span>Afternoon (12pm - 5pm)</span>
-                    <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.afternoon}%{" "}
-                      <span className="text-[10px] text-zinc-500">
-                        ({timeStats.afternoon})
-                      </span>
-                    </span>
-                  </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                    <div
-                      style={{ width: `${timeStats.percentages.afternoon}%` }}
-                      className="h-full bg-orange-500 transition-all duration-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Evening */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-zinc-400">
-                    <span>Evening (5pm - 9pm)</span>
-                    <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.evening}%{" "}
-                      <span className="text-[10px] text-zinc-500">
-                        ({timeStats.evening})
-                      </span>
-                    </span>
-                  </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                    <div
-                      style={{ width: `${timeStats.percentages.evening}%` }}
-                      className="h-full bg-purple-500 transition-all duration-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Night */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-zinc-400">
-                    <span>Night (9pm - 5am)</span>
-                    <span className="font-semibold text-zinc-200">
-                      {timeStats.percentages.night}%{" "}
-                      <span className="text-[10px] text-zinc-500">
-                        ({timeStats.night})
-                      </span>
-                    </span>
-                  </div>
-                  <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                    <div
-                      style={{ width: `${timeStats.percentages.night}%` }}
-                      className="h-full bg-indigo-500 transition-all duration-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-xs text-zinc-500 font-mono py-6">
-              Could not determine contribution activity times for this month.
-            </div>
-          )}
-        </div>
+        </SpotlightCard>
       </div>
     );
   }
@@ -935,12 +999,12 @@ export default function GitWrapped({
   return (
     <div className="space-y-8 select-none">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-white tracking-wide">
-            Git Stats
+          <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
+            GitStats
           </h1>
-          <p className="text-xs text-zinc-500 mt-2 font-mono">
+          <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
             Monthly breakdown of your GitHub contributions and activity.
           </p>
         </div>
@@ -949,7 +1013,7 @@ export default function GitWrapped({
           <button
             onClick={handleRefresh}
             disabled={loading || isRefreshing}
-            className="self-start sm:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
+            className="self-start md:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
           >
             <svg
               className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
@@ -969,6 +1033,74 @@ export default function GitWrapped({
         )}
       </div>
 
+      {/* Summary Widgets */}
+      {!error && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              title: "Total Commits",
+              value: counts.commits,
+              color: "#ffffff",
+            },
+            {
+              title: "Pull Requests",
+              value: counts.pullRequests,
+              color: "#e4e4e7",
+            },
+            {
+              title: "Issues Opened",
+              value: counts.issues,
+              color: "#c4c4c7",
+            },
+            {
+              title: "Code Reviews",
+              value: counts.reviews,
+              color: "#a1a1aa",
+            },
+          ].map((stat) => (
+            <SpotlightCard
+              key={stat.title}
+              spotlightColor={stat.color}
+              className="h-[140px] transition-all duration-300 hover:translate-y-[-2px]"
+            >
+              <div className="flex flex-col justify-between h-full w-full">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{
+                        backgroundColor: stat.color,
+                        boxShadow: `0 0 8px ${stat.color}`,
+                      }}
+                    />
+                    <span
+                      className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
+                    >
+                      {stat.title}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-baseline gap-1.5">
+                  <span
+                    className={`text-5xl font-semibold tracking-tight ${leagueSpartan.className}`}
+                    style={{ color: stat.color }}
+                  >
+                    {loading ? (
+                      <span className="text-2xl font-mono text-zinc-500">
+                        ...
+                      </span>
+                    ) : (
+                      <AnimatedCounter value={stat.value} />
+                    )}
+                  </span>
+                </div>
+              </div>
+            </SpotlightCard>
+          ))}
+        </div>
+      )}
+
       {/* Error state */}
       {error && (
         <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-5 text-center space-y-3 font-mono text-xs text-red-400">
@@ -984,18 +1116,20 @@ export default function GitWrapped({
 
       {/* Grid container */}
       {!error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading
-            ? Array.from({ length: 6 }).map((_, idx) => (
-                <SkeletonCard key={idx} />
-              ))
-            : stats?.map((stat) => (
-                <MonthlyStatCard
-                  key={stat.month}
-                  stat={stat}
-                  onClick={() => setSelectedMonth(stat.month)}
-                />
-              ))}
+        <div className="border-t border-zinc-900/60 pt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading
+              ? Array.from({ length: 6 }).map((_, idx) => (
+                  <SkeletonCard key={idx} />
+                ))
+              : stats?.map((stat) => (
+                  <MonthlyStatCard
+                    key={stat.month}
+                    stat={stat}
+                    onClick={() => setSelectedMonth(stat.month)}
+                  />
+                ))}
+          </div>
         </div>
       )}
     </div>
