@@ -999,38 +999,13 @@ export default function GitWrapped({
   return (
     <div className="space-y-8 select-none">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        <div>
-          <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
-            GitStats
-          </h1>
-          <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
-            Monthly breakdown of your GitHub contributions and activity.
-          </p>
-        </div>
-
-        {username && session && (
-          <button
-            onClick={handleRefresh}
-            disabled={loading || isRefreshing}
-            className="self-start md:self-center flex items-center gap-2 border border-zinc-800/80 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer disabled:opacity-50"
-          >
-            <svg
-              className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3"
-              />
-            </svg>
-            {isRefreshing ? "Refreshing..." : "Sync GitHub"}
-          </button>
-        )}
+      <div>
+        <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
+          GitStats
+        </h1>
+        <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
+          Monthly breakdown of your GitHub contributions and activity.
+        </p>
       </div>
 
       {/* Summary Widgets */}
