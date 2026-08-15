@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { ReactLenis } from "lenis/react";
+import { ReactLenis, type LenisRef } from "lenis/react";
 import { LiquidOcean } from "@/components/ui/liquid-ocean";
 import Dashboard from "@/components/pages/Dashboard";
 import IssuesAndPRs from "@/components/pages/IssuesAndPRs";
@@ -98,9 +98,17 @@ export default function Home() {
     x: 0,
     y: 0,
   });
+  const lenisRef = useRef<LenisRef>(null);
+
   const [selectedTab, setSelectedTab] = useState("Dashboard");
   const [isTabLoading, setIsTabLoading] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+
+  useEffect(() => {
+    if (lenisRef.current?.lenis) {
+      lenisRef.current.lenis.scrollTo(0, { immediate: true });
+    }
+  }, [selectedTab]);
   const [quoteData, setQuoteData] = useState<{
     quote: string;
     author: string;
@@ -1218,6 +1226,7 @@ export default function Home() {
 
         {/* Content Area */}
         <ReactLenis
+          ref={lenisRef}
           root="asChild"
           className="flex-1 overflow-y-auto p-8 bg-black"
           options={{
