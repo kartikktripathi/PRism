@@ -830,7 +830,7 @@ export default function GitWrapped({
         {/* Developer Persona & Contribution Time Analyzer wrapped in SpotlightCard */}
         <SpotlightCard
           spotlightColor="rgba(255, 255, 255, 0.08)"
-          className="rounded-lg max-w-lg"
+          className="rounded-lg max-w-lg mx-auto"
         >
           <div className="space-y-6 w-full h-full">
             <div className="flex flex-col gap-1.5 border-b border-zinc-900/60 pb-4 w-full">
