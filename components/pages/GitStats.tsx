@@ -829,7 +829,7 @@ export default function GitWrapped({
 
         {/* Developer Persona & Contribution Time Analyzer wrapped in SpotlightCard */}
         <SpotlightCard
-          spotlightColor="rgba(255, 255, 255, 0.08)"
+          spotlightColor="#10b981"
           className="rounded-lg max-w-lg mx-auto"
         >
           <div className="space-y-6 w-full h-full">
@@ -867,124 +867,139 @@ export default function GitWrapped({
                 <span>Analyzing contribution times...</span>
               </div>
             ) : timeStats ? (
-              <div className="space-y-6 w-full">
-                {/* Persona Tag */}
-                <div className="flex flex-col gap-2">
-                  <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
-                    Result
-                  </div>
-                  <div className="flex">
-                    <div
-                      className={`px-4 py-2.5 rounded border font-mono text-xs font-semibold flex items-center gap-2 select-none shadow-lg ${
-                        timeStats.persona === "Early-Bird Engineer"
-                          ? "bg-amber-950/20 border-amber-500/30 text-amber-400 shadow-amber-500/5"
-                          : timeStats.persona === "Post-Lunch Programmer"
-                            ? "bg-orange-950/20 border-orange-500/30 text-orange-400 shadow-orange-500/5"
-                            : timeStats.persona === "Shadow Scripter"
-                              ? "bg-purple-950/20 border-purple-500/30 text-purple-400 shadow-purple-500/5"
-                              : timeStats.persona === "Nocturnal Developer"
-                                ? "bg-indigo-950/20 border-indigo-500/30 text-indigo-400 shadow-indigo-500/5"
-                                : "bg-zinc-900 border-zinc-800 text-zinc-300"
-                      }`}
-                    >
-                      <span>you are a/an</span>
-                      <span className="underline decoration-2 underline-offset-4 decoration-current">
-                        {timeStats.persona}
-                      </span>
-                      <span>
-                        {timeStats.persona === "Early-Bird Engineer" && "☀️"}
-                        {timeStats.persona === "Post-Lunch Programmer" && "☕"}
-                        {timeStats.persona === "Shadow Scripter" && "🌆"}
-                        {timeStats.persona === "Nocturnal Developer" && "🌙"}
-                        {timeStats.persona === "Silent Achiever" && "🤫"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              (() => {
+                const isDayActive = timeStats.persona === "Early-Bird Engineer";
+                const isAfternoonActive = timeStats.persona === "Post-Lunch Programmer";
+                const isEveningActive = timeStats.persona === "Shadow Scripter";
+                const isNightActive = timeStats.persona === "Nocturnal Developer";
 
-                {/* Progress Bars Breakdown */}
-                <div className="space-y-4 font-mono text-xs w-full">
-                  <div className="text-xs text-zinc-505 uppercase tracking-wider">
-                    Time-of-day breakdown
-                  </div>
+                return (
+                  <div className="space-y-6 w-full">
+                    {/* Persona Tag */}
+                    <div className="flex flex-col gap-2">
+                      <div className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
+                        Result
+                      </div>
+                      <div className="flex">
+                        <div
+                          className="px-4 py-2.5 rounded border font-mono text-xs font-semibold flex items-center gap-2 select-none shadow-lg bg-emerald-950/20 border-emerald-500/30 text-emerald-400 shadow-emerald-500/5"
+                        >
+                          <span>you are a/an</span>
+                          <span className="underline decoration-2 underline-offset-4 decoration-current">
+                            {timeStats.persona}
+                          </span>
+                          <span>
+                            {timeStats.persona === "Early-Bird Engineer" && "☀️"}
+                            {timeStats.persona === "Post-Lunch Programmer" && "☕"}
+                            {timeStats.persona === "Shadow Scripter" && "🌆"}
+                            {timeStats.persona === "Nocturnal Developer" && "🌙"}
+                            {timeStats.persona === "Silent Achiever" && "🤫"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-                  {/* Day */}
-                  <div className="space-y-1.5 w-full">
-                    <div className="flex justify-between text-zinc-400">
-                      <span>Day (5am - 12pm)</span>
-                      <span className="font-semibold text-zinc-200">
-                        {timeStats.percentages.day}%{" "}
-                        <span className="text-[10px] text-zinc-500">
-                          ({timeStats.day})
-                        </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                      <div
-                        style={{ width: `${timeStats.percentages.day}%` }}
-                        className="h-full bg-amber-500 transition-all duration-500"
-                      />
-                    </div>
-                  </div>
+                    {/* Progress Bars Breakdown */}
+                    <div className="space-y-4 font-mono text-xs w-full">
+                      <div className="text-xs text-zinc-500 uppercase tracking-wider">
+                        Time-of-day breakdown
+                      </div>
 
-                  {/* Afternoon */}
-                  <div className="space-y-1.5 w-full">
-                    <div className="flex justify-between text-zinc-400">
-                      <span>Afternoon (12pm - 5pm)</span>
-                      <span className="font-semibold text-zinc-200">
-                        {timeStats.percentages.afternoon}%{" "}
-                        <span className="text-[10px] text-zinc-500">
-                          ({timeStats.afternoon})
-                        </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                      <div
-                        style={{ width: `${timeStats.percentages.afternoon}%` }}
-                        className="h-full bg-orange-500 transition-all duration-500"
-                      />
-                    </div>
-                  </div>
+                      {/* Day */}
+                      <div className="space-y-1.5 w-full">
+                        <div className="flex justify-between text-zinc-400">
+                          <span>Day (5am - 12pm)</span>
+                          <span className="font-semibold text-zinc-200">
+                            {timeStats.percentages.day}%{" "}
+                            <span className="text-[10px] text-zinc-500">
+                              ({timeStats.day})
+                            </span>
+                          </span>
+                        </div>
+                        <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                          <div
+                            style={{ width: `${timeStats.percentages.day}%` }}
+                            className={`h-full transition-all duration-500 ${
+                              isDayActive
+                                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                                : "bg-emerald-500/20"
+                            }`}
+                          />
+                        </div>
+                      </div>
 
-                  {/* Evening */}
-                  <div className="space-y-1.5 w-full">
-                    <div className="flex justify-between text-zinc-400">
-                      <span>Evening (5pm - 9pm)</span>
-                      <span className="font-semibold text-zinc-200">
-                        {timeStats.percentages.evening}%{" "}
-                        <span className="text-[10px] text-zinc-500">
-                          ({timeStats.evening})
-                        </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                      <div
-                        style={{ width: `${timeStats.percentages.evening}%` }}
-                        className="h-full bg-purple-500 transition-all duration-500"
-                      />
-                    </div>
-                  </div>
+                      {/* Afternoon */}
+                      <div className="space-y-1.5 w-full">
+                        <div className="flex justify-between text-zinc-400">
+                          <span>Afternoon (12pm - 5pm)</span>
+                          <span className="font-semibold text-zinc-200">
+                            {timeStats.percentages.afternoon}%{" "}
+                            <span className="text-[10px] text-zinc-500">
+                              ({timeStats.afternoon})
+                            </span>
+                          </span>
+                        </div>
+                        <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                          <div
+                            style={{ width: `${timeStats.percentages.afternoon}%` }}
+                            className={`h-full transition-all duration-500 ${
+                              isAfternoonActive
+                                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                                : "bg-emerald-500/20"
+                            }`}
+                          />
+                        </div>
+                      </div>
 
-                  {/* Night */}
-                  <div className="space-y-1.5 w-full">
-                    <div className="flex justify-between text-zinc-400">
-                      <span>Night (9pm - 5am)</span>
-                      <span className="font-semibold text-zinc-200">
-                        {timeStats.percentages.night}%{" "}
-                        <span className="text-[10px] text-zinc-500">
-                          ({timeStats.night})
-                        </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
-                      <div
-                        style={{ width: `${timeStats.percentages.night}%` }}
-                        className="h-full bg-indigo-500 transition-all duration-500"
-                      />
+                      {/* Evening */}
+                      <div className="space-y-1.5 w-full">
+                        <div className="flex justify-between text-zinc-400">
+                          <span>Evening (5pm - 9pm)</span>
+                          <span className="font-semibold text-zinc-200">
+                            {timeStats.percentages.evening}%{" "}
+                            <span className="text-[10px] text-zinc-500">
+                              ({timeStats.evening})
+                            </span>
+                          </span>
+                        </div>
+                        <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                          <div
+                            style={{ width: `${timeStats.percentages.evening}%` }}
+                            className={`h-full transition-all duration-500 ${
+                              isEveningActive
+                                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                                : "bg-emerald-500/20"
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Night */}
+                      <div className="space-y-1.5 w-full">
+                        <div className="flex justify-between text-zinc-400">
+                          <span>Night (9pm - 5am)</span>
+                          <span className="font-semibold text-zinc-200">
+                            {timeStats.percentages.night}%{" "}
+                            <span className="text-[10px] text-zinc-500">
+                              ({timeStats.night})
+                            </span>
+                          </span>
+                        </div>
+                        <div className="h-2 bg-zinc-900 border border-zinc-800 rounded overflow-hidden">
+                          <div
+                            style={{ width: `${timeStats.percentages.night}%` }}
+                            className={`h-full transition-all duration-500 ${
+                              isNightActive
+                                ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                                : "bg-emerald-500/20"
+                            }`}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()
             ) : (
               <div className="text-xs text-zinc-500 font-mono py-6">
                 Could not determine contribution activity times for this month.
