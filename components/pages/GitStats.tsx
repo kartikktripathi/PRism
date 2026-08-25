@@ -218,7 +218,9 @@ function MonthlyStatCard({
               </span>
               <span>Pull Requests</span>
             </div>
-            <span className="font-bold text-purple-400">{stat.pullRequests}</span>
+            <span className="font-bold text-purple-400">
+              {stat.pullRequests}
+            </span>
           </div>
 
           {/* Issues */}
@@ -326,7 +328,8 @@ const personaThemes: Record<string, ThemeStyle> = {
     desc: "You conquer the codebase before the rest of the world wakes up. Armed with sunrise focus and early commits.",
     themeTitle: "Dawn Catalyst",
     barColor: "bg-amber-500/80",
-    barHoverColor: "group-hover:bg-amber-400 group-hover:shadow-[0_0_8px_rgba(251,191,36,0.5)]",
+    barHoverColor:
+      "group-hover:bg-amber-400 group-hover:shadow-[0_0_8px_rgba(251,191,36,0.5)]",
   },
   "Post-Lunch Programmer": {
     primary: "emerald-400",
@@ -341,7 +344,8 @@ const personaThemes: Record<string, ThemeStyle> = {
     desc: "You do your best work in the afternoon flow, bridging morning inspiration with solid, execution-focused releases.",
     themeTitle: "Midday Engine",
     barColor: "bg-emerald-500/80",
-    barHoverColor: "group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.5)]",
+    barHoverColor:
+      "group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.5)]",
   },
   "Shadow Scripter": {
     primary: "fuchsia-400",
@@ -356,7 +360,8 @@ const personaThemes: Record<string, ThemeStyle> = {
     desc: "As daylight fades, your productivity rises. Navigating the twilight and evening hours with quiet, focused execution.",
     themeTitle: "Twilight Architect",
     barColor: "bg-fuchsia-500/80",
-    barHoverColor: "group-hover:bg-fuchsia-400 group-hover:shadow-[0_0_8px_rgba(232,121,249,0.5)]",
+    barHoverColor:
+      "group-hover:bg-fuchsia-400 group-hover:shadow-[0_0_8px_rgba(232,121,249,0.5)]",
   },
   "Nocturnal Developer": {
     primary: "violet-400",
@@ -371,7 +376,8 @@ const personaThemes: Record<string, ThemeStyle> = {
     desc: "A master of the midnight oil. Your keyboard clicks through the quiet of the night, turning caffeine and silence into clean code.",
     themeTitle: "Midnight Alchemist",
     barColor: "bg-violet-500/80",
-    barHoverColor: "group-hover:bg-violet-400 group-hover:shadow-[0_0_8px_rgba(167,139,250,0.5)]",
+    barHoverColor:
+      "group-hover:bg-violet-400 group-hover:shadow-[0_0_8px_rgba(167,139,250,0.5)]",
   },
   "Silent Achiever": {
     primary: "zinc-400",
@@ -386,7 +392,8 @@ const personaThemes: Record<string, ThemeStyle> = {
     desc: "Quiet, steady, and stealthy. Planning your next major contribution cycle behind the scenes.",
     themeTitle: "Stealth Strategist",
     barColor: "bg-zinc-500/80",
-    barHoverColor: "group-hover:bg-zinc-400 group-hover:shadow-[0_0_8px_rgba(161,161,170,0.5)]",
+    barHoverColor:
+      "group-hover:bg-zinc-400 group-hover:shadow-[0_0_8px_rgba(161,161,170,0.5)]",
   },
 };
 
@@ -419,7 +426,7 @@ export default function GitWrapped({
         issues: acc.issues + curr.issues,
         reviews: acc.reviews + curr.reviews,
       }),
-      { commits: 0, pullRequests: 0, issues: 0, reviews: 0 }
+      { commits: 0, pullRequests: 0, issues: 0, reviews: 0 },
     );
   }, [stats]);
 
@@ -1041,7 +1048,9 @@ export default function GitWrapped({
                       </span>
                       <span
                         className={`font-semibold ${
-                          isAfternoonActive ? theme.primaryText : "text-zinc-300"
+                          isAfternoonActive
+                            ? theme.primaryText
+                            : "text-zinc-300"
                         }`}
                       >
                         {timeStats.percentages.afternoon}%{" "}
@@ -1332,10 +1341,14 @@ export default function GitWrapped({
     <div className="space-y-8 select-none">
       {/* Page Header */}
       <div>
-        <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
+        <h1
+          className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}
+        >
           GitStats
         </h1>
-        <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
+        <p
+          className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}
+        >
           Monthly breakdown of your GitHub contributions and activity.
         </p>
       </div>

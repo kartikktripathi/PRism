@@ -364,8 +364,7 @@ export default function Organizations({
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (o) =>
-          o.name.toLowerCase().includes(q) ||
-          o.login.toLowerCase().includes(q),
+          o.name.toLowerCase().includes(q) || o.login.toLowerCase().includes(q),
       );
     }
 
@@ -402,7 +401,10 @@ export default function Organizations({
     return {
       totalOrgs: orgs.length,
       activeOrgs: orgs.filter((o) => o.totalContributions > 0).length,
-      totalContributions: orgs.reduce((acc, o) => acc + o.totalContributions, 0),
+      totalContributions: orgs.reduce(
+        (acc, o) => acc + o.totalContributions,
+        0,
+      ),
       totalRepos: orgs.reduce((acc, o) => acc + o.reposCount, 0),
     };
   }, [orgs]);
@@ -434,11 +436,16 @@ export default function Organizations({
     <div className="space-y-8 select-none">
       {/* Header */}
       <div>
-        <h1 className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}>
+        <h1
+          className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}
+        >
           Organizations
         </h1>
-        <p className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}>
-          Track and analyze your contributions (commits, PRs, issues, reviews, comments) in organization codebases in the past year.
+        <p
+          className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}
+        >
+          Track and analyze your contributions (commits, PRs, issues, reviews,
+          comments) in organization codebases in the past year.
         </p>
       </div>
 
@@ -675,173 +682,173 @@ export default function Organizations({
                       rel="noopener noreferrer"
                       className="group flex flex-col justify-between h-full w-full gap-6"
                     >
-                    {/* Header info */}
-                    <div className="flex items-start gap-4">
-                      {org.avatarUrl && (
-                        <img
-                          src={org.avatarUrl}
-                          className="w-12 h-12 rounded border border-zinc-800 bg-zinc-950 object-cover flex-shrink-0"
-                          alt={org.name}
-                        />
-                      )}
-                      <div className="space-y-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-sm font-semibold text-zinc-200 group-hover:text-emerald-400 transition-colors truncate">
-                            {org.name}
-                          </h2>
-                          <span className="text-[10px] text-zinc-500 font-mono">
-                            @{org.login}
-                          </span>
+                      {/* Header info */}
+                      <div className="flex items-start gap-4">
+                        {org.avatarUrl && (
+                          <img
+                            src={org.avatarUrl}
+                            className="w-12 h-12 rounded border border-zinc-800 bg-zinc-950 object-cover flex-shrink-0"
+                            alt={org.name}
+                          />
+                        )}
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-sm font-semibold text-zinc-200 group-hover:text-emerald-400 transition-colors truncate">
+                              {org.name}
+                            </h2>
+                            <span className="text-[10px] text-zinc-500 font-mono">
+                              @{org.login}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                      <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
-                          Commits
-                        </p>
-                        <p className="text-sm font-bold text-zinc-300 mt-1">
-                          {org.commits}
-                        </p>
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                            Commits
+                          </p>
+                          <p className="text-sm font-bold text-zinc-300 mt-1">
+                            {org.commits}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                            PRs
+                          </p>
+                          <p className="text-sm font-bold text-emerald-500 mt-1">
+                            {org.pullRequests}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                            Issues
+                          </p>
+                          <p className="text-sm font-bold text-amber-500 mt-1">
+                            {org.issues}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                            Reviews
+                          </p>
+                          <p className="text-sm font-bold text-purple-400 mt-1">
+                            {org.reviews}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                            Comments
+                          </p>
+                          <p className="text-sm font-bold text-blue-400 mt-1">
+                            {org.comments}
+                          </p>
+                        </div>
+                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded bg-zinc-900/20">
+                          <p className="text-[9px] uppercase tracking-wider text-emerald-500/80 font-bold">
+                            Total
+                          </p>
+                          <p className="text-sm font-bold text-emerald-400 mt-1">
+                            {total}
+                          </p>
+                        </div>
                       </div>
-                      <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
-                          PRs
-                        </p>
-                        <p className="text-sm font-bold text-emerald-500 mt-1">
-                          {org.pullRequests}
-                        </p>
-                      </div>
-                      <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
-                          Issues
-                        </p>
-                        <p className="text-sm font-bold text-amber-500 mt-1">
-                          {org.issues}
-                        </p>
-                      </div>
-                      <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
-                          Reviews
-                        </p>
-                        <p className="text-sm font-bold text-purple-400 mt-1">
-                          {org.reviews}
-                        </p>
-                      </div>
-                      <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                        <p className="text-[9px] uppercase tracking-wider text-zinc-600">
-                          Comments
-                        </p>
-                        <p className="text-sm font-bold text-blue-400 mt-1">
-                          {org.comments}
-                        </p>
-                      </div>
-                      <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded bg-zinc-900/20">
-                        <p className="text-[9px] uppercase tracking-wider text-emerald-500/80 font-bold">
-                          Total
-                        </p>
-                        <p className="text-sm font-bold text-emerald-400 mt-1">
-                          {total}
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* Stacked Breakdown Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center text-[9px] font-mono text-zinc-550">
-                        <span>Contribution Breakdown</span>
-                        {org.reposCount > 0 && (
-                          <span>
-                            {org.reposCount} active{" "}
-                            {org.reposCount === 1 ? "repo" : "repos"}
-                          </span>
-                        )}
-                      </div>
-                      <div className="w-full h-1.5 rounded-full overflow-hidden bg-zinc-900 flex">
-                        {total === 0 ? (
-                          <div
-                            className="w-full h-full bg-zinc-800/40 rounded-full"
-                            title="No contributions in past year"
-                          />
-                        ) : (
-                          <>
+                      {/* Stacked Breakdown Bar */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-[9px] font-mono text-zinc-550">
+                          <span>Contribution Breakdown</span>
+                          {org.reposCount > 0 && (
+                            <span>
+                              {org.reposCount} active{" "}
+                              {org.reposCount === 1 ? "repo" : "repos"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="w-full h-1.5 rounded-full overflow-hidden bg-zinc-900 flex">
+                          {total === 0 ? (
+                            <div
+                              className="w-full h-full bg-zinc-800/40 rounded-full"
+                              title="No contributions in past year"
+                            />
+                          ) : (
+                            <>
+                              {org.commits > 0 && (
+                                <div
+                                  className="bg-zinc-400 h-full border-r border-zinc-950/40 last:border-0"
+                                  style={{ width: `${pctCommits}%` }}
+                                  title={`Commits: ${org.commits}`}
+                                />
+                              )}
+                              {org.pullRequests > 0 && (
+                                <div
+                                  className="bg-emerald-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  style={{ width: `${pctPrs}%` }}
+                                  title={`Pull Requests: ${org.pullRequests}`}
+                                />
+                              )}
+                              {org.issues > 0 && (
+                                <div
+                                  className="bg-amber-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  style={{ width: `${pctIssues}%` }}
+                                  title={`Issues: ${org.issues}`}
+                                />
+                              )}
+                              {org.reviews > 0 && (
+                                <div
+                                  className="bg-purple-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  style={{ width: `${pctReviews}%` }}
+                                  title={`Reviews: ${org.reviews}`}
+                                />
+                              )}
+                              {org.comments > 0 && (
+                                <div
+                                  className="bg-blue-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  style={{ width: `${pctComments}%` }}
+                                  title={`Comments: ${org.comments}`}
+                                />
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Segment legends (only visible on cards with contributions) */}
+                        {total > 0 && (
+                          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[8.5px] font-mono text-zinc-600">
                             {org.commits > 0 && (
-                              <div
-                                className="bg-zinc-400 h-full border-r border-zinc-950/40 last:border-0"
-                                style={{ width: `${pctCommits}%` }}
-                                title={`Commits: ${org.commits}`}
-                              />
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />{" "}
+                                Commits ({Math.round(pctCommits)}%)
+                              </span>
                             )}
                             {org.pullRequests > 0 && (
-                              <div
-                                className="bg-emerald-500 h-full border-r border-zinc-950/40 last:border-0"
-                                style={{ width: `${pctPrs}%` }}
-                                title={`Pull Requests: ${org.pullRequests}`}
-                              />
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
+                                PRs ({Math.round(pctPrs)}%)
+                              </span>
                             )}
                             {org.issues > 0 && (
-                              <div
-                                className="bg-amber-500 h-full border-r border-zinc-950/40 last:border-0"
-                                style={{ width: `${pctIssues}%` }}
-                                title={`Issues: ${org.issues}`}
-                              />
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />{" "}
+                                Issues ({Math.round(pctIssues)}%)
+                              </span>
                             )}
                             {org.reviews > 0 && (
-                              <div
-                                className="bg-purple-500 h-full border-r border-zinc-950/40 last:border-0"
-                                style={{ width: `${pctReviews}%` }}
-                                title={`Reviews: ${org.reviews}`}
-                              />
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />{" "}
+                                Reviews ({Math.round(pctReviews)}%)
+                              </span>
                             )}
                             {org.comments > 0 && (
-                              <div
-                                className="bg-blue-500 h-full border-r border-zinc-950/40 last:border-0"
-                                style={{ width: `${pctComments}%` }}
-                                title={`Comments: ${org.comments}`}
-                              />
+                              <span className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />{" "}
+                                Comments ({Math.round(pctComments)}%)
+                              </span>
                             )}
-                          </>
+                          </div>
                         )}
                       </div>
-
-                      {/* Segment legends (only visible on cards with contributions) */}
-                      {total > 0 && (
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[8.5px] font-mono text-zinc-600">
-                          {org.commits > 0 && (
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />{" "}
-                              Commits ({Math.round(pctCommits)}%)
-                            </span>
-                          )}
-                          {org.pullRequests > 0 && (
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
-                              PRs ({Math.round(pctPrs)}%)
-                            </span>
-                          )}
-                          {org.issues > 0 && (
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />{" "}
-                              Issues ({Math.round(pctIssues)}%)
-                            </span>
-                          )}
-                          {org.reviews > 0 && (
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />{" "}
-                              Reviews ({Math.round(pctReviews)}%)
-                            </span>
-                          )}
-                          {org.comments > 0 && (
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />{" "}
-                              Comments ({Math.round(pctComments)}%)
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
                     </a>
                   </SpotlightCard>
                 );

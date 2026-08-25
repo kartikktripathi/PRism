@@ -399,7 +399,9 @@ export default function ReviewsAndComments({
                               </span>
                               <span
                                 className="text-[10px] font-mono text-zinc-600"
-                                title={new Date(item.created_at).toLocaleString()}
+                                title={new Date(
+                                  item.created_at,
+                                ).toLocaleString()}
                               >
                                 opened {formatRelativeTime(item.created_at)}
                               </span>
@@ -410,7 +412,9 @@ export default function ReviewsAndComments({
                                   </span>
                                   <div className="flex flex-wrap gap-1">
                                     {item.labels.slice(0, 5).map((label) => {
-                                      const styles = getLabelStyles(label.color);
+                                      const styles = getLabelStyles(
+                                        label.color,
+                                      );
                                       return (
                                         <span
                                           key={label.id}
@@ -559,7 +563,11 @@ export default function ReviewsAndComments({
                                       : "bg-red-950/40 border border-red-800/40 text-red-400"
                                 }`}
                               >
-                                {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
+                                {isMerged
+                                  ? "Merged"
+                                  : isOpen
+                                    ? "Open"
+                                    : "Closed"}
                               </span>
                             </div>
 
@@ -584,7 +592,9 @@ export default function ReviewsAndComments({
                               </span>
                               <span
                                 className="text-[10px] font-mono text-zinc-600"
-                                title={new Date(item.created_at).toLocaleString()}
+                                title={new Date(
+                                  item.created_at,
+                                ).toLocaleString()}
                               >
                                 opened {formatRelativeTime(item.created_at)}
                               </span>
@@ -595,7 +605,9 @@ export default function ReviewsAndComments({
                                   </span>
                                   <div className="flex flex-wrap gap-1">
                                     {item.labels.slice(0, 5).map((label) => {
-                                      const styles = getLabelStyles(label.color);
+                                      const styles = getLabelStyles(
+                                        label.color,
+                                      );
                                       return (
                                         <span
                                           key={label.id}
@@ -744,7 +756,11 @@ export default function ReviewsAndComments({
                                       : "bg-red-950/40 border border-red-800/40 text-red-400"
                                 }`}
                               >
-                                {isMerged ? "Merged" : isOpen ? "Open" : "Closed"}
+                                {isMerged
+                                  ? "Merged"
+                                  : isOpen
+                                    ? "Open"
+                                    : "Closed"}
                               </span>
                             </div>
 
@@ -769,7 +785,9 @@ export default function ReviewsAndComments({
                               </span>
                               <span
                                 className="text-[10px] font-mono text-zinc-600"
-                                title={new Date(item.created_at).toLocaleString()}
+                                title={new Date(
+                                  item.created_at,
+                                ).toLocaleString()}
                               >
                                 opened {formatRelativeTime(item.created_at)}
                               </span>
@@ -780,7 +798,9 @@ export default function ReviewsAndComments({
                                   </span>
                                   <div className="flex flex-wrap gap-1">
                                     {item.labels.slice(0, 5).map((label) => {
-                                      const styles = getLabelStyles(label.color);
+                                      const styles = getLabelStyles(
+                                        label.color,
+                                      );
                                       return (
                                         <span
                                           key={label.id}
