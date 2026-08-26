@@ -416,9 +416,6 @@ export default function Dashboard({
                             {repo.name}
                           </span>
                         </div>
-                        <span className="text-[10px] font-medium text-zinc-400 bg-zinc-900/40 border border-zinc-800/80 px-2 py-0.5 rounded font-mono group-hover:text-zinc-200 group-hover:border-zinc-700/80 transition-all duration-150">
-                          {repo.count} {repo.count === 1 ? "commit" : "commits"}
-                        </span>
                       </div>
                       <p className="text-[11px] text-zinc-500 truncate mb-4 font-mono group-hover:text-zinc-400 transition-colors duration-150">
                         {repo.fullName}

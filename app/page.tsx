@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
-import { ReactLenis } from "lenis/react";
+import { ReactLenis, type LenisRef } from "lenis/react";
 import { LiquidOcean } from "@/components/ui/liquid-ocean";
 import Dashboard from "@/components/pages/Dashboard";
 import IssuesAndPRs from "@/components/pages/IssuesAndPRs";
@@ -98,9 +98,17 @@ export default function Home() {
     x: 0,
     y: 0,
   });
+  const lenisRef = useRef<LenisRef>(null);
+
   const [selectedTab, setSelectedTab] = useState("Dashboard");
   const [isTabLoading, setIsTabLoading] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+
+  useEffect(() => {
+    if (lenisRef.current?.lenis) {
+      lenisRef.current.lenis.scrollTo(0, { immediate: true });
+    }
+  }, [selectedTab]);
   const [quoteData, setQuoteData] = useState<{
     quote: string;
     author: string;
@@ -506,15 +514,15 @@ export default function Home() {
 
       processWeeks(
         y1.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-        [],
+          [],
       );
       processWeeks(
         y2.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-        [],
+          [],
       );
       processWeeks(
         y3.data?.user?.contributionsCollection?.contributionCalendar?.weeks ||
-        [],
+          [],
       );
 
       const uniqueContributionsMap: { [date: string]: number } = {};
@@ -662,8 +670,8 @@ export default function Home() {
                 : "mentioned you in";
           let url = n.subject.url
             ? n.subject.url
-              .replace("api.github.com/repos", "github.com")
-              .replace("/pulls/", "/pull/")
+                .replace("api.github.com/repos", "github.com")
+                .replace("/pulls/", "/pull/")
             : `https://github.com/${n.repository.full_name}`;
 
           if (
@@ -1087,8 +1095,9 @@ export default function Home() {
         >
           {/* Dither Background Shader */}
           <div
-            className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out ${isSidebarHovered ? "opacity-0 pointer-events-none" : "opacity-25"
-              }`}
+            className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out ${
+              isSidebarHovered ? "opacity-0 pointer-events-none" : "opacity-25"
+            }`}
           >
             <Dither
               waveSpeed={0.03}
@@ -1110,10 +1119,11 @@ export default function Home() {
             {/* Programming Quote (visible when sidebar is not hovered) */}
             {quoteData && (
               <div
-                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${isSidebarHovered
+                className={`absolute top-16 left-0 right-0 px-4 text-center flex flex-col items-center justify-center transition-all duration-700 ease-in-out pointer-events-auto ${
+                  isSidebarHovered
                     ? "opacity-0 scale-95 pointer-events-none"
                     : "opacity-100 scale-100"
-                  }`}
+                }`}
               >
                 <p className="text-[13px] font-mono leading-relaxed text-zinc-400 tracking-tight italic select-text">
                   "{quoteData.quote}"
@@ -1172,10 +1182,11 @@ export default function Home() {
                             handleTabChange(tab);
                           }}
                           variant={tab === "GitStats" ? "scribble" : "pulse"}
-                          className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${isActive
+                          className={`${outfit.className} uppercase text-md transition-all cursor-pointer text-center ${
+                            isActive
                               ? "text-white font-bold"
                               : "text-zinc-500 hover:text-zinc-300"
-                            } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
+                          } ${isMultiLine ? "flex flex-col items-center whitespace-normal gap-0.5" : ""}`}
                         >
                           {tab === "Issues & PRs" ? (
                             <>
@@ -1218,6 +1229,7 @@ export default function Home() {
 
         {/* Content Area */}
         <ReactLenis
+          ref={lenisRef}
           root="asChild"
           className="flex-1 overflow-y-auto p-8 bg-black"
           options={{
@@ -1227,7 +1239,10 @@ export default function Home() {
             smoothWheel: true,
           }}
         >
-          <main className="w-full" style={{ visibility: isTabLoading ? "hidden" : "visible" }}>
+          <main
+            className="w-full"
+            style={{ visibility: isTabLoading ? "hidden" : "visible" }}
+          >
             {selectedTab === "Dashboard" && (
               <Dashboard
                 prs={prs}

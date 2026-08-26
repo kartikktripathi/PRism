@@ -745,7 +745,10 @@ export default function IssuesAndPRs({
                       <span className="mt-1 flex-shrink-0 flex items-center justify-center">
                         {isPR ? (
                           isMerged ? (
-                            <GitMergeIcon size={16} className="text-purple-400" />
+                            <GitMergeIcon
+                              size={16}
+                              className="text-purple-400"
+                            />
                           ) : isOpen ? (
                             <GitPullRequestIcon
                               size={16}
@@ -758,7 +761,10 @@ export default function IssuesAndPRs({
                             />
                           )
                         ) : isOpen ? (
-                          <IssueOpenedIcon size={16} className="text-emerald-500" />
+                          <IssueOpenedIcon
+                            size={16}
+                            className="text-emerald-500"
+                          />
                         ) : (
                           <IssueClosedIcon
                             size={16}
