@@ -1,7 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { GitPullRequestIcon, IssueOpenedIcon } from "@primer/octicons-react";
+import {
+  GitPullRequestIcon,
+  IssueOpenedIcon,
+  SunIcon,
+  BriefcaseIcon,
+  TelescopeIcon,
+  MoonIcon,
+  EyeClosedIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  GraphIcon,
+  StarIcon,
+} from "@primer/octicons-react";
 import { League_Spartan, Montserrat } from "next/font/google";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
@@ -307,7 +319,7 @@ interface ThemeStyle {
   glowColor: string;
   spotlight: string;
   bgGradient: string;
-  emoji: string;
+  icon: React.ComponentType<any>;
   desc: string;
   themeTitle: string;
   barColor: string;
@@ -324,7 +336,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     glowColor: "bg-amber-500",
     spotlight: "#fbbf24",
     bgGradient: "from-amber-950/10 via-zinc-950/50 to-zinc-950",
-    emoji: "☀️",
+    icon: SunIcon,
     desc: "You conquer the codebase before the rest of the world wakes up. Armed with sunrise focus and early commits.",
     themeTitle: "Dawn Catalyst",
     barColor: "bg-amber-500/80",
@@ -340,7 +352,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     glowColor: "bg-emerald-500",
     spotlight: "#34d399",
     bgGradient: "from-emerald-950/10 via-zinc-950/50 to-zinc-950",
-    emoji: "☕",
+    icon: BriefcaseIcon,
     desc: "You do your best work in the afternoon flow, bridging morning inspiration with solid, execution-focused releases.",
     themeTitle: "Midday Engine",
     barColor: "bg-emerald-500/80",
@@ -356,7 +368,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     glowColor: "bg-fuchsia-500",
     spotlight: "#e879f9",
     bgGradient: "from-fuchsia-950/10 via-zinc-950/50 to-zinc-950",
-    emoji: "🌆",
+    icon: TelescopeIcon,
     desc: "As daylight fades, your productivity rises. Navigating the twilight and evening hours with quiet, focused execution.",
     themeTitle: "Twilight Architect",
     barColor: "bg-fuchsia-500/80",
@@ -372,7 +384,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     glowColor: "bg-violet-500",
     spotlight: "#a78bfa",
     bgGradient: "from-violet-950/10 via-zinc-950/50 to-zinc-950",
-    emoji: "🌙",
+    icon: MoonIcon,
     desc: "A master of the midnight oil. Your keyboard clicks through the quiet of the night, turning caffeine and silence into clean code.",
     themeTitle: "Midnight Alchemist",
     barColor: "bg-violet-500/80",
@@ -388,7 +400,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     glowColor: "bg-zinc-500",
     spotlight: "#a1a1aa",
     bgGradient: "from-zinc-950/50 to-zinc-950",
-    emoji: "🤫",
+    icon: EyeClosedIcon,
     desc: "Quiet, steady, and stealthy. Planning your next major contribution cycle behind the scenes.",
     themeTitle: "Stealth Strategist",
     barColor: "bg-zinc-500/80",
@@ -978,12 +990,12 @@ export default function GitWrapped({
               className={`rounded-xl border border-zinc-900/60 bg-zinc-950/10 shadow-2xl p-6 ${theme.glow}`}
             >
               <div className="flex flex-col items-center text-center">
-                {/* Large Emoji Circle */}
+                {/* Large Icon Circle */}
                 <div
-                  className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl mb-4 relative ${theme.accentBg} border ${theme.accentBorder}`}
+                  className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 relative ${theme.accentBg} border ${theme.accentBorder} ${theme.primaryText}`}
                 >
                   <div className="absolute inset-0 rounded-full animate-ping opacity-10 bg-current" />
-                  <span>{theme.emoji}</span>
+                  <theme.icon className="w-10 h-10" />
                 </div>
 
                 <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1">
@@ -995,7 +1007,7 @@ export default function GitWrapped({
                 <div
                   className={`text-[10px] font-mono tracking-widest mt-1.5 uppercase ${theme.primaryText}`}
                 >
-                  // {theme.themeTitle}
+                  {`// ${theme.themeTitle}`}
                 </div>
                 <p className="text-zinc-400 text-xs mt-4 leading-relaxed font-mono px-2">
                   {theme.desc}
@@ -1013,7 +1025,7 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <span>☀️</span> Day (5am - 12pm)
+                        <SunIcon className="w-4 h-4 text-amber-400" /> Day (5am - 12pm)
                       </span>
                       <span
                         className={`font-semibold ${
@@ -1044,7 +1056,7 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <span>☕</span> Afternoon (12pm - 5pm)
+                        <BriefcaseIcon className="w-4 h-4 text-emerald-400" /> Afternoon (12pm - 5pm)
                       </span>
                       <span
                         className={`font-semibold ${
@@ -1077,7 +1089,7 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <span>🌆</span> Evening (5pm - 9pm)
+                        <TelescopeIcon className="w-4 h-4 text-fuchsia-400" /> Evening (5pm - 9pm)
                       </span>
                       <span
                         className={`font-semibold ${
@@ -1108,7 +1120,7 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <span>🌙</span> Night (9pm - 5am)
+                        <MoonIcon className="w-4 h-4 text-violet-400" /> Night (9pm - 5am)
                       </span>
                       <span
                         className={`font-semibold ${
@@ -1247,12 +1259,14 @@ export default function GitWrapped({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Comparison block */}
                       <div className="p-3.5 rounded-lg border border-zinc-900 bg-zinc-950/40 flex items-start gap-3">
-                        <div className="text-xl">
-                          {diffType === "more"
-                            ? "📈"
-                            : diffType === "less"
-                              ? "📉"
-                              : "📊"}
+                        <div className="mt-0.5">
+                          {diffType === "more" ? (
+                            <ArrowUpIcon className="w-5 h-5 text-emerald-400" />
+                          ) : diffType === "less" ? (
+                            <ArrowDownIcon className="w-5 h-5 text-rose-400" />
+                          ) : (
+                            <GraphIcon className="w-5 h-5 text-zinc-400" />
+                          )}
                         </div>
                         <div>
                           <div className="text-[10px] font-mono text-zinc-500 uppercase">
@@ -1296,7 +1310,9 @@ export default function GitWrapped({
 
                       {/* Active Day block */}
                       <div className="p-3.5 rounded-lg border border-zinc-900 bg-zinc-950/40 flex items-start gap-3">
-                        <div className="text-xl">⭐</div>
+                        <div className="mt-0.5">
+                          <StarIcon className="w-5 h-5 text-amber-400" />
+                        </div>
                         <div>
                           <div className="text-[10px] font-mono text-zinc-500 uppercase">
                             Apex Day
