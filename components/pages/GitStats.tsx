@@ -119,11 +119,10 @@ function MiniBarChart({
                 style={{
                   height: `${Math.max(heightPercent, activity > 0 ? 15 : 5)}%`,
                 }}
-                className={`w-full rounded-[1px] transition-all duration-150 ${
-                  activity > 0
+                className={`w-full rounded-[1px] transition-all duration-150 ${activity > 0
                     ? `${colorClass} ${hoverColorClass}`
                     : "bg-zinc-800/40"
-                }`}
+                  }`}
               />
 
               {/* Tooltip */}
@@ -152,9 +151,8 @@ function MonthlyStatCard({
   return (
     <SpotlightCard
       spotlightColor="rgba(255, 255, 255, 0.08)"
-      className={`rounded-lg transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg ${
-        onClick ? "cursor-pointer" : ""
-      }`}
+      className={`rounded-lg transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg ${onClick ? "cursor-pointer" : ""
+        }`}
     >
       <div
         onClick={onClick}
@@ -959,7 +957,7 @@ export default function GitWrapped({
           <div
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-mono tracking-wider uppercase select-none ${theme.accentBg} ${theme.accentBorder} ${theme.primaryText}`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
             {theme.themeTitle} Mode Active
           </div>
         </div>
@@ -989,27 +987,28 @@ export default function GitWrapped({
               spotlightColor={theme.spotlight}
               className={`rounded-xl border border-zinc-900/60 bg-zinc-950/10 shadow-2xl p-6 ${theme.glow}`}
             >
-              <div className="flex flex-col items-center text-center">
-                {/* Large Icon Circle */}
-                <div
-                  className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 relative ${theme.accentBg} border ${theme.accentBorder} ${theme.primaryText}`}
-                >
-                  <div className="absolute inset-0 rounded-full animate-ping opacity-10 bg-current" />
-                  <theme.icon className="w-10 h-10" />
+              <div className="flex flex-col items-start text-left w-full">
+                <div className="flex items-center gap-4 w-full mb-2">
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${theme.accentBg} border ${theme.accentBorder} ${theme.primaryText}`}
+                  >
+                    <theme.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                      Persona Profile
+                    </div>
+                    <h2 className="text-xl font-bold text-white tracking-wide font-sans">
+                      {timeStats.persona}
+                    </h2>
+                    <div
+                      className={`text-[10px] font-mono tracking-widest mt-0.5 uppercase ${theme.primaryText}`}
+                    >
+                      {`// ${theme.themeTitle}`}
+                    </div>
+                  </div>
                 </div>
-
-                <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1">
-                  Persona Profile
-                </div>
-                <h2 className="text-2xl font-bold text-white tracking-wide font-sans">
-                  {timeStats.persona}
-                </h2>
-                <div
-                  className={`text-[10px] font-mono tracking-widest mt-1.5 uppercase ${theme.primaryText}`}
-                >
-                  {`// ${theme.themeTitle}`}
-                </div>
-                <p className="text-zinc-400 text-xs mt-4 leading-relaxed font-mono px-2">
+                <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-mono">
                   {theme.desc}
                 </p>
               </div>
@@ -1028,9 +1027,8 @@ export default function GitWrapped({
                         <SunIcon className="w-4 h-4 text-amber-400" /> Day (5am - 12pm)
                       </span>
                       <span
-                        className={`font-semibold ${
-                          isDayActive ? theme.primaryText : "text-zinc-300"
-                        }`}
+                        className={`font-semibold ${isDayActive ? theme.primaryText : "text-zinc-300"
+                          }`}
                       >
                         {timeStats.percentages.day}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1059,11 +1057,10 @@ export default function GitWrapped({
                         <BriefcaseIcon className="w-4 h-4 text-emerald-400" /> Afternoon (12pm - 5pm)
                       </span>
                       <span
-                        className={`font-semibold ${
-                          isAfternoonActive
+                        className={`font-semibold ${isAfternoonActive
                             ? theme.primaryText
                             : "text-zinc-300"
-                        }`}
+                          }`}
                       >
                         {timeStats.percentages.afternoon}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1092,9 +1089,8 @@ export default function GitWrapped({
                         <TelescopeIcon className="w-4 h-4 text-fuchsia-400" /> Evening (5pm - 9pm)
                       </span>
                       <span
-                        className={`font-semibold ${
-                          isEveningActive ? theme.primaryText : "text-zinc-300"
-                        }`}
+                        className={`font-semibold ${isEveningActive ? theme.primaryText : "text-zinc-300"
+                          }`}
                       >
                         {timeStats.percentages.evening}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1123,9 +1119,8 @@ export default function GitWrapped({
                         <MoonIcon className="w-4 h-4 text-violet-400" /> Night (9pm - 5am)
                       </span>
                       <span
-                        className={`font-semibold ${
-                          isNightActive ? theme.primaryText : "text-zinc-300"
-                        }`}
+                        className={`font-semibold ${isNightActive ? theme.primaryText : "text-zinc-300"
+                          }`}
                       >
                         {timeStats.percentages.night}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1456,15 +1451,15 @@ export default function GitWrapped({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading
               ? Array.from({ length: 6 }).map((_, idx) => (
-                  <SkeletonCard key={idx} />
-                ))
+                <SkeletonCard key={idx} />
+              ))
               : stats?.map((stat) => (
-                  <MonthlyStatCard
-                    key={stat.month}
-                    stat={stat}
-                    onClick={() => setSelectedMonth(stat.month)}
-                  />
-                ))}
+                <MonthlyStatCard
+                  key={stat.month}
+                  stat={stat}
+                  onClick={() => setSelectedMonth(stat.month)}
+                />
+              ))}
           </div>
         </div>
       )}
