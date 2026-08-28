@@ -119,10 +119,11 @@ function MiniBarChart({
                 style={{
                   height: `${Math.max(heightPercent, activity > 0 ? 15 : 5)}%`,
                 }}
-                className={`w-full rounded-[1px] transition-all duration-150 ${activity > 0
+                className={`w-full rounded-[1px] transition-all duration-150 ${
+                  activity > 0
                     ? `${colorClass} ${hoverColorClass}`
                     : "bg-zinc-800/40"
-                  }`}
+                }`}
               />
 
               {/* Tooltip */}
@@ -151,8 +152,9 @@ function MonthlyStatCard({
   return (
     <SpotlightCard
       spotlightColor="rgba(255, 255, 255, 0.08)"
-      className={`rounded-lg transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg ${onClick ? "cursor-pointer" : ""
-        }`}
+      className={`rounded-lg transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg ${
+        onClick ? "cursor-pointer" : ""
+      }`}
     >
       <div
         onClick={onClick}
@@ -1024,11 +1026,13 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <SunIcon className="w-4 h-4 text-amber-400" /> Day (5am - 12pm)
+                        <SunIcon className="w-4 h-4 text-amber-400" /> Day (5am
+                        - 12pm)
                       </span>
                       <span
-                        className={`font-semibold ${isDayActive ? theme.primaryText : "text-zinc-300"
-                          }`}
+                        className={`font-semibold ${
+                          isDayActive ? theme.primaryText : "text-zinc-300"
+                        }`}
                       >
                         {timeStats.percentages.day}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1054,13 +1058,15 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <BriefcaseIcon className="w-4 h-4 text-emerald-400" /> Afternoon (12pm - 5pm)
+                        <BriefcaseIcon className="w-4 h-4 text-emerald-400" />{" "}
+                        Afternoon (12pm - 5pm)
                       </span>
                       <span
-                        className={`font-semibold ${isAfternoonActive
+                        className={`font-semibold ${
+                          isAfternoonActive
                             ? theme.primaryText
                             : "text-zinc-300"
-                          }`}
+                        }`}
                       >
                         {timeStats.percentages.afternoon}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1086,11 +1092,13 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <TelescopeIcon className="w-4 h-4 text-fuchsia-400" /> Evening (5pm - 9pm)
+                        <TelescopeIcon className="w-4 h-4 text-fuchsia-400" />{" "}
+                        Evening (5pm - 9pm)
                       </span>
                       <span
-                        className={`font-semibold ${isEveningActive ? theme.primaryText : "text-zinc-300"
-                          }`}
+                        className={`font-semibold ${
+                          isEveningActive ? theme.primaryText : "text-zinc-300"
+                        }`}
                       >
                         {timeStats.percentages.evening}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1116,11 +1124,13 @@ export default function GitWrapped({
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
                       <span className="flex items-center gap-1.5">
-                        <MoonIcon className="w-4 h-4 text-violet-400" /> Night (9pm - 5am)
+                        <MoonIcon className="w-4 h-4 text-violet-400" /> Night
+                        (9pm - 5am)
                       </span>
                       <span
-                        className={`font-semibold ${isNightActive ? theme.primaryText : "text-zinc-300"
-                          }`}
+                        className={`font-semibold ${
+                          isNightActive ? theme.primaryText : "text-zinc-300"
+                        }`}
                       >
                         {timeStats.percentages.night}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
@@ -1451,15 +1461,15 @@ export default function GitWrapped({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading
               ? Array.from({ length: 6 }).map((_, idx) => (
-                <SkeletonCard key={idx} />
-              ))
+                  <SkeletonCard key={idx} />
+                ))
               : stats?.map((stat) => (
-                <MonthlyStatCard
-                  key={stat.month}
-                  stat={stat}
-                  onClick={() => setSelectedMonth(stat.month)}
-                />
-              ))}
+                  <MonthlyStatCard
+                    key={stat.month}
+                    stat={stat}
+                    onClick={() => setSelectedMonth(stat.month)}
+                  />
+                ))}
           </div>
         </div>
       )}
