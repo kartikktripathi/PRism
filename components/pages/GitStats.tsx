@@ -849,27 +849,29 @@ export default function GitWrapped({
           {/* Main Grid Skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
             {/* Left panel skeleton */}
-            <div className="lg:col-span-5 bg-zinc-900/20 border border-zinc-900 rounded-lg p-6 space-y-6">
-              <div className="h-36 sm:h-40 bg-zinc-850/60 rounded-lg animate-pulse w-full" />
-              <div className="flex items-center gap-4 w-full">
-                <div className="w-12 h-12 bg-zinc-800/60 rounded-full animate-pulse flex-shrink-0" />
-                <div className="space-y-2 flex-1">
-                  <div className="h-3 bg-zinc-800/60 rounded w-1/3 animate-pulse" />
-                  <div className="h-5 bg-zinc-800/60 rounded w-2/3 animate-pulse" />
-                  <div className="h-3 bg-zinc-800/60 rounded w-1/4 animate-pulse" />
-                </div>
-              </div>
-              <div className="h-10 bg-zinc-850/40 rounded w-full animate-pulse" />
-              <div className="space-y-4 pt-4 border-t border-zinc-900/60">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="flex justify-between">
-                      <div className="h-3 bg-zinc-800/60 rounded w-1/3 animate-pulse" />
-                      <div className="h-3 bg-zinc-800/60 rounded w-10 animate-pulse" />
-                    </div>
-                    <div className="h-1.5 bg-zinc-800/30 rounded w-full animate-pulse" />
+            <div className="lg:col-span-5 bg-zinc-900/20 border border-zinc-900 rounded-xl overflow-hidden shadow-2xl">
+              <div className="h-36 sm:h-44 bg-zinc-850/60 animate-pulse w-full" />
+              <div className="p-5 space-y-6">
+                <div className="flex items-center gap-4 w-full">
+                  <div className="w-12 h-12 bg-zinc-800/60 rounded-full animate-pulse flex-shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <div className="h-3 bg-zinc-800/60 rounded w-1/3 animate-pulse" />
+                    <div className="h-5 bg-zinc-800/60 rounded w-2/3 animate-pulse" />
+                    <div className="h-3 bg-zinc-800/60 rounded w-1/4 animate-pulse" />
                   </div>
-                ))}
+                </div>
+                <div className="h-10 bg-zinc-850/40 rounded w-full animate-pulse" />
+                <div className="space-y-4 pt-4 border-t border-zinc-900/60">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="flex justify-between">
+                        <div className="h-3 bg-zinc-800/60 rounded w-1/3 animate-pulse" />
+                        <div className="h-3 bg-zinc-800/60 rounded w-10 animate-pulse" />
+                      </div>
+                      <div className="h-1.5 bg-zinc-800/30 rounded w-full animate-pulse" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -997,22 +999,17 @@ export default function GitWrapped({
           <div className="lg:col-span-5 w-full">
             <SpotlightCard
               spotlightColor={theme.spotlight}
-              className={`rounded-xl border border-zinc-900/60 bg-zinc-950/10 shadow-2xl p-6 ${theme.glow}`}
+              className={`rounded-xl border border-zinc-900/60 bg-zinc-950/10 shadow-2xl overflow-hidden ${theme.glow}`}
             >
               <div className="flex flex-col items-start text-left w-full">
-                {/* Persona Banner */}
-                <div className="relative w-full h-36 sm:h-40 rounded-lg overflow-hidden mb-5 border border-zinc-800/80 group">
+                {/* Persona Banner - attached to card borders */}
+                <div className="relative -mt-5 -mx-5 w-[calc(100%+2.5rem)] h-36 sm:h-44 overflow-hidden mb-5 group">
                   <img
                     src={theme.banner}
                     alt={timeStats.persona}
                     className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div
-                    className={`absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full text-[9px] font-mono tracking-wider uppercase backdrop-blur-md border ${theme.accentBg} ${theme.accentBorder} ${theme.primaryText}`}
-                  >
-                    {theme.themeTitle}
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                 </div>
 
                 <div className="flex items-center gap-4 w-full mb-2">
