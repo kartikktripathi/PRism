@@ -14,13 +14,9 @@ import {
   GraphIcon,
   StarIcon,
 } from "@primer/octicons-react";
-import { League_Spartan, Montserrat } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
-
-const leagueSpartan = League_Spartan({
-  subsets: ["latin"],
-});
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -102,7 +98,7 @@ function MiniBarChart({
 
   return (
     <div className="mt-4 pt-3.5 border-t border-zinc-900/60">
-      <div className="text-[10px] text-zinc-500 mb-2 font-mono flex justify-between select-none">
+      <div className="text-[10px] text-zinc-500 mb-2 flex justify-between select-none">
         <span>Daily Activity</span>
         <span>{totalActivity} contributions</span>
       </div>
@@ -128,7 +124,7 @@ function MiniBarChart({
 
               {/* Tooltip */}
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
-                <div className="bg-zinc-950 border border-zinc-800 text-zinc-300 text-[9px] font-mono py-0.5 px-1.5 rounded shadow-2xl whitespace-nowrap">
+                <div className="bg-zinc-950 border border-zinc-800 text-zinc-300 text-[9px] py-0.5 px-1.5 rounded shadow-2xl whitespace-nowrap">
                   Day {idx + 1}: {activity}{" "}
                   {activity === 1 ? "contribution" : "contributions"}
                 </div>
@@ -158,7 +154,7 @@ function MonthlyStatCard({
     >
       <div
         onClick={onClick}
-        className="flex flex-col justify-between h-full w-full font-sans"
+        className="flex flex-col justify-between h-full w-full"
       >
         {/* Card Header with Month Heading and subtle icon */}
         <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60 w-full">
@@ -181,7 +177,7 @@ function MonthlyStatCard({
         </div>
 
         {/* Stats List */}
-        <div className="space-y-3.5 font-mono text-xs w-full">
+        <div className="space-y-3.5 text-xs w-full">
           {/* Commits */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-zinc-500">
@@ -835,7 +831,7 @@ export default function GitWrapped({
   if (selectedMonth) {
     if (loadingTimeStats) {
       return (
-        <div className="space-y-8 select-none animate-pulse">
+        <div className={`space-y-8 select-none animate-pulse ${montserrat.className}`}>
           {/* Header Skeleton */}
           <div className="flex items-center justify-between">
             <div className="h-9 bg-zinc-900 border border-zinc-800 rounded w-32 animate-pulse" />
@@ -908,11 +904,11 @@ export default function GitWrapped({
 
     if (!timeStats) {
       return (
-        <div className="space-y-8 select-none">
+        <div className={`space-y-8 select-none ${montserrat.className}`}>
           <div>
             <button
               onClick={() => setSelectedMonth(null)}
-              className="flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer"
+              className="flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer"
             >
               <svg
                 className="w-4 h-4"
@@ -930,7 +926,7 @@ export default function GitWrapped({
               Back to GitStats
             </button>
           </div>
-          <div className="text-xs text-zinc-500 font-mono py-12 text-center border border-zinc-900 bg-zinc-950/20 rounded-lg">
+          <div className="text-xs text-zinc-500 py-12 text-center border border-zinc-900 bg-zinc-950/20 rounded-lg">
             Could not determine contribution activity times for this month.
           </div>
         </div>
@@ -945,12 +941,12 @@ export default function GitWrapped({
     const isNightActive = timeStats.persona === "Nocturnal Developer";
 
     return (
-      <div className="space-y-8 select-none animate-fade-in">
+      <div className={`space-y-8 select-none animate-fade-in ${montserrat.className}`}>
         {/* Top bar with back button & Report indicator */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
             onClick={() => setSelectedMonth(null)}
-            className="w-fit flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 font-mono text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer"
+            className="w-fit flex items-center gap-2 border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/60 hover:border-zinc-700 hover:text-white text-zinc-400 text-xs px-3.5 py-2.5 rounded transition-all cursor-pointer"
           >
             <svg
               className="w-4 h-4"
@@ -969,7 +965,7 @@ export default function GitWrapped({
           </button>
 
           <div
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-mono tracking-wider uppercase select-none ${theme.accentBg} ${theme.accentBorder} ${theme.primaryText}`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] tracking-wider uppercase select-none ${theme.accentBg} ${theme.accentBorder} ${theme.primaryText}`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-current" />
             {theme.themeTitle} Mode Active
@@ -983,12 +979,10 @@ export default function GitWrapped({
             className={`absolute top-[-100px] left-1/4 w-72 h-72 rounded-full blur-[120px] opacity-20 pointer-events-none -z-10 ${theme.glowColor}`}
           />
 
-          <h1
-            className={`text-4xl md:text-5xl text-white font-bold tracking-tight ${montserrat.className}`}
-          >
+          <h1 className="text-4xl md:text-5xl text-white font-bold tracking-tight">
             {selectedMonth}
           </h1>
-          <p className="text-zinc-500 font-mono text-xs mt-2 uppercase tracking-widest">
+          <p className="text-zinc-500 text-xs mt-2 uppercase tracking-widest">
             Dedicated Developer Dossier
           </p>
         </div>
@@ -1019,31 +1013,31 @@ export default function GitWrapped({
                     <theme.icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                    <div className="text-[10px] text-zinc-500 uppercase tracking-widest">
                       Persona Profile
                     </div>
-                    <h2 className="text-xl font-bold text-white tracking-wide font-sans">
+                    <h2 className="text-xl font-bold text-white tracking-wide">
                       {timeStats.persona}
                     </h2>
                     <div
-                      className={`text-[10px] font-mono tracking-widest mt-0.5 uppercase ${theme.primaryText}`}
+                      className={`text-[10px] tracking-widest mt-0.5 uppercase ${theme.primaryText}`}
                     >
                       {`// ${theme.themeTitle}`}
                     </div>
                   </div>
                 </div>
-                <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-mono">
+                <p className="text-zinc-400 text-xs mt-3 leading-relaxed">
                   {theme.desc}
                 </p>
               </div>
 
               {/* Hourly Time-of-day breakdown */}
               <div className="mt-8 pt-6 border-t border-zinc-900/60 space-y-5">
-                <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
                   Contribution Clock
                 </div>
 
-                <div className="space-y-4 font-mono text-xs">
+                <div className="space-y-4 text-xs">
                   {/* Day */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-zinc-400">
@@ -1189,15 +1183,11 @@ export default function GitWrapped({
                     spotlightColor={theme.spotlight}
                     className="h-[120px]"
                   >
-                    <div className="flex flex-col justify-between h-full w-full font-sans">
-                      <span
-                        className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
-                      >
+                    <div className="flex flex-col justify-between h-full w-full">
+                      <span className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
                         Repositories Worked On
                       </span>
-                      <span
-                        className={`text-4xl font-bold ${theme.primaryText} ${leagueSpartan.className}`}
-                      >
+                      <span className={`text-4xl font-bold ${theme.primaryText}`}>
                         {selectedStat.repositories}
                       </span>
                     </div>
@@ -1208,10 +1198,8 @@ export default function GitWrapped({
                     spotlightColor={theme.spotlight}
                     className="h-[120px]"
                   >
-                    <div className="flex flex-col justify-between h-full w-full font-sans">
-                      <span
-                        className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
-                      >
+                    <div className="flex flex-col justify-between h-full w-full">
+                      <span className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
                         Repositories Created
                       </span>
                       <span className="text-4xl font-bold text-white tracking-tight">
@@ -1225,10 +1213,8 @@ export default function GitWrapped({
                     spotlightColor={theme.spotlight}
                     className="h-[120px]"
                   >
-                    <div className="flex flex-col justify-between h-full w-full font-sans">
-                      <span
-                        className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
-                      >
+                    <div className="flex flex-col justify-between h-full w-full">
+                      <span className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
                         Pull Requests Opened
                       </span>
                       <span className="text-4xl font-bold text-white tracking-tight">
@@ -1242,10 +1228,8 @@ export default function GitWrapped({
                     spotlightColor={theme.spotlight}
                     className="h-[120px]"
                   >
-                    <div className="flex flex-col justify-between h-full w-full font-sans">
-                      <span
-                        className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
-                      >
+                    <div className="flex flex-col justify-between h-full w-full">
+                      <span className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
                         Most Used Language
                       </span>
                       <span
@@ -1261,10 +1245,10 @@ export default function GitWrapped({
                 {/* Daily Activity Chart Card */}
                 <SpotlightCard spotlightColor={theme.spotlight} className="p-6">
                   <div className="w-full">
-                    <h3 className="text-sm font-semibold text-white font-sans tracking-wide">
+                    <h3 className="text-sm font-semibold text-white tracking-wide">
                       Activity Pulse
                     </h3>
-                    <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                    <p className="text-[11px] text-zinc-500 mt-0.5">
                       Daily breakdown of commits and issues during this month.
                     </p>
 
@@ -1278,8 +1262,8 @@ export default function GitWrapped({
 
                 {/* Performance Insight & Active Day Card */}
                 <SpotlightCard spotlightColor={theme.spotlight} className="p-6">
-                  <div className="flex flex-col gap-4 font-mono text-xs w-full">
-                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                  <div className="flex flex-col gap-4 text-xs w-full">
+                    <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
                       Executive Summary & Insights
                     </div>
 
@@ -1296,7 +1280,7 @@ export default function GitWrapped({
                           )}
                         </div>
                         <div>
-                          <div className="text-[10px] font-mono text-zinc-500 uppercase">
+                          <div className="text-[10px] text-zinc-500 uppercase">
                             Monthly Shift
                           </div>
                           <div className="text-sm font-bold text-white mt-0.5">
@@ -1341,7 +1325,7 @@ export default function GitWrapped({
                           <StarIcon className="w-5 h-5 text-amber-400" />
                         </div>
                         <div>
-                          <div className="text-[10px] font-mono text-zinc-500 uppercase">
+                          <div className="text-[10px] text-zinc-500 uppercase">
                             Apex Day
                           </div>
                           <div className="text-sm font-bold text-white mt-0.5">
@@ -1381,17 +1365,13 @@ export default function GitWrapped({
   }
 
   return (
-    <div className="space-y-8 select-none">
+    <div className={`space-y-8 select-none ${montserrat.className}`}>
       {/* Page Header */}
       <div>
-        <h1
-          className={`text-5xl md:text-6xl text-white font-bold tracking-tight ${montserrat.className}`}
-        >
+        <h1 className="text-5xl md:text-6xl text-white font-bold tracking-tight">
           GitStats
         </h1>
-        <p
-          className={`mt-2 text-lg text-zinc-400 font-light tracking-wide ${leagueSpartan.className}`}
-        >
+        <p className="mt-2 text-lg text-zinc-400 font-light tracking-wide">
           Monthly breakdown of your GitHub contributions and activity.
         </p>
       </div>
@@ -1436,9 +1416,7 @@ export default function GitWrapped({
                         boxShadow: `0 0 8px ${stat.color}`,
                       }}
                     />
-                    <span
-                      className={`text-[10px] font-mono font-medium tracking-wider text-zinc-500 uppercase ${leagueSpartan.className}`}
-                    >
+                    <span className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
                       {stat.title}
                     </span>
                   </div>
@@ -1446,11 +1424,11 @@ export default function GitWrapped({
 
                 <div className="mt-3 flex items-baseline gap-1.5">
                   <span
-                    className={`text-5xl font-semibold tracking-tight ${leagueSpartan.className}`}
+                    className="text-5xl font-semibold tracking-tight"
                     style={{ color: stat.color }}
                   >
                     {loading ? (
-                      <span className="text-2xl font-mono text-zinc-500">
+                      <span className="text-2xl text-zinc-500">
                         ...
                       </span>
                     ) : (
@@ -1466,7 +1444,7 @@ export default function GitWrapped({
 
       {/* Error state */}
       {error && (
-        <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-5 text-center space-y-3 font-mono text-xs text-red-400">
+        <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-5 text-center space-y-3 text-xs text-red-400">
           <p>{error}</p>
           <button
             onClick={handleRefresh}
