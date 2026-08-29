@@ -610,24 +610,14 @@ export default function Home() {
         `https://api.github.com/users/${username}/received_events?per_page=100`,
       );
 
-      // 3. Fetch Followers
-      const followers = await fetchWithCheck(
-        `https://api.github.com/users/${username}/followers?per_page=10`,
-      );
-
-      // 4. Fetch User's Own Events (for repo creation, etc.)
-      const userEvents = await fetchWithCheck(
-        `https://api.github.com/users/${username}/events?per_page=100`,
-      );
-
-      // 5. Fetch User's Merged PRs
+      // 3. Fetch User's Merged PRs
       const sinceDateOnly = sinceISO.split("T")[0];
       const mergedPRsData = await fetchWithCheck(
         `https://api.github.com/search/issues?q=is:pr+author:${username}+is:merged+merged:>=${sinceDateOnly}&per_page=50`,
       );
       const mergedPRs = mergedPRsData?.items || [];
 
-      // 6. Fetch User's Opened PRs
+      // 4. Fetch User's Opened PRs
       const openedPRsData = await fetchWithCheck(
         `https://api.github.com/search/issues?q=is:pr+author:${username}+created:>=${sinceDateOnly}&per_page=50`,
       );

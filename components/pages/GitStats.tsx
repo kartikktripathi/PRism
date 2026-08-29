@@ -419,7 +419,6 @@ export default function GitWrapped({
   const [stats, setStats] = useState<MonthlyStat[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [timeStats, setTimeStats] = useState<TimeStats | null>(null);
   const [loadingTimeStats, setLoadingTimeStats] = useState<boolean>(false);
@@ -615,7 +614,6 @@ export default function GitWrapped({
       setError(errMsg);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
       onLoadComplete?.();
     }
   }, [username, session]);
@@ -750,7 +748,6 @@ export default function GitWrapped({
   }, [username, session, fetchMonthlyStats]);
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     await fetchMonthlyStats();
   };
 

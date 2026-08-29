@@ -438,5 +438,3 @@ export const LineHoverLink = React.forwardRef<
 });
 
 LineHoverLink.displayName = "LineHoverLink";
-
-export default LineHoverLink;

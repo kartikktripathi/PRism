@@ -42,7 +42,6 @@ export default function Organizations({
   const [orgs, setOrgs] = useState<OrganizationData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   // Filter and Sorting state
   const [searchQuery, setSearchQuery] = useState("");
@@ -336,7 +335,6 @@ export default function Organizations({
       setError(errMsg);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
       onLoadComplete?.();
     }
   }, [username, session]);
@@ -351,7 +349,6 @@ export default function Organizations({
   }, [username, session, fetchOrganizationsData]);
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     await fetchOrganizationsData();
   };
 

@@ -97,7 +97,6 @@ export default function IssuesAndPRs({
   const [items, setItems] = useState<IssueOrPR[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   // Filters and sorting states
   const [searchQuery, setSearchQuery] = useState("");
@@ -232,7 +231,6 @@ export default function IssuesAndPRs({
       setError(errMsg);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
       onLoadComplete?.();
     }
   }, [username, session]);
@@ -247,7 +245,6 @@ export default function IssuesAndPRs({
   }, [username, session, fetchIssuesAndPRs]);
 
   const handleRefresh = async () => {
-    setIsRefreshing(true);
     await fetchIssuesAndPRs();
   };
 

@@ -210,7 +210,6 @@ interface SceneContentProps {
 
 function SceneContent({
   backgroundColor,
-  gridColor,
   accentColor,
   rotationSpeed,
   showGrid,
@@ -384,5 +383,3 @@ export function LiquidOcean({
     </div>
   );
 }
-
-export default LiquidOcean;

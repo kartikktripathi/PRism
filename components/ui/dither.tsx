@@ -368,5 +368,3 @@ export function Dither({
     </div>
   );
 }
-
-export default Dither;
