@@ -20,7 +20,9 @@ interface DashboardLoaderProps {
   loadStates: LoadStates;
 }
 
-export function DashboardLoader({}: DashboardLoaderProps = {} as DashboardLoaderProps) {
+export function DashboardLoader(
+  {}: DashboardLoaderProps = {} as DashboardLoaderProps,
+) {
   const [showSlowMessage, setShowSlowMessage] = React.useState(false);
 
   React.useEffect(() => {

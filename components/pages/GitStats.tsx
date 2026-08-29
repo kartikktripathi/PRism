@@ -828,7 +828,9 @@ export default function GitWrapped({
   if (selectedMonth) {
     if (loadingTimeStats) {
       return (
-        <div className={`space-y-8 select-none animate-pulse ${montserrat.className}`}>
+        <div
+          className={`space-y-8 select-none animate-pulse ${montserrat.className}`}
+        >
           {/* Header Skeleton */}
           <div className="flex items-center justify-between">
             <div className="h-9 bg-zinc-900 border border-zinc-800 rounded w-32 animate-pulse" />
@@ -938,7 +940,9 @@ export default function GitWrapped({
     const isNightActive = timeStats.persona === "Nocturnal Developer";
 
     return (
-      <div className={`space-y-8 select-none animate-fade-in ${montserrat.className}`}>
+      <div
+        className={`space-y-8 select-none animate-fade-in ${montserrat.className}`}
+      >
         {/* Top bar with back button & Report indicator */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
@@ -1184,7 +1188,9 @@ export default function GitWrapped({
                       <span className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
                         Repositories Worked On
                       </span>
-                      <span className={`text-4xl font-bold ${theme.primaryText}`}>
+                      <span
+                        className={`text-4xl font-bold ${theme.primaryText}`}
+                      >
                         {selectedStat.repositories}
                       </span>
                     </div>
@@ -1425,9 +1431,7 @@ export default function GitWrapped({
                     style={{ color: stat.color }}
                   >
                     {loading ? (
-                      <span className="text-2xl text-zinc-500">
-                        ...
-                      </span>
+                      <span className="text-2xl text-zinc-500">...</span>
                     ) : (
                       <AnimatedCounter value={stat.value} />
                     )}
