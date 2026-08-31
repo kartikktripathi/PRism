@@ -1,25 +1,25 @@
-# 🔮 PRism
+# PRism
 
 An Open Sourcerer's Playground to track, review, and merge pull requests. Built for developers who want a premium, fast, and visually spectacular workspace to monitor their GitHub ecosystem.
 
-**🌐 Deployed Application**: [prism-osdev.vercel.app](https://prism-osdev.vercel.app/)
+**Deployed Application**: [prism-osdev.vercel.app](https://prism-osdev.vercel.app/)
 
 ---
 
-## ✨ Features
+## Features
 
 PRism offers a unified, high-performance developer workspace:
 
-- **📊 Interactive Dashboard**: Keep track of your real-time contribution streak, active repositories, recent commits, and GitHub notifications in one place.
-- **🎁 Git Wrapped (GraphQL-powered)**: Retrieve detailed monthly breakdown metrics (commits, PRs, issues, code reviews), language distribution, and a calculated **coding personality/persona** based on the time of your commits (e.g. _Morning Bird_, _Night Owl_).
-- **📥 Issues & PRs**: Detailed logs of your authored, assigned, mentioned, and review-requested pull requests and issues, with interactive search/filters and status indicators (Merged, Open, Closed).
-- **🏢 Organization Analytics**: Fetch and analyze your contributions across all the organizations you belong to, tracking commit trends, PRs, and repository membership.
-- **💬 Reviews & Comments**: Real-time review inbox tracking pending review requests, PRs you've commented on, and reviews you've completed.
-- **🎨 Premium Dark Mode Aesthetics**: Smooth animations powered by **Framer Motion**, smooth scrolling with **Lenis**, and 3D visual effects with **React Three Fiber (Three.js)** and custom dither post-processing shaders.
+- **Interactive Dashboard**: Keep track of your real-time contribution streak, active repositories, recent commits, and GitHub notifications in one place.
+- **Git Wrapped (GraphQL-powered)**: Retrieve detailed monthly breakdown metrics (commits, PRs, issues, code reviews), language distribution, and a calculated **coding personality/persona** based on the time of your commits (e.g. _Morning Bird_, _Night Owl_).
+- **Issues & PRs**: Detailed logs of your authored, assigned, mentioned, and review-requested pull requests and issues, with interactive search/filters and status indicators (Merged, Open, Closed).
+- **Organization Analytics**: Fetch and analyse your contributions across all the organisations you belong to, tracking commit trends, PRs, and repository membership.
+- **Reviews & Comments**: Real-time review inbox tracking pending review requests, PRs you've commented on, and reviews you've completed.
+- **Premium Dark Mode Aesthetics**: Smooth animations powered by **Framer Motion**, smooth scrolling with **Lenis**, and 3D visual effects with **React Three Fiber (Three.js)** and custom dither post-processing shaders.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Category          | Technology Used                                                                           |
 | :---------------- | :---------------------------------------------------------------------------------------- |
@@ -35,7 +35,7 @@ PRism offers a unified, high-performance developer workspace:
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 PRism/
@@ -67,7 +67,7 @@ PRism/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 Follow these steps to run PRism locally:
 
@@ -81,7 +81,7 @@ To authenticate users, you need a GitHub OAuth App:
 
 1. Go to your GitHub Profile -> **Settings** -> **Developer Settings** -> **OAuth Apps** -> **New OAuth App**.
 2. Set the Homepage URL to `http://localhost:3000`.
-3. Set the User Authorization Callback URL to `http://localhost:3000/api/auth/callback/github`.
+3. Set the User Authorisation Callback URL to `http://localhost:3000/api/auth/callback/github`.
 4. Register the application, and copy your **Client ID** and **Client Secret**.
 
 ### 3. Setup Project
@@ -120,12 +120,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🔮 Future Scope
+## Future Scope
 
 We aim to expand PRism into a fully-fledged productivity ecosystem:
 
-- **📱 Spotify-Style share cards**: Generate downloadable, beautiful infographic summaries of your "Git Wrapped" year/month to share directly on Twitter/X, LinkedIn, or GitHub readmes.
-- **🤖 AI-Powered Pull Request Summarizer**: Leverage LLM integrations (such as Google Gemini) to generate automatic daily standup updates and high-level PR summaries directly from diff data.
-- **📊 Peer Benchmarking**: Securely compare and benchmark cycle times, review response speeds, and commit frequencies against team members or open source projects.
-- **🖥️ Desktop App**: Wrap the application with Tauri/Electron to support local file access, system-tray review reminders, and push notifications.
-- **🔗 Multi-Platform Support**: Extend the data parsers to pull statistics and active tasks from GitLab and Bitbucket alongside GitHub.
+- **Spotify-Style share cards**: Generate downloadable, beautiful infographic summaries of your "Git Wrapped" year/month to share directly on Twitter/X, LinkedIn, or GitHub READMEs.
+- **AI-Powered Pull Request Summarizer**: Leverage LLM integrations (such as Google Gemini) to generate automatic daily standup updates and high-level PR summaries directly from diff data.
+- **Peer Benchmarking**: Securely compare and benchmark cycle times, review response speeds, and commit frequencies against team members or open-source projects.
+- **Desktop App**: Wrap the application with Tauri/Electron to support local file access, system-tray review reminders, and push notifications.
+- **Multi-Platform Support**: Extend the data parsers to pull statistics and active tasks from GitLab and Bitbucket alongside GitHub.
