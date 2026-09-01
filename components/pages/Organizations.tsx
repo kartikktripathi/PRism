@@ -408,24 +408,33 @@ export default function Organizations({
 
   // Loading skeleton card matching the design style
   const SkeletonCard = () => (
-    <div className="border border-zinc-900/60 bg-zinc-950/20 rounded-lg p-5 flex flex-col gap-6 animate-pulse">
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-zinc-800 rounded flex-shrink-0" />
-        <div className="space-y-2.5 w-full">
-          <div className="h-4 bg-zinc-800 rounded w-1/3" />
-          <div className="h-3 bg-zinc-800 rounded w-1/4" />
-          <div className="h-3 bg-zinc-800 rounded w-2/3 mt-2" />
+    <div className="border border-zinc-900/80 bg-zinc-950/40 rounded-lg p-5 flex flex-col justify-between gap-5 animate-pulse min-h-[240px]">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3.5 min-w-0 flex-1">
+          <div className="w-11 h-11 bg-zinc-800/80 rounded-lg flex-shrink-0" />
+          <div className="space-y-2 flex-1 min-w-0">
+            <div className="h-3.5 bg-zinc-800 rounded w-1/3" />
+            <div className="h-2.5 bg-zinc-850 rounded w-1/4" />
+          </div>
         </div>
+        <div className="w-14 h-5 bg-zinc-850 rounded-full flex-shrink-0" />
       </div>
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-3 gap-2">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-10 bg-zinc-900 border border-zinc-900 rounded p-2"
+            className="h-12 bg-zinc-900/50 border border-zinc-900/80 rounded-lg"
           />
         ))}
       </div>
-      <div className="h-2 bg-zinc-900 rounded-full w-full" />
+      <div className="space-y-2 pt-2 border-t border-zinc-900/40">
+        <div className="flex justify-between">
+          <div className="h-2.5 bg-zinc-850 rounded w-1/4" />
+          <div className="h-2.5 bg-zinc-850 rounded w-1/6" />
+        </div>
+        <div className="h-1.5 bg-zinc-900 rounded-full w-full" />
+        <div className="h-3 bg-zinc-900/60 rounded w-1/2" />
+      </div>
     </div>
   );
 
@@ -667,6 +676,8 @@ export default function Organizations({
                 const pctComments =
                   total > 0 ? (org.comments / total) * 100 : 0;
 
+                const displayName = org.name || org.login;
+
                 return (
                   <SpotlightCard
                     key={org.login}
@@ -677,91 +688,105 @@ export default function Organizations({
                       href={`https://github.com/${org.login}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex flex-col justify-between h-full w-full gap-6"
+                      className="group flex flex-col justify-between h-full w-full gap-5"
                     >
                       {/* Header info */}
-                      <div className="flex items-start gap-4">
-                        {org.avatarUrl && (
-                          <img
-                            src={org.avatarUrl}
-                            className="w-12 h-12 rounded border border-zinc-800 bg-zinc-950 object-cover flex-shrink-0"
-                            alt={org.name}
-                          />
-                        )}
-                        <div className="space-y-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between gap-3 w-full">
+                        <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                          {org.avatarUrl ? (
+                            <img
+                              src={org.avatarUrl}
+                              className="w-11 h-11 rounded-lg border border-zinc-800/80 bg-zinc-950 object-cover flex-shrink-0"
+                              alt={displayName}
+                            />
+                          ) : (
+                            <div className="w-11 h-11 rounded-lg border border-zinc-800/80 bg-zinc-900 flex items-center justify-center text-zinc-400 font-mono text-sm font-semibold flex-shrink-0">
+                              {displayName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
                             <h2 className="text-sm font-semibold text-zinc-200 group-hover:text-emerald-400 transition-colors truncate">
-                              {org.name}
+                              {displayName}
                             </h2>
-                            <span className="text-[10px] text-zinc-500 font-mono">
+                            <p className="text-[11px] text-zinc-500 font-mono truncate">
                               @{org.login}
-                            </span>
+                            </p>
                           </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {total > 0 ? (
+                            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-800/50 text-emerald-400 font-medium">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800/60 text-zinc-500">
+                              Inactive
+                            </span>
+                          )}
                         </div>
                       </div>
 
                       {/* Stats Grid */}
                       <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
                             Commits
                           </p>
-                          <p className="text-sm font-bold text-zinc-300 mt-1">
+                          <p className="text-sm font-bold text-zinc-200 mt-1">
                             {org.commits}
                           </p>
                         </div>
-                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
                             PRs
                           </p>
-                          <p className="text-sm font-bold text-emerald-500 mt-1">
+                          <p className="text-sm font-bold text-emerald-400 mt-1">
                             {org.pullRequests}
                           </p>
                         </div>
-                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
                             Issues
                           </p>
-                          <p className="text-sm font-bold text-amber-500 mt-1">
+                          <p className="text-sm font-bold text-amber-400 mt-1">
                             {org.issues}
                           </p>
                         </div>
-                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
                             Reviews
                           </p>
                           <p className="text-sm font-bold text-purple-400 mt-1">
                             {org.reviews}
                           </p>
                         </div>
-                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-600">
+                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
+                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
                             Comments
                           </p>
                           <p className="text-sm font-bold text-blue-400 mt-1">
                             {org.comments}
                           </p>
                         </div>
-                        <div className="border border-zinc-900/80 bg-zinc-950/15 p-2 rounded bg-zinc-900/20">
-                          <p className="text-[9px] uppercase tracking-wider text-emerald-500/80 font-bold">
+                        <div className="border border-emerald-900/40 bg-emerald-950/20 p-2 rounded-lg flex flex-col justify-center">
+                          <p className="text-[9px] uppercase tracking-wider text-emerald-400/90 font-semibold">
                             Total
                           </p>
-                          <p className="text-sm font-bold text-emerald-400 mt-1">
+                          <p className="text-sm font-bold text-emerald-300 mt-1">
                             {total}
                           </p>
                         </div>
                       </div>
 
-                      {/* Stacked Breakdown Bar */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center text-[9px] font-mono text-zinc-550">
+                      {/* Stacked Breakdown Bar & Footer */}
+                      <div className="space-y-2 pt-2 border-t border-zinc-900/60">
+                        <div className="flex justify-between items-center text-[9px] font-mono text-zinc-400">
                           <span>Contribution Breakdown</span>
-                          {org.reposCount > 0 && (
-                            <span>
-                              {org.reposCount} active{" "}
-                              {org.reposCount === 1 ? "repo" : "repos"}
-                            </span>
-                          )}
+                          <span className="text-zinc-500">
+                            {org.reposCount > 0
+                              ? `${org.reposCount} active ${org.reposCount === 1 ? "repo" : "repos"}`
+                              : "0 active repos"}
+                          </span>
                         </div>
                         <div className="w-full h-1.5 rounded-full overflow-hidden bg-zinc-900 flex">
                           {total === 0 ? (
@@ -810,41 +835,47 @@ export default function Organizations({
                           )}
                         </div>
 
-                        {/* Segment legends (only visible on cards with contributions) */}
-                        {total > 0 && (
-                          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[8.5px] font-mono text-zinc-600">
-                            {org.commits > 0 && (
-                              <span className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />{" "}
-                                Commits ({Math.round(pctCommits)}%)
-                              </span>
-                            )}
-                            {org.pullRequests > 0 && (
-                              <span className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />{" "}
-                                PRs ({Math.round(pctPrs)}%)
-                              </span>
-                            )}
-                            {org.issues > 0 && (
-                              <span className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />{" "}
-                                Issues ({Math.round(pctIssues)}%)
-                              </span>
-                            )}
-                            {org.reviews > 0 && (
-                              <span className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />{" "}
-                                Reviews ({Math.round(pctReviews)}%)
-                              </span>
-                            )}
-                            {org.comments > 0 && (
-                              <span className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />{" "}
-                                Comments ({Math.round(pctComments)}%)
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        {/* Segment legends (consistent height container) */}
+                        <div className="min-h-[1.25rem] flex flex-wrap items-center gap-x-3 gap-y-1 text-[8.5px] font-mono text-zinc-500">
+                          {total > 0 ? (
+                            <>
+                              {org.commits > 0 && (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                                  Commits ({Math.round(pctCommits)}%)
+                                </span>
+                              )}
+                              {org.pullRequests > 0 && (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  PRs ({Math.round(pctPrs)}%)
+                                </span>
+                              )}
+                              {org.issues > 0 && (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                  Issues ({Math.round(pctIssues)}%)
+                                </span>
+                              )}
+                              {org.reviews > 0 && (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                  Reviews ({Math.round(pctReviews)}%)
+                                </span>
+                              )}
+                              {org.comments > 0 && (
+                                <span className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                  Comments ({Math.round(pctComments)}%)
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-zinc-600 text-[8.5px]">
+                              No contributions in the past year
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </a>
                   </SpotlightCard>
