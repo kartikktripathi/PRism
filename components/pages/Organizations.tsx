@@ -593,12 +593,12 @@ export default function Organizations({
           </div>
 
           {/* Sorter Selection */}
-          <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="flex items-center gap-2">
             <span className="text-zinc-600 text-[11px]">Sort By:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-zinc-950 border border-zinc-800/80 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-2.5 px-3 cursor-pointer font-mono"
+              className="bg-zinc-950 border border-zinc-800/80 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-1 px-2 text-[11px] cursor-pointer font-mono"
             >
               <option value="total">Total Contributions</option>
               <option value="commits">Commits</option>
