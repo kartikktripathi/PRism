@@ -46,18 +46,18 @@
 
 ## Tech Stack
 
-| Category | Technology | Description |
-| :--- | :--- | :--- |
-| **Framework** | [Next.js 16 (App Router)](https://nextjs.org/) | Server Components, hybrid rendering & API routing |
-| **Language** | [TypeScript 5](https://www.typescriptlang.org/) | Strict static typing across entire application |
-| **Authentication** | [NextAuth.js](https://next-auth.js.org/) | GitHub OAuth integration with secure session handling |
-| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Modern utility-first CSS engine with PostCSS |
-| **3D & Shaders** | [React Three Fiber](https://r3f.docs.pmnd.rs/) / [Three.js](https://threejs.org/) | Custom WebGL shaders and dynamic fluid mesh rendering |
-| **Post-Processing**| [Postprocessing](https://pmndrs.github.io/postprocessing/) | Custom retro dither filter pipelines |
-| **Animation** | [Framer Motion 12](https://www.framer.com/motion/) | Layout animations, micro-interactions, and page transitions |
-| **Smooth Scroll** | [Lenis](https://lenis.darkroom.engineering/) | Inertial smooth scrolling engine |
-| **Data Viz** | [Chart.js](https://www.chartjs.org/) & [React Chartjs 2](https://react-chartjs-2.js.org/) | Interactive contribution breakdown graphs and radar charts |
-| **Icons** | [GitHub Primer Octicons](https://primer.style/foundations/icons/) | Native GitHub icon library |
+| Category            | Technology                                                                                | Description                                                 |
+| :------------------ | :---------------------------------------------------------------------------------------- | :---------------------------------------------------------- |
+| **Framework**       | [Next.js 16 (App Router)](https://nextjs.org/)                                            | Server Components, hybrid rendering & API routing           |
+| **Language**        | [TypeScript 5](https://www.typescriptlang.org/)                                           | Strict static typing across entire application              |
+| **Authentication**  | [NextAuth.js](https://next-auth.js.org/)                                                  | GitHub OAuth integration with secure session handling       |
+| **Styling**         | [Tailwind CSS v4](https://tailwindcss.com/)                                               | Modern utility-first CSS engine with PostCSS                |
+| **3D & Shaders**    | [React Three Fiber](https://r3f.docs.pmnd.rs/) / [Three.js](https://threejs.org/)         | Custom WebGL shaders and dynamic fluid mesh rendering       |
+| **Post-Processing** | [Postprocessing](https://pmndrs.github.io/postprocessing/)                                | Custom retro dither filter pipelines                        |
+| **Animation**       | [Framer Motion 12](https://www.framer.com/motion/)                                        | Layout animations, micro-interactions, and page transitions |
+| **Smooth Scroll**   | [Lenis](https://lenis.darkroom.engineering/)                                              | Inertial smooth scrolling engine                            |
+| **Data Viz**        | [Chart.js](https://www.chartjs.org/) & [React Chartjs 2](https://react-chartjs-2.js.org/) | Interactive contribution breakdown graphs and radar charts  |
+| **Icons**           | [GitHub Primer Octicons](https://primer.style/foundations/icons/)                         | Native GitHub icon library                                  |
 
 ---
 
@@ -153,6 +153,7 @@ NEXTAUTH_URL=http://localhost:3000
 
 > [!TIP]
 > You can generate a secure `NEXTAUTH_SECRET` by running:
+>
 > ```bash
 > openssl rand -base64 32
 > ```
@@ -173,12 +174,12 @@ Visit [`http://localhost:3000`](http://localhost:3000) in your browser to view P
 
 ## Scripts
 
-| Command | Description |
-| :--- | :--- |
-| `npm run dev` | Runs the Next.js development server with Webpack |
-| `npm run build` | Builds the production bundle |
-| `npm run start` | Starts the production server |
-| `npm run lint` | Lints codebase using ESLint |
+| Command         | Description                                      |
+| :-------------- | :----------------------------------------------- |
+| `npm run dev`   | Runs the Next.js development server with Webpack |
+| `npm run build` | Builds the production bundle                     |
+| `npm run start` | Starts the production server                     |
+| `npm run lint`  | Lints codebase using ESLint                      |
 
 ---
 

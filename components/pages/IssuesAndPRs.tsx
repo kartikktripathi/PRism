@@ -654,10 +654,7 @@ export default function IssuesAndPRs({
               onChange={(e) =>
                 setSortBy(
                   e.target.value as
-                    | "newest"
-                    | "oldest"
-                    | "comments"
-                    | "updated",
+                    "newest" | "oldest" | "comments" | "updated",
                 )
               }
               className="bg-zinc-950 border border-zinc-800/80 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-1 px-2 text-[11px] cursor-pointer font-mono"
