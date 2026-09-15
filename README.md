@@ -14,6 +14,10 @@
   <a href="https://prism-osdev.vercel.app/"><strong>Explore Live Demo »</strong></a>
 </p>
 
+<p align="center">
+  <a href="https://prism.nstsdc.org/"><strong>Explore Live Demo (Backup) »</strong></a>
+</p>
+
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
