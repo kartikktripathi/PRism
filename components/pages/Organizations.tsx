@@ -34,6 +34,16 @@ interface OrganizationData {
   reposCount: number;
 }
 
+const SORT_OPTIONS = [
+  { value: "total", label: "Total Contributions" },
+  { value: "commits", label: "Commits" },
+  { value: "prs", label: "Pull Requests" },
+  { value: "issues", label: "Issues" },
+  { value: "reviews", label: "Code Reviews" },
+  { value: "comments", label: "Comments" },
+  { value: "alphabetical", label: "Alphabetical" },
+] as const;
+
 export default function Organizations({
   session,
   username,
@@ -54,6 +64,7 @@ export default function Organizations({
     | "comments"
     | "alphabetical"
   >("total");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [filterActiveOnly, setFilterActiveOnly] = useState<boolean>(false);
 
   const fetchOrganizationsData = useCallback(async () => {
@@ -593,21 +604,45 @@ export default function Organizations({
           </div>
 
           {/* Sorter Selection */}
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-600 text-[11px]">Sort By:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-zinc-950 border border-zinc-800/80 focus:border-zinc-700 text-zinc-400 focus:text-zinc-200 outline-none rounded py-1 px-2 text-[11px] cursor-pointer font-mono"
-            >
-              <option value="total">Total Contributions</option>
-              <option value="commits">Commits</option>
-              <option value="prs">Pull Requests</option>
-              <option value="issues">Issues</option>
-              <option value="reviews">Code Reviews</option>
-              <option value="comments">Comments</option>
-              <option value="alphabetical">Alphabetical</option>
-            </select>
+          <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-mono">
+            <span>Sort by</span>
+            <span className="relative inline-block z-30">
+              <button
+                type="button"
+                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                className="font-semibold text-white hover:text-white focus:outline-none transition-colors underline underline-offset-4 cursor-pointer inline-flex items-center gap-1.5 align-baseline"
+              >
+                {SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label}
+              </button>
+
+              {isSortDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40 cursor-default"
+                    onClick={() => setIsSortDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 xl:left-auto xl:right-0 mt-1.5 w-44 bg-zinc-950/95 backdrop-blur-md border border-zinc-800/80 rounded-lg shadow-xl shadow-black/80 z-50 overflow-hidden py-1">
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setSortBy(opt.value);
+                          setIsSortDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 text-[11px] font-mono transition-colors cursor-pointer ${
+                          sortBy === opt.value
+                            ? "bg-gray-600 text-white font-semibold"
+                            : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </span>
           </div>
         </div>
       </div>
