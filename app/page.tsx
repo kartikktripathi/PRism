@@ -24,6 +24,14 @@ const montserrat = Montserrat({
   subsets: ["latin"],
 });
 
+const TABS = [
+  "Dashboard",
+  "Issues & PRs",
+  "Reviews & Comments",
+  "Organizations",
+  "GitStats",
+] as const;
+
 function calculateStreak(contributions: { count: number; date: string }[]) {
   if (!contributions || contributions.length === 0) return 0;
 
@@ -100,9 +108,55 @@ export default function Home() {
   });
   const lenisRef = useRef<LenisRef>(null);
 
-  const [selectedTab, setSelectedTab] = useState("Dashboard");
-  const [isTabLoading, setIsTabLoading] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedTab = localStorage.getItem("prism_selected_tab");
+        if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
+          return savedTab;
+        }
+      } catch {}
+    }
+    return "Dashboard";
+  });
+  const [isTabLoading, setIsTabLoading] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedTab = localStorage.getItem("prism_selected_tab");
+        if (
+          savedTab &&
+          (TABS as readonly string[]).includes(savedTab) &&
+          savedTab !== "Dashboard"
+        ) {
+          return true;
+        }
+      } catch {}
+    }
+    return false;
+  });
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedTab = localStorage.getItem("prism_selected_tab");
+      if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
+        if (savedTab !== selectedTab) {
+          setSelectedTab(savedTab);
+          if (savedTab !== "Dashboard") {
+            setIsTabLoading(true);
+          }
+        }
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (selectedTab && (TABS as readonly string[]).includes(selectedTab)) {
+        localStorage.setItem("prism_selected_tab", selectedTab);
+      }
+    } catch {}
+  }, [selectedTab]);
 
   useEffect(() => {
     if (lenisRef.current?.lenis) {
@@ -142,6 +196,9 @@ export default function Home() {
   });
 
   function handleTabChange(tab: string) {
+    try {
+      localStorage.setItem("prism_selected_tab", tab);
+    } catch {}
     if (tab !== "Dashboard") {
       setIsTabLoading(true);
     } else {
@@ -990,13 +1047,7 @@ export default function Home() {
     return <DashboardLoader loadStates={loadStates} />;
   }
 
-  const tabs = [
-    "Dashboard",
-    "Issues & PRs",
-    "Reviews & Comments",
-    "Organizations",
-    "GitStats",
-  ];
+  const tabs = TABS;
 
   return (
     <main className="h-screen w-screen bg-black text-[#a1a1aa] flex flex-col font-sans overflow-hidden select-none">
@@ -1004,7 +1055,12 @@ export default function Home() {
       <header className="h-16 bg-black backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-10 shadow-2xl shadow-[#000000]">
         {/* Left Side: PRism Logo */}
         <div
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            try {
+              localStorage.setItem("prism_selected_tab", selectedTab);
+            } catch {}
+            window.location.reload();
+          }}
           className="flex justify-start -ml-15 translate-y-[13px] hover:cursor-pointer hover:scale-130 duration-500"
         >
           <img src="/logo.png" className="w-36 h-16 object-contain" />
