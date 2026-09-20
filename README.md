@@ -11,11 +11,11 @@
 </p>
 
 <p align="center">
-  <a href="https://prism-osdev.vercel.app/"><strong>Explore Live Demo »</strong></a>
+  <a href="https://prism.nstsdc.org/"><strong>Explore Live Demo »</strong></a>
 </p>
 
 <p align="center">
-  <a href="https://prism.nstsdc.org/"><strong>Explore Live Demo (Backup) »</strong></a>
+  <a href="https://prism-osdev.vercel.app/"><strong>Explore Live Demo (Backup) »</strong></a>
 </p>
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
