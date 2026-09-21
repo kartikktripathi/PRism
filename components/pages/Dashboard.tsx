@@ -64,12 +64,23 @@ export default function Dashboard({
 
   const filteredContributionData = (() => {
     if (!contributionData || contributionData.length === 0) return [];
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
+
+    const validData = contributionData.filter(
+      (day: any) => !day.date || day.date <= todayStr,
+    );
+
     if (duration === "week") {
-      return contributionData.slice(-7);
+      return validData.slice(-7);
     } else if (duration === "month") {
-      return contributionData.slice(-30);
+      return validData.slice(-30);
     } else {
-      return contributionData.slice(-365);
+      return validData.slice(-365);
     }
   })();
 

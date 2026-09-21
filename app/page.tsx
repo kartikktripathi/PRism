@@ -39,13 +39,27 @@ function calculateStreak(contributions: { count: number; date: string }[]) {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const todayStr = `${year}-${month}-${day}`;
+  const utcTodayStr = now.toISOString().split("T")[0];
 
-  const todayEntry = sorted.find((c) => c.date === todayStr);
-  const yesterdayEntry = sorted.find((c) => c.date === yesterdayStr);
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yYear = yesterday.getFullYear();
+  const yMonth = String(yesterday.getMonth() + 1).padStart(2, "0");
+  const yDay = String(yesterday.getDate()).padStart(2, "0");
+  const yesterdayStr = `${yYear}-${yMonth}-${yDay}`;
+  const utcYesterdayStr = yesterday.toISOString().split("T")[0];
+
+  const todayEntry = sorted.find(
+    (c) => c.date === todayStr || c.date === utcTodayStr,
+  );
+  const yesterdayEntry = sorted.find(
+    (c) => c.date === yesterdayStr || c.date === utcYesterdayStr,
+  );
 
   let activeIndex = -1;
 
@@ -601,12 +615,21 @@ export default function Home() {
       const streakValue = calculateStreak(uniqueContributions);
       setStreak(streakValue);
 
-      const today = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const todayStr = `${year}-${month}-${day}`;
+
+      const oneYearAgoYear = oneYearAgo.getFullYear();
+      const oneYearAgoMonth = String(oneYearAgo.getMonth() + 1).padStart(
+        2,
+        "0",
+      );
+      const oneYearAgoDay = String(oneYearAgo.getDate()).padStart(2, "0");
+      const oneYearAgoStr = `${oneYearAgoYear}-${oneYearAgoMonth}-${oneYearAgoDay}`;
+
       const past365Days = uniqueContributions.filter((c: any) => {
-        const cDate = new Date(c.date);
-        const timeDiff = today.getTime() - cDate.getTime();
-        const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-        return diffDays >= 0 && diffDays <= 365;
+        return c.date >= oneYearAgoStr && c.date <= todayStr;
       });
 
       past365Days.sort(
