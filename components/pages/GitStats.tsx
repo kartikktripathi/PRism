@@ -85,7 +85,7 @@ function getPastMonths(count: number = 6) {
 function MiniBarChart({
   data,
   colorClass = "bg-emerald-500/80",
-  hoverColorClass = "group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.5)]",
+  hoverColorClass = "group-hover/bar:bg-emerald-400 group-hover/bar:shadow-[0_0_8px_rgba(16,185,129,0.5)]",
 }: {
   data: number[];
   colorClass?: string;
@@ -108,7 +108,7 @@ function MiniBarChart({
           return (
             <div
               key={idx}
-              className="group relative flex-1 h-full flex items-end cursor-default"
+              className="group/bar relative flex-1 h-full flex items-end cursor-pointer"
             >
               {/* Bar */}
               <div
@@ -118,12 +118,12 @@ function MiniBarChart({
                 className={`w-full rounded-[1px] transition-all duration-150 ${
                   activity > 0
                     ? `${colorClass} ${hoverColorClass}`
-                    : "bg-zinc-800/40"
+                    : "bg-zinc-800/40 group-hover/bar:bg-zinc-700"
                 }`}
               />
 
               {/* Tooltip */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-10">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/bar:flex flex-col items-center pointer-events-none z-30">
                 <div className="bg-zinc-950 border border-zinc-800 text-zinc-300 text-[9px] py-0.5 px-1.5 rounded shadow-2xl whitespace-nowrap">
                   Day {idx + 1}: {activity}{" "}
                   {activity === 1 ? "contribution" : "contributions"}
@@ -170,7 +170,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     themeTitle: "Dawn Catalyst",
     barColor: "bg-amber-500/80",
     barHoverColor:
-      "group-hover:bg-amber-400 group-hover:shadow-[0_0_8px_rgba(251,191,36,0.5)]",
+      "group-hover/bar:bg-amber-400 group-hover/bar:shadow-[0_0_8px_rgba(251,191,36,0.5)]",
     banner: "/morning.jpg",
   },
   "Post-Lunch Programmer": {
@@ -187,7 +187,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     themeTitle: "Midday Engine",
     barColor: "bg-emerald-500/80",
     barHoverColor:
-      "group-hover:bg-emerald-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.5)]",
+      "group-hover/bar:bg-emerald-400 group-hover/bar:shadow-[0_0_8px_rgba(16,185,129,0.5)]",
     banner: "/afternoon.jpg",
   },
   "Shadow Scripter": {
@@ -204,7 +204,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     themeTitle: "Twilight Architect",
     barColor: "bg-fuchsia-500/80",
     barHoverColor:
-      "group-hover:bg-fuchsia-400 group-hover:shadow-[0_0_8px_rgba(232,121,249,0.5)]",
+      "group-hover/bar:bg-fuchsia-400 group-hover/bar:shadow-[0_0_8px_rgba(232,121,249,0.5)]",
     banner: "/evening.jpg",
   },
   "Nocturnal Developer": {
@@ -221,7 +221,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     themeTitle: "Midnight Alchemist",
     barColor: "bg-violet-500/80",
     barHoverColor:
-      "group-hover:bg-violet-400 group-hover:shadow-[0_0_8px_rgba(167,139,250,0.5)]",
+      "group-hover/bar:bg-violet-400 group-hover/bar:shadow-[0_0_8px_rgba(167,139,250,0.5)]",
     banner: "/night.jpg",
   },
   "Silent Achiever": {
@@ -238,7 +238,7 @@ const personaThemes: Record<string, ThemeStyle> = {
     themeTitle: "Stealth Strategist",
     barColor: "bg-zinc-500/80",
     barHoverColor:
-      "group-hover:bg-zinc-400 group-hover:shadow-[0_0_8px_rgba(161,161,170,0.5)]",
+      "group-hover/bar:bg-zinc-400 group-hover/bar:shadow-[0_0_8px_rgba(161,161,170,0.5)]",
     banner: "/night.jpg",
   },
 };
