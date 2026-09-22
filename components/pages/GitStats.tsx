@@ -138,174 +138,6 @@ function MiniBarChart({
   );
 }
 
-function MonthlyStatCard({
-  stat,
-  onClick,
-}: {
-  stat: MonthlyStat;
-  onClick?: () => void;
-}) {
-  return (
-    <SpotlightCard
-      spotlightColor="rgba(255, 255, 255, 0.08)"
-      className={`rounded-lg transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg ${
-        onClick ? "cursor-pointer" : ""
-      }`}
-    >
-      <div
-        onClick={onClick}
-        className="flex flex-col justify-between h-full w-full"
-      >
-        {/* Card Header with Month Heading and subtle icon */}
-        <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60 w-full">
-          <h3 className="text-lg font-semibold text-white tracking-wide">
-            {stat.month}
-          </h3>
-          <svg
-            className="w-4 h-4 text-zinc-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z"
-            />
-          </svg>
-        </div>
-
-        {/* Stats List */}
-        <div className="space-y-3.5 text-xs w-full">
-          {/* Commits */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-zinc-500">
-              <svg
-                className="w-4 h-4 text-emerald-500 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="4" />
-                <line x1="12" y1="2" x2="12" y2="8" />
-                <line x1="12" y1="16" x2="12" y2="22" />
-              </svg>
-              <span>Commits</span>
-            </div>
-            <span className="font-bold text-emerald-400">{stat.commits}</span>
-          </div>
-
-          {/* Repositories */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-zinc-500">
-              <svg
-                className="w-4 h-4 text-zinc-400 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
-              <span>Repositories</span>
-            </div>
-            <span className="font-bold text-zinc-200">{stat.repositories}</span>
-          </div>
-
-          {/* Pull Requests */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-zinc-500">
-              <span className="flex items-center justify-center w-4 h-4 text-purple-400 flex-shrink-0">
-                <GitPullRequestIcon size={16} />
-              </span>
-              <span>Pull Requests</span>
-            </div>
-            <span className="font-bold text-purple-400">
-              {stat.pullRequests}
-            </span>
-          </div>
-
-          {/* Issues */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-zinc-500">
-              <span className="flex items-center justify-center w-4 h-4 text-rose-500 flex-shrink-0">
-                <IssueOpenedIcon size={16} />
-              </span>
-              <span>Issues Opened</span>
-            </div>
-            <span className="font-bold text-rose-400">{stat.issues}</span>
-          </div>
-
-          {/* Reviews & Comments */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-zinc-500">
-              <svg
-                className="w-4 h-4 text-amber-500 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-              <span>Reviews & Comments</span>
-            </div>
-            <span className="font-bold text-amber-400">{stat.reviews}</span>
-          </div>
-        </div>
-
-        <div className="w-full">
-          <MiniBarChart data={stat.commitHistory} />
-        </div>
-      </div>
-    </SpotlightCard>
-  );
-}
-
-function SkeletonCard() {
-  return (
-    <div className="border border-zinc-900/60 bg-zinc-950/20 rounded-lg p-5 flex flex-col animate-pulse">
-      <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-900/60">
-        <div className="h-5 bg-zinc-800 rounded w-1/3" />
-        <div className="h-4 w-4 bg-zinc-800 rounded-full" />
-      </div>
-      <div className="space-y-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex justify-between items-center">
-            <div className="flex items-center gap-2 w-1/2">
-              <div className="w-4 h-4 bg-zinc-800 rounded-full animate-pulse" />
-              <div className="h-3 bg-zinc-800 rounded w-2/3 animate-pulse" />
-            </div>
-            <div className="h-3 bg-zinc-800 rounded w-1/6 animate-pulse" />
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-4 pt-3.5 border-t border-zinc-900/60 flex flex-col gap-2">
-        <div className="h-3 bg-zinc-800 rounded w-1/4 animate-pulse" />
-        <div className="h-10 flex items-end gap-[3px] w-full">
-          {Array.from({ length: 30 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="bg-zinc-800/20 rounded-[1px] flex-1 h-2 animate-pulse"
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 interface ThemeStyle {
   primary: string;
   primaryText: string;
@@ -315,7 +147,7 @@ interface ThemeStyle {
   glowColor: string;
   spotlight: string;
   bgGradient: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   desc: string;
   themeTitle: string;
   barColor: string;
@@ -411,6 +243,366 @@ const personaThemes: Record<string, ThemeStyle> = {
   },
 };
 
+function calculateTimeStats(
+  commitItems: { commit?: { committer?: { date?: string } } }[] = [],
+  issueItems: { created_at?: string }[] = [],
+): TimeStats {
+  let day = 0;
+  let afternoon = 0;
+  let evening = 0;
+  let night = 0;
+
+  const processDate = (dateString?: string) => {
+    if (!dateString) return;
+    const date = new Date(dateString);
+    const hour = date.getHours();
+
+    if (hour >= 5 && hour < 12) {
+      day++;
+    } else if (hour >= 12 && hour < 17) {
+      afternoon++;
+    } else if (hour >= 17 && hour < 21) {
+      evening++;
+    } else {
+      night++;
+    }
+  };
+
+  commitItems.forEach((item) => {
+    if (item.commit?.committer?.date) {
+      processDate(item.commit.committer.date);
+    }
+  });
+
+  issueItems.forEach((item) => {
+    if (item.created_at) {
+      processDate(item.created_at);
+    }
+  });
+
+  const total = day + afternoon + evening + night;
+  const percentages = {
+    day: total > 0 ? Math.round((day / total) * 100) : 0,
+    afternoon: total > 0 ? Math.round((afternoon / total) * 100) : 0,
+    evening: total > 0 ? Math.round((evening / total) * 100) : 0,
+    night: total > 0 ? Math.round((night / total) * 100) : 0,
+  };
+
+  const maxVal = Math.max(day, afternoon, evening, night);
+  let persona = "Nocturnal Developer";
+  if (total > 0) {
+    if (maxVal === day) {
+      persona = "Early-Bird Engineer";
+    } else if (maxVal === afternoon) {
+      persona = "Post-Lunch Programmer";
+    } else if (maxVal === evening) {
+      persona = "Shadow Scripter";
+    } else if (maxVal === night) {
+      persona = "Nocturnal Developer";
+    }
+  } else {
+    persona = "Silent Achiever";
+  }
+
+  return {
+    day,
+    afternoon,
+    evening,
+    night,
+    percentages,
+    persona,
+  };
+}
+
+async function fetchMonthTimeStats(
+  monthLabel: string,
+  username: string,
+  token: string,
+): Promise<TimeStats> {
+  const monthMeta = getPastMonths(6).find((m) => m.label === monthLabel);
+  if (!monthMeta) {
+    return {
+      day: 0,
+      afternoon: 0,
+      evening: 0,
+      night: 0,
+      percentages: { day: 0, afternoon: 0, evening: 0, night: 0 },
+      persona: "Silent Achiever",
+    };
+  }
+
+  const fromStr = monthMeta.from.substring(0, 10);
+  const toStr = monthMeta.to.substring(0, 10);
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+  };
+
+  const commitUrl = `https://api.github.com/search/commits?q=author:${username}+committer-date:${fromStr}..${toStr}&per_page=100`;
+  const issueUrl = `https://api.github.com/search/issues?q=author:${username}+created:${fromStr}..${toStr}&per_page=100`;
+
+  try {
+    const [commitRes, issueRes] = await Promise.all([
+      fetch(commitUrl, { headers }),
+      fetch(issueUrl, { headers }),
+    ]);
+
+    const commitData = commitRes.ok ? await commitRes.json() : { items: [] };
+    const issueData = issueRes.ok ? await issueRes.json() : { items: [] };
+
+    return calculateTimeStats(commitData.items, issueData.items);
+  } catch (err) {
+    console.error(`Error fetching time stats for ${monthLabel}:`, err);
+    return {
+      day: 0,
+      afternoon: 0,
+      evening: 0,
+      night: 0,
+      percentages: { day: 0, afternoon: 0, evening: 0, night: 0 },
+      persona: "Silent Achiever",
+    };
+  }
+}
+
+function MonthlyStatCard({
+  stat,
+  timeStats,
+  onClick,
+}: {
+  stat: MonthlyStat;
+  timeStats?: TimeStats | null;
+  onClick?: () => void;
+}) {
+  const persona =
+    timeStats?.persona ||
+    (stat.commits === 0 && stat.issues === 0 ? "Silent Achiever" : null);
+  const theme = personaThemes[persona || "Silent Achiever"];
+  const isPersonaLoading = !persona;
+
+  return (
+    <SpotlightCard
+      spotlightColor={persona ? theme.spotlight : "rgba(255, 255, 255, 0.08)"}
+      className={`rounded-xl transition-all duration-300 hover:translate-y-[-2px] hover:shadow-2xl ${
+        onClick ? "cursor-pointer" : ""
+      }`}
+    >
+      <div
+        onClick={onClick}
+        className="flex flex-col justify-between h-full w-full group"
+      >
+        {/* Top Edge-to-Edge Persona Banner for this month */}
+        <div className="relative -mt-5 -mx-5 w-[calc(100%+2.5rem)] h-36 overflow-hidden mb-4 rounded-t-xl group">
+          {/* Persona Banner Image */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={theme.banner}
+            alt={persona || stat.month}
+            className={`w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 ${
+              isPersonaLoading ? "opacity-35 grayscale" : "opacity-90"
+            }`}
+          />
+
+          {/* Gradient Overlay for high-contrast text and badge legibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/30 pointer-events-none" />
+
+          {/* Banner Content Overlay */}
+          <div className="absolute inset-0 p-4 flex flex-col justify-between z-10">
+            {/* Top row: Developer Profile Persona Badge + Dossier CTA */}
+            <div className="flex items-center justify-between gap-2">
+              {isPersonaLoading ? (
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-zinc-800 bg-zinc-950/70 text-[10px] text-zinc-400 backdrop-blur-md animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-ping" />
+                  <span>Profiling Persona...</span>
+                </div>
+              ) : (
+                <div
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-semibold tracking-wide backdrop-blur-md shadow-lg ${theme.accentBg} ${theme.accentBorder} ${theme.primaryText}`}
+                >
+                  <theme.icon className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{persona}</span>
+                </div>
+              )}
+
+              <div className="text-[10px] text-zinc-400 group-hover:text-white flex items-center gap-1 transition-colors drop-shadow bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
+                <span className="hidden sm:inline font-medium">Dossier</span>
+                <svg
+                  className="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Bottom row: Month Name and Persona Theme Subtitle */}
+            <div>
+              <h3 className="text-xl font-bold text-white tracking-wide drop-shadow-md">
+                {stat.month}
+              </h3>
+              <div
+                className={`text-[10px] tracking-widest uppercase font-semibold mt-0.5 drop-shadow ${
+                  isPersonaLoading ? "text-zinc-500" : theme.primaryText
+                }`}
+              >
+                {isPersonaLoading
+                  ? "// Activity Analysis"
+                  : `// ${theme.themeTitle}`}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats List */}
+        <div className="space-y-3.5 text-xs w-full">
+          {/* Commits */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <svg
+                className="w-4 h-4 text-emerald-500 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <line x1="12" y1="2" x2="12" y2="8" />
+                <line x1="12" y1="16" x2="12" y2="22" />
+              </svg>
+              <span>Commits</span>
+            </div>
+            <span className="font-bold text-emerald-400">{stat.commits}</span>
+          </div>
+
+          {/* Repositories */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <svg
+                className="w-4 h-4 text-zinc-400 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+              <span>Repositories</span>
+            </div>
+            <span className="font-bold text-zinc-200">{stat.repositories}</span>
+          </div>
+
+          {/* Pull Requests */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <span className="flex items-center justify-center w-4 h-4 text-purple-400 flex-shrink-0">
+                <GitPullRequestIcon size={16} />
+              </span>
+              <span>Pull Requests</span>
+            </div>
+            <span className="font-bold text-purple-400">
+              {stat.pullRequests}
+            </span>
+          </div>
+
+          {/* Issues */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <span className="flex items-center justify-center w-4 h-4 text-rose-500 flex-shrink-0">
+                <IssueOpenedIcon size={16} />
+              </span>
+              <span>Issues Opened</span>
+            </div>
+            <span className="font-bold text-rose-400">{stat.issues}</span>
+          </div>
+
+          {/* Reviews & Comments */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-zinc-500">
+              <svg
+                className="w-4 h-4 text-amber-500 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+              <span>Reviews & Comments</span>
+            </div>
+            <span className="font-bold text-amber-400">{stat.reviews}</span>
+          </div>
+        </div>
+
+        {/* Themed Daily Activity MiniBarChart */}
+        <div className="w-full">
+          <MiniBarChart
+            data={stat.commitHistory}
+            colorClass={persona ? theme.barColor : undefined}
+            hoverColorClass={persona ? theme.barHoverColor : undefined}
+          />
+        </div>
+      </div>
+    </SpotlightCard>
+  );
+}
+
+function SkeletonCard() {
+  return (
+    <div className="border border-zinc-900/60 bg-zinc-950/20 rounded-xl p-5 flex flex-col animate-pulse overflow-hidden">
+      {/* Banner Skeleton */}
+      <div className="-mt-5 -mx-5 h-36 bg-zinc-900/80 mb-4 rounded-t-xl relative p-4 flex flex-col justify-between">
+        <div className="flex justify-between items-center">
+          <div className="h-5 bg-zinc-800 rounded-full w-28" />
+          <div className="h-4 w-12 bg-zinc-800 rounded" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="h-6 bg-zinc-800 rounded w-36" />
+          <div className="h-3 bg-zinc-850 rounded w-24" />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex justify-between items-center">
+            <div className="flex items-center gap-2 w-1/2">
+              <div className="w-4 h-4 bg-zinc-800 rounded-full animate-pulse" />
+              <div className="h-3 bg-zinc-800 rounded w-2/3 animate-pulse" />
+            </div>
+            <div className="h-3 bg-zinc-800 rounded w-1/6 animate-pulse" />
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 pt-3.5 border-t border-zinc-900/60 flex flex-col gap-2">
+        <div className="h-3 bg-zinc-800 rounded w-1/4 animate-pulse" />
+        <div className="h-10 flex items-end gap-[3px] w-full">
+          {Array.from({ length: 30 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-zinc-800/20 rounded-[1px] flex-1 h-2 animate-pulse"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GitWrapped({
   session,
   username,
@@ -422,6 +614,9 @@ export default function GitWrapped({
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [timeStats, setTimeStats] = useState<TimeStats | null>(null);
   const [loadingTimeStats, setLoadingTimeStats] = useState<boolean>(false);
+  const [monthlyTimeStats, setMonthlyTimeStats] = useState<
+    Record<string, TimeStats>
+  >({});
 
   const counts = useMemo(() => {
     if (!stats) {
@@ -541,18 +736,25 @@ export default function GitWrapped({
         const dayEntries: { date: string; count: number }[] = [];
         if (monthData?.contributionCalendar?.weeks) {
           const targetPrefix = m.from.substring(0, 7); // e.g. "2026-06"
-          monthData.contributionCalendar.weeks.forEach((week: any) => {
-            if (week.contributionDays) {
-              week.contributionDays.forEach((day: any) => {
-                if (day.date && day.date.startsWith(targetPrefix)) {
-                  dayEntries.push({
-                    date: day.date,
-                    count: day.contributionCount || 0,
-                  });
-                }
-              });
-            }
-          });
+          monthData.contributionCalendar.weeks.forEach(
+            (week: {
+              contributionDays?: {
+                date?: string;
+                contributionCount?: number;
+              }[];
+            }) => {
+              if (week.contributionDays) {
+                week.contributionDays.forEach((day) => {
+                  if (day.date && day.date.startsWith(targetPrefix)) {
+                    dayEntries.push({
+                      date: day.date,
+                      count: day.contributionCount || 0,
+                    });
+                  }
+                });
+              }
+            },
+          );
         }
         dayEntries.sort((a, b) => a.date.localeCompare(b.date));
         const history = dayEntries.map((e) => e.count);
@@ -561,18 +763,26 @@ export default function GitWrapped({
         const languageScores: { [name: string]: number } = {};
 
         if (monthData?.commitContributionsByRepository) {
-          monthData.commitContributionsByRepository.forEach((c: any) => {
-            const lang = c.repository?.primaryLanguage?.name;
-            const count = c.contributions?.totalCount || 0;
-            if (lang && count > 0) {
-              languageScores[lang] = (languageScores[lang] || 0) + count;
-            }
-          });
+          monthData.commitContributionsByRepository.forEach(
+            (c: {
+              repository?: { primaryLanguage?: { name?: string } };
+              contributions?: { totalCount?: number };
+            }) => {
+              const lang = c.repository?.primaryLanguage?.name;
+              const count = c.contributions?.totalCount || 0;
+              if (lang && count > 0) {
+                languageScores[lang] = (languageScores[lang] || 0) + count;
+              }
+            },
+          );
         }
 
         if (monthData?.pullRequestReviewContributionsByRepository) {
           monthData.pullRequestReviewContributionsByRepository.forEach(
-            (r: any) => {
+            (r: {
+              repository?: { primaryLanguage?: { name?: string } };
+              contributions?: { totalCount?: number };
+            }) => {
               const lang = r.repository?.primaryLanguage?.name;
               const count = r.contributions?.totalCount || 0;
               if (lang && count > 0) {
@@ -605,6 +815,42 @@ export default function GitWrapped({
       });
 
       setStats(parsedStats);
+
+      // Pre-populate timeStats / personas for all months
+      const initialMap: Record<string, TimeStats> = {};
+      const activeStats: MonthlyStat[] = [];
+
+      parsedStats.forEach((st) => {
+        if (st.commits === 0 && st.issues === 0) {
+          initialMap[st.month] = {
+            day: 0,
+            afternoon: 0,
+            evening: 0,
+            night: 0,
+            percentages: { day: 0, afternoon: 0, evening: 0, night: 0 },
+            persona: "Silent Achiever",
+          };
+        } else {
+          activeStats.push(st);
+        }
+      });
+
+      setMonthlyTimeStats((prev) => ({ ...prev, ...initialMap }));
+
+      // Concurrently fetch time stats for months with activity
+      if (session?.accessToken) {
+        activeStats.forEach(async (st) => {
+          const tStats = await fetchMonthTimeStats(
+            st.month,
+            username,
+            session.accessToken!,
+          );
+          setMonthlyTimeStats((prev) => ({
+            ...prev,
+            [st.month]: tStats,
+          }));
+        });
+      }
     } catch (err: unknown) {
       console.error("Error fetching monthly stats:", err);
       const errMsg =
@@ -616,136 +862,69 @@ export default function GitWrapped({
       setLoading(false);
       onLoadComplete?.();
     }
-  }, [username, session]);
+  }, [username, session, onLoadComplete]);
 
   const fetchTimeStats = useCallback(
     async (monthLabel: string) => {
       if (!username || !session?.accessToken) return;
 
+      if (monthlyTimeStats[monthLabel]) {
+        setTimeStats(monthlyTimeStats[monthLabel]);
+        return;
+      }
+
       setLoadingTimeStats(true);
       setTimeStats(null);
 
       try {
-        const selectedMonthMeta = getPastMonths(6).find(
-          (m) => m.label === monthLabel,
+        const statsResult = await fetchMonthTimeStats(
+          monthLabel,
+          username,
+          session.accessToken,
         );
-        if (!selectedMonthMeta) {
-          setLoadingTimeStats(false);
-          return;
-        }
-
-        const fromStr = selectedMonthMeta.from.substring(0, 10);
-        const toStr = selectedMonthMeta.to.substring(0, 10);
-
-        const headers = {
-          Authorization: `Bearer ${session.accessToken}`,
-          Accept: "application/vnd.github+json",
-        };
-
-        const commitUrl = `https://api.github.com/search/commits?q=author:${username}+committer-date:${fromStr}..${toStr}&per_page=100`;
-        const issueUrl = `https://api.github.com/search/issues?q=author:${username}+created:${fromStr}..${toStr}&per_page=100`;
-
-        const [commitRes, issueRes] = await Promise.all([
-          fetch(commitUrl, { headers }),
-          fetch(issueUrl, { headers }),
-        ]);
-
-        const commitData = commitRes.ok
-          ? await commitRes.json()
-          : { items: [] };
-        const issueData = issueRes.ok ? await issueRes.json() : { items: [] };
-
-        let day = 0;
-        let afternoon = 0;
-        let evening = 0;
-        let night = 0;
-
-        const processDate = (dateString: string) => {
-          if (!dateString) return;
-          const date = new Date(dateString);
-          const hour = date.getHours();
-
-          if (hour >= 5 && hour < 12) {
-            day++;
-          } else if (hour >= 12 && hour < 17) {
-            afternoon++;
-          } else if (hour >= 17 && hour < 21) {
-            evening++;
-          } else {
-            night++;
-          }
-        };
-
-        if (Array.isArray(commitData.items)) {
-          commitData.items.forEach((item: any) => {
-            if (item.commit?.committer?.date) {
-              processDate(item.commit.committer.date);
-            }
-          });
-        }
-
-        if (Array.isArray(issueData.items)) {
-          issueData.items.forEach((item: any) => {
-            if (item.created_at) {
-              processDate(item.created_at);
-            }
-          });
-        }
-
-        const total = day + afternoon + evening + night;
-        const percentages = {
-          day: total > 0 ? Math.round((day / total) * 100) : 0,
-          afternoon: total > 0 ? Math.round((afternoon / total) * 100) : 0,
-          evening: total > 0 ? Math.round((evening / total) * 100) : 0,
-          night: total > 0 ? Math.round((night / total) * 100) : 0,
-        };
-
-        const maxVal = Math.max(day, afternoon, evening, night);
-        let persona = "Nocturnal Developer";
-        if (total > 0) {
-          if (maxVal === day) {
-            persona = "Early-Bird Engineer";
-          } else if (maxVal === afternoon) {
-            persona = "Post-Lunch Programmer";
-          } else if (maxVal === evening) {
-            persona = "Shadow Scripter";
-          } else if (maxVal === night) {
-            persona = "Nocturnal Developer";
-          }
-        } else {
-          persona = "Silent Achiever";
-        }
-
-        setTimeStats({
-          day,
-          afternoon,
-          evening,
-          night,
-          percentages,
-          persona,
-        });
+        setTimeStats(statsResult);
+        setMonthlyTimeStats((prev) => ({
+          ...prev,
+          [monthLabel]: statsResult,
+        }));
       } catch (err) {
         console.error("Error fetching time stats:", err);
       } finally {
         setLoadingTimeStats(false);
       }
     },
-    [username, session],
+    [username, session, monthlyTimeStats],
   );
 
   useEffect(() => {
-    if (selectedMonth) {
-      fetchTimeStats(selectedMonth);
-    } else {
-      setTimeStats(null);
+    let active = true;
+    if (selectedMonth && !monthlyTimeStats[selectedMonth]) {
+      void (async () => {
+        await Promise.resolve();
+        if (active) {
+          await fetchTimeStats(selectedMonth);
+        }
+      })();
     }
-  }, [selectedMonth, fetchTimeStats]);
+    return () => {
+      active = false;
+    };
+  }, [selectedMonth, monthlyTimeStats, fetchTimeStats]);
 
   useEffect(() => {
-    if (username && session) {
-      fetchMonthlyStats();
+    let isMounted = true;
+    if (username && session?.accessToken) {
+      void (async () => {
+        await Promise.resolve();
+        if (isMounted) {
+          await fetchMonthlyStats();
+        }
+      })();
     }
-  }, [username, session, fetchMonthlyStats]);
+    return () => {
+      isMounted = false;
+    };
+  }, [username, session?.accessToken, fetchMonthlyStats]);
 
   const handleRefresh = async () => {
     await fetchMonthlyStats();
@@ -825,8 +1004,11 @@ export default function GitWrapped({
     }
   }
 
+  const effectiveTimeStats =
+    (selectedMonth ? monthlyTimeStats[selectedMonth] : null) || timeStats;
+
   if (selectedMonth) {
-    if (loadingTimeStats) {
+    if (!effectiveTimeStats && loadingTimeStats) {
       return (
         <div
           className={`space-y-8 select-none animate-pulse ${montserrat.className}`}
@@ -901,7 +1083,7 @@ export default function GitWrapped({
       );
     }
 
-    if (!timeStats) {
+    if (!effectiveTimeStats) {
       return (
         <div className={`space-y-8 select-none ${montserrat.className}`}>
           <div>
@@ -933,11 +1115,13 @@ export default function GitWrapped({
     }
 
     const theme =
-      personaThemes[timeStats.persona] || personaThemes["Silent Achiever"];
-    const isDayActive = timeStats.persona === "Early-Bird Engineer";
-    const isAfternoonActive = timeStats.persona === "Post-Lunch Programmer";
-    const isEveningActive = timeStats.persona === "Shadow Scripter";
-    const isNightActive = timeStats.persona === "Nocturnal Developer";
+      personaThemes[effectiveTimeStats.persona] ||
+      personaThemes["Silent Achiever"];
+    const isDayActive = effectiveTimeStats.persona === "Early-Bird Engineer";
+    const isAfternoonActive =
+      effectiveTimeStats.persona === "Post-Lunch Programmer";
+    const isEveningActive = effectiveTimeStats.persona === "Shadow Scripter";
+    const isNightActive = effectiveTimeStats.persona === "Nocturnal Developer";
 
     return (
       <div
@@ -999,9 +1183,10 @@ export default function GitWrapped({
               <div className="flex flex-col items-start text-left w-full">
                 {/* Persona Banner - attached to card borders */}
                 <div className="relative -mt-5 -mx-5 w-[calc(100%+2.5rem)] h-36 sm:h-44 overflow-hidden mb-5 group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={theme.banner}
-                    alt={timeStats.persona}
+                    alt={effectiveTimeStats.persona}
                     className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
@@ -1018,7 +1203,7 @@ export default function GitWrapped({
                       Persona Profile
                     </div>
                     <h2 className="text-xl font-bold text-white tracking-wide">
-                      {timeStats.persona}
+                      {effectiveTimeStats.persona}
                     </h2>
                     <div
                       className={`text-[10px] tracking-widest mt-0.5 uppercase ${theme.primaryText}`}
@@ -1051,9 +1236,9 @@ export default function GitWrapped({
                           isDayActive ? theme.primaryText : "text-zinc-300"
                         }`}
                       >
-                        {timeStats.percentages.day}%{" "}
+                        {effectiveTimeStats.percentages.day}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
-                          ({timeStats.day})
+                          ({effectiveTimeStats.day})
                         </span>
                       </span>
                     </div>
@@ -1061,7 +1246,7 @@ export default function GitWrapped({
                       <div
                         className="h-full transition-all duration-700"
                         style={{
-                          width: `${timeStats.percentages.day}%`,
+                          width: `${effectiveTimeStats.percentages.day}%`,
                           backgroundColor: isDayActive
                             ? theme.spotlight
                             : undefined,
@@ -1085,9 +1270,9 @@ export default function GitWrapped({
                             : "text-zinc-300"
                         }`}
                       >
-                        {timeStats.percentages.afternoon}%{" "}
+                        {effectiveTimeStats.percentages.afternoon}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
-                          ({timeStats.afternoon})
+                          ({effectiveTimeStats.afternoon})
                         </span>
                       </span>
                     </div>
@@ -1095,7 +1280,7 @@ export default function GitWrapped({
                       <div
                         className="h-full transition-all duration-700"
                         style={{
-                          width: `${timeStats.percentages.afternoon}%`,
+                          width: `${effectiveTimeStats.percentages.afternoon}%`,
                           backgroundColor: isAfternoonActive
                             ? theme.spotlight
                             : undefined,
@@ -1117,9 +1302,9 @@ export default function GitWrapped({
                           isEveningActive ? theme.primaryText : "text-zinc-300"
                         }`}
                       >
-                        {timeStats.percentages.evening}%{" "}
+                        {effectiveTimeStats.percentages.evening}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
-                          ({timeStats.evening})
+                          ({effectiveTimeStats.evening})
                         </span>
                       </span>
                     </div>
@@ -1127,7 +1312,7 @@ export default function GitWrapped({
                       <div
                         className="h-full transition-all duration-700"
                         style={{
-                          width: `${timeStats.percentages.evening}%`,
+                          width: `${effectiveTimeStats.percentages.evening}%`,
                           backgroundColor: isEveningActive
                             ? theme.spotlight
                             : undefined,
@@ -1149,9 +1334,9 @@ export default function GitWrapped({
                           isNightActive ? theme.primaryText : "text-zinc-300"
                         }`}
                       >
-                        {timeStats.percentages.night}%{" "}
+                        {effectiveTimeStats.percentages.night}%{" "}
                         <span className="text-[10px] text-zinc-500 font-normal">
-                          ({timeStats.night})
+                          ({effectiveTimeStats.night})
                         </span>
                       </span>
                     </div>
@@ -1159,7 +1344,7 @@ export default function GitWrapped({
                       <div
                         className="h-full transition-all duration-700"
                         style={{
-                          width: `${timeStats.percentages.night}%`,
+                          width: `${effectiveTimeStats.percentages.night}%`,
                           backgroundColor: isNightActive
                             ? theme.spotlight
                             : undefined,
@@ -1468,6 +1653,7 @@ export default function GitWrapped({
                   <MonthlyStatCard
                     key={stat.month}
                     stat={stat}
+                    timeStats={monthlyTimeStats[stat.month]}
                     onClick={() => setSelectedMonth(stat.month)}
                   />
                 ))}
