@@ -423,23 +423,6 @@ function MonthlyStatCard({
                   <span>{persona}</span>
                 </div>
               )}
-
-              <div className="text-[10px] text-zinc-400 group-hover:text-white flex items-center gap-1 transition-colors drop-shadow bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">
-                <span className="hidden sm:inline font-medium">Dossier</span>
-                <svg
-                  className="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
             </div>
 
             {/* Bottom row: Month Name and Persona Theme Subtitle */}
