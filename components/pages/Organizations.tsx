@@ -4,6 +4,15 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { League_Spartan, Montserrat } from "next/font/google";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
+import {
+  GitCommitIcon,
+  GitPullRequestIcon,
+  IssueOpenedIcon,
+  EyeIcon,
+  CommentIcon,
+  RepoIcon,
+  ArrowUpRightIcon,
+} from "@primer/octicons-react";
 
 const leagueSpartan = League_Spartan({
   subsets: ["latin"],
@@ -417,27 +426,30 @@ export default function Organizations({
     };
   }, [orgs]);
 
-  // Loading skeleton card matching the design style
+  // Loading skeleton card matching the modern minimalist style
   const SkeletonCard = () => (
-    <div className="border border-zinc-900/80 bg-zinc-950/40 rounded-lg p-5 flex flex-col justify-between gap-5 animate-pulse min-h-[240px]">
+    <div className="border border-zinc-900/80 bg-zinc-950/40 rounded-xl p-5 flex flex-col justify-between gap-5 animate-pulse min-h-[250px]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3.5 min-w-0 flex-1">
-          <div className="w-11 h-11 bg-zinc-800/80 rounded-lg flex-shrink-0" />
+          <div className="w-12 h-12 bg-zinc-800/80 rounded-xl flex-shrink-0" />
           <div className="space-y-2 flex-1 min-w-0">
-            <div className="h-3.5 bg-zinc-800 rounded w-1/3" />
-            <div className="h-2.5 bg-zinc-850 rounded w-1/4" />
+            <div className="h-4 bg-zinc-800 rounded w-1/3" />
+            <div className="h-3 bg-zinc-850 rounded w-1/4" />
           </div>
         </div>
-        <div className="w-14 h-5 bg-zinc-850 rounded-full flex-shrink-0" />
+        <div className="w-16 h-6 bg-zinc-850 rounded-full flex-shrink-0" />
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-12 bg-zinc-900/50 border border-zinc-900/80 rounded-lg"
-          />
-        ))}
+
+      <div className="flex items-baseline justify-between pt-1">
+        <div className="space-y-1.5">
+          <div className="h-2.5 bg-zinc-850 rounded w-24" />
+          <div className="h-7 bg-zinc-800 rounded w-16" />
+        </div>
+        <div className="w-20 h-6 bg-zinc-850 rounded-md" />
       </div>
+
+      <div className="h-14 bg-zinc-900/40 border border-zinc-850/60 rounded-lg" />
+
       <div className="space-y-2 pt-2 border-t border-zinc-900/40">
         <div className="flex justify-between">
           <div className="h-2.5 bg-zinc-850 rounded w-1/4" />
@@ -717,7 +729,7 @@ export default function Organizations({
                   <SpotlightCard
                     key={org.login}
                     spotlightColor="rgba(255, 255, 255, 0.08)"
-                    className="rounded-lg transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg"
+                    className="rounded-xl transition-all duration-300 hover:translate-y-[-2px] hover:shadow-xl hover:shadow-black/50"
                   >
                     <a
                       href={`https://github.com/${org.login}`}
@@ -731,182 +743,250 @@ export default function Organizations({
                           {org.avatarUrl ? (
                             <img
                               src={org.avatarUrl}
-                              className="w-11 h-11 rounded-lg border border-zinc-800/80 bg-zinc-950 object-cover flex-shrink-0"
+                              className="w-12 h-12 rounded-xl ring-1 ring-white/10 bg-zinc-950 object-cover flex-shrink-0 transition-transform duration-300 group-hover:scale-105"
                               alt={displayName}
                             />
                           ) : (
-                            <div className="w-11 h-11 rounded-lg border border-zinc-800/80 bg-zinc-900 flex items-center justify-center text-zinc-400 font-mono text-sm font-semibold flex-shrink-0">
+                            <div className="w-12 h-12 rounded-xl ring-1 ring-white/10 bg-zinc-900 flex items-center justify-center text-zinc-400 font-mono text-sm font-semibold flex-shrink-0">
                               {displayName.slice(0, 2).toUpperCase()}
                             </div>
                           )}
                           <div className="min-w-0 flex-1">
-                            <h2 className="text-sm font-semibold text-zinc-200 group-hover:text-emerald-400 transition-colors truncate">
-                              {displayName}
-                            </h2>
-                            <p className="text-[11px] text-zinc-500 font-mono truncate">
+                            <div className="flex items-center gap-1.5">
+                              <h2 className="text-base font-semibold text-zinc-100 group-hover:text-white transition-colors truncate tracking-tight">
+                                {displayName}
+                              </h2>
+                              <ArrowUpRightIcon className="w-3.5 h-3.5 text-zinc-500 opacity-60 group-hover:opacity-100 group-hover:text-zinc-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all flex-shrink-0" />
+                            </div>
+                            <p className="text-xs text-zinc-500 font-mono truncate">
                               @{org.login}
                             </p>
                           </div>
                         </div>
+
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {total > 0 ? (
-                            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-800/50 text-emerald-400 font-medium">
+                            <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                               Active
                             </span>
                           ) : (
-                            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800/60 text-zinc-500">
+                            <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-zinc-900/60 border border-zinc-800/60 text-zinc-500 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
                               Inactive
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Stats Grid */}
-                      <div className="grid grid-cols-3 gap-2 text-center font-mono">
-                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
-                            Commits
-                          </p>
-                          <p className="text-sm font-bold text-zinc-200 mt-1">
+                      {/* Primary Stats Header Row: Total & Active Repos */}
+                      <div className="flex items-baseline justify-between pt-1">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block mb-0.5">
+                            Total Contributions
+                          </span>
+                          <div className="flex items-baseline gap-2">
+                            <span
+                              className={`text-3xl font-semibold tracking-tight text-white ${leagueSpartan.className}`}
+                            >
+                              {total.toLocaleString()}
+                            </span>
+                            <span className="text-xs text-zinc-500 font-mono">
+                              past year
+                            </span>
+                          </div>
+                        </div>
+
+                        {org.reposCount > 0 ? (
+                          <div className="flex items-center gap-1.5 text-xs font-mono text-zinc-400 bg-zinc-900/60 border border-zinc-800/60 px-2.5 py-1 rounded-md">
+                            <RepoIcon className="w-3.5 h-3.5 text-zinc-400" />
+                            <span>
+                              {org.reposCount}{" "}
+                              {org.reposCount === 1 ? "repo" : "repos"}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-xs font-mono text-zinc-600 bg-zinc-950/40 border border-zinc-900/80 px-2.5 py-1 rounded-md">
+                            <RepoIcon className="w-3.5 h-3.5 text-zinc-600" />
+                            <span>0 repos</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Sleek Minimalist Metrics Bar */}
+                      <div className="grid grid-cols-5 rounded-lg bg-zinc-900/30 border border-zinc-850/70 divide-x divide-zinc-850/70 font-mono py-2.5">
+                        <div className="flex flex-col items-center justify-center px-1 text-center">
+                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
+                            <GitCommitIcon className="w-3 h-3 text-zinc-400" />
+                            <span className="text-[9px] uppercase tracking-wider">
+                              Commits
+                            </span>
+                          </div>
+                          <span
+                            className={`text-sm font-semibold ${org.commits > 0 ? "text-zinc-200" : "text-zinc-600"}`}
+                          >
                             {org.commits}
-                          </p>
+                          </span>
                         </div>
-                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
-                            PRs
-                          </p>
-                          <p className="text-sm font-bold text-emerald-400 mt-1">
+
+                        <div className="flex flex-col items-center justify-center px-1 text-center">
+                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
+                            <GitPullRequestIcon className="w-3 h-3 text-emerald-400" />
+                            <span className="text-[9px] uppercase tracking-wider">
+                              PRs
+                            </span>
+                          </div>
+                          <span
+                            className={`text-sm font-semibold ${org.pullRequests > 0 ? "text-emerald-400" : "text-zinc-600"}`}
+                          >
                             {org.pullRequests}
-                          </p>
+                          </span>
                         </div>
-                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
-                            Issues
-                          </p>
-                          <p className="text-sm font-bold text-amber-400 mt-1">
+
+                        <div className="flex flex-col items-center justify-center px-1 text-center">
+                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
+                            <IssueOpenedIcon className="w-3 h-3 text-amber-400" />
+                            <span className="text-[9px] uppercase tracking-wider">
+                              Issues
+                            </span>
+                          </div>
+                          <span
+                            className={`text-sm font-semibold ${org.issues > 0 ? "text-amber-400" : "text-zinc-600"}`}
+                          >
                             {org.issues}
-                          </p>
+                          </span>
                         </div>
-                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
-                            Reviews
-                          </p>
-                          <p className="text-sm font-bold text-purple-400 mt-1">
+
+                        <div className="flex flex-col items-center justify-center px-1 text-center">
+                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
+                            <EyeIcon className="w-3 h-3 text-purple-400" />
+                            <span className="text-[9px] uppercase tracking-wider">
+                              Reviews
+                            </span>
+                          </div>
+                          <span
+                            className={`text-sm font-semibold ${org.reviews > 0 ? "text-purple-400" : "text-zinc-600"}`}
+                          >
                             {org.reviews}
-                          </p>
+                          </span>
                         </div>
-                        <div className="border border-zinc-800/60 bg-zinc-950/40 p-2 rounded-lg flex flex-col justify-center">
-                          <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-medium">
-                            Comments
-                          </p>
-                          <p className="text-sm font-bold text-blue-400 mt-1">
+
+                        <div className="flex flex-col items-center justify-center px-1 text-center">
+                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
+                            <CommentIcon className="w-3 h-3 text-blue-400" />
+                            <span className="text-[9px] uppercase tracking-wider">
+                              Comments
+                            </span>
+                          </div>
+                          <span
+                            className={`text-sm font-semibold ${org.comments > 0 ? "text-blue-400" : "text-zinc-600"}`}
+                          >
                             {org.comments}
-                          </p>
-                        </div>
-                        <div className="border border-emerald-900/40 bg-emerald-950/20 p-2 rounded-lg flex flex-col justify-center">
-                          <p className="text-[9px] uppercase tracking-wider text-emerald-400/90 font-semibold">
-                            Total
-                          </p>
-                          <p className="text-sm font-bold text-emerald-300 mt-1">
-                            {total}
-                          </p>
+                          </span>
                         </div>
                       </div>
 
                       {/* Stacked Breakdown Bar & Footer */}
                       <div className="space-y-2 pt-2 border-t border-zinc-900/60">
-                        <div className="flex justify-between items-center text-[9px] font-mono text-zinc-400">
-                          <span>Contribution Breakdown</span>
-                          <span className="text-zinc-500">
-                            {org.reposCount > 0
-                              ? `${org.reposCount} active ${org.reposCount === 1 ? "repo" : "repos"}`
-                              : "0 active repos"}
-                          </span>
+                        <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500">
+                          <span>Activity Distribution</span>
+                          {total > 0 ? (
+                            <span className="text-zinc-400">
+                              {pctCommits >= pctPrs && pctCommits >= pctIssues && pctCommits >= pctReviews && pctCommits >= pctComments && "Mainly Commits"}
+                              {pctPrs > pctCommits && pctPrs >= pctIssues && pctPrs >= pctReviews && pctPrs >= pctComments && "Mainly Pull Requests"}
+                              {pctIssues > pctCommits && pctIssues > pctPrs && pctIssues >= pctReviews && pctIssues >= pctComments && "Mainly Issues"}
+                              {pctReviews > pctCommits && pctReviews > pctPrs && pctReviews > pctIssues && pctReviews >= pctComments && "Mainly Reviews"}
+                              {pctComments > pctCommits && pctComments > pctPrs && pctComments > pctIssues && pctComments > pctReviews && "Mainly Discussions"}
+                            </span>
+                          ) : (
+                            <span className="text-zinc-600">No activity</span>
+                          )}
                         </div>
-                        <div className="w-full h-1.5 rounded-full overflow-hidden bg-zinc-900 flex">
+
+                        <div className="w-full h-1.5 rounded-full overflow-hidden bg-zinc-900/80 flex gap-[1px]">
                           {total === 0 ? (
                             <div
-                              className="w-full h-full bg-zinc-800/40 rounded-full"
+                              className="w-full h-full bg-zinc-850/40 rounded-full"
                               title="No contributions in past year"
                             />
                           ) : (
                             <>
                               {org.commits > 0 && (
                                 <div
-                                  className="bg-zinc-400 h-full border-r border-zinc-950/40 last:border-0"
+                                  className="bg-zinc-300 h-full transition-all duration-300"
                                   style={{ width: `${pctCommits}%` }}
-                                  title={`Commits: ${org.commits}`}
+                                  title={`Commits: ${org.commits} (${Math.round(pctCommits)}%)`}
                                 />
                               )}
                               {org.pullRequests > 0 && (
                                 <div
-                                  className="bg-emerald-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  className="bg-emerald-400 h-full transition-all duration-300"
                                   style={{ width: `${pctPrs}%` }}
-                                  title={`Pull Requests: ${org.pullRequests}`}
+                                  title={`Pull Requests: ${org.pullRequests} (${Math.round(pctPrs)}%)`}
                                 />
                               )}
                               {org.issues > 0 && (
                                 <div
-                                  className="bg-amber-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  className="bg-amber-400 h-full transition-all duration-300"
                                   style={{ width: `${pctIssues}%` }}
-                                  title={`Issues: ${org.issues}`}
+                                  title={`Issues: ${org.issues} (${Math.round(pctIssues)}%)`}
                                 />
                               )}
                               {org.reviews > 0 && (
                                 <div
-                                  className="bg-purple-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  className="bg-purple-400 h-full transition-all duration-300"
                                   style={{ width: `${pctReviews}%` }}
-                                  title={`Reviews: ${org.reviews}`}
+                                  title={`Reviews: ${org.reviews} (${Math.round(pctReviews)}%)`}
                                 />
                               )}
                               {org.comments > 0 && (
                                 <div
-                                  className="bg-blue-500 h-full border-r border-zinc-950/40 last:border-0"
+                                  className="bg-blue-400 h-full transition-all duration-300"
                                   style={{ width: `${pctComments}%` }}
-                                  title={`Comments: ${org.comments}`}
+                                  title={`Comments: ${org.comments} (${Math.round(pctComments)}%)`}
                                 />
                               )}
                             </>
                           )}
                         </div>
 
-                        {/* Segment legends (consistent height container) */}
-                        <div className="min-h-[1.25rem] flex flex-wrap items-center gap-x-3 gap-y-1 text-[8.5px] font-mono text-zinc-500">
+                        {/* Minimalist Micro-Legend */}
+                        <div className="min-h-[1.25rem] flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[9px] font-mono text-zinc-500">
                           {total > 0 ? (
                             <>
                               {org.commits > 0 && (
                                 <span className="flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                                  Commits ({Math.round(pctCommits)}%)
+                                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-300" />
+                                  Commits {Math.round(pctCommits)}%
                                 </span>
                               )}
                               {org.pullRequests > 0 && (
                                 <span className="flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  PRs ({Math.round(pctPrs)}%)
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                  PRs {Math.round(pctPrs)}%
                                 </span>
                               )}
                               {org.issues > 0 && (
                                 <span className="flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                  Issues ({Math.round(pctIssues)}%)
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                  Issues {Math.round(pctIssues)}%
                                 </span>
                               )}
                               {org.reviews > 0 && (
                                 <span className="flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                                  Reviews ({Math.round(pctReviews)}%)
+                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                                  Reviews {Math.round(pctReviews)}%
                                 </span>
                               )}
                               {org.comments > 0 && (
                                 <span className="flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                  Comments ({Math.round(pctComments)}%)
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                  Comments {Math.round(pctComments)}%
                                 </span>
                               )}
                             </>
                           ) : (
-                            <span className="text-zinc-600 text-[8.5px]">
+                            <span className="text-zinc-600 text-[9px]">
                               No contributions in the past year
                             </span>
                           )}
