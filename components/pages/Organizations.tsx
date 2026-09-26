@@ -448,7 +448,7 @@ export default function Organizations({
         <div className="w-20 h-6 bg-zinc-850 rounded-md" />
       </div>
 
-      <div className="h-14 bg-zinc-900/40 border border-zinc-850/60 rounded-lg" />
+      <div className="h-12 bg-zinc-900/30 border border-zinc-800/60 rounded-md" />
 
       <div className="space-y-2 pt-2 border-t border-zinc-900/40">
         <div className="flex justify-between">
@@ -813,73 +813,73 @@ export default function Organizations({
                         )}
                       </div>
 
-                      {/* Sleek Minimalist Metrics Bar */}
-                      <div className="grid grid-cols-5 rounded-lg bg-zinc-900/30 border border-zinc-850/70 divide-x divide-zinc-850/70 font-mono py-2.5">
+                      {/* Subtle & Rigid Modern Minimalist Metrics Bar */}
+                      <div className="grid grid-cols-5 rounded-md bg-zinc-950/40 border border-zinc-800/60 divide-x divide-zinc-800/60 font-mono py-2">
                         <div className="flex flex-col items-center justify-center px-1 text-center">
-                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
-                            <GitCommitIcon className="w-3 h-3 text-zinc-400" />
-                            <span className="text-[9px] uppercase tracking-wider">
+                          <div className="flex items-center justify-center gap-1 text-zinc-500 mb-0.5">
+                            <GitCommitIcon className="w-3 h-3 text-zinc-400 flex-shrink-0" />
+                            <span className="text-[9px] uppercase tracking-wider text-zinc-500">
                               Commits
                             </span>
                           </div>
                           <span
-                            className={`text-sm font-semibold ${org.commits > 0 ? "text-zinc-200" : "text-zinc-600"}`}
+                            className={`text-sm font-semibold tabular-nums transition-colors ${org.commits > 0 ? "text-zinc-200 group-hover:text-white" : "text-zinc-600"}`}
                           >
                             {org.commits}
                           </span>
                         </div>
 
                         <div className="flex flex-col items-center justify-center px-1 text-center">
-                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
-                            <GitPullRequestIcon className="w-3 h-3 text-emerald-400" />
-                            <span className="text-[9px] uppercase tracking-wider">
+                          <div className="flex items-center justify-center gap-1 text-zinc-500 mb-0.5">
+                            <GitPullRequestIcon className="w-3 h-3 text-emerald-500/80 flex-shrink-0" />
+                            <span className="text-[9px] uppercase tracking-wider text-zinc-500">
                               PRs
                             </span>
                           </div>
                           <span
-                            className={`text-sm font-semibold ${org.pullRequests > 0 ? "text-emerald-400" : "text-zinc-600"}`}
+                            className={`text-sm font-semibold tabular-nums transition-colors ${org.pullRequests > 0 ? "text-zinc-200 group-hover:text-white" : "text-zinc-600"}`}
                           >
                             {org.pullRequests}
                           </span>
                         </div>
 
                         <div className="flex flex-col items-center justify-center px-1 text-center">
-                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
-                            <IssueOpenedIcon className="w-3 h-3 text-amber-400" />
-                            <span className="text-[9px] uppercase tracking-wider">
+                          <div className="flex items-center justify-center gap-1 text-zinc-500 mb-0.5">
+                            <IssueOpenedIcon className="w-3 h-3 text-amber-500/80 flex-shrink-0" />
+                            <span className="text-[9px] uppercase tracking-wider text-zinc-500">
                               Issues
                             </span>
                           </div>
                           <span
-                            className={`text-sm font-semibold ${org.issues > 0 ? "text-amber-400" : "text-zinc-600"}`}
+                            className={`text-sm font-semibold tabular-nums transition-colors ${org.issues > 0 ? "text-zinc-200 group-hover:text-white" : "text-zinc-600"}`}
                           >
                             {org.issues}
                           </span>
                         </div>
 
                         <div className="flex flex-col items-center justify-center px-1 text-center">
-                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
-                            <EyeIcon className="w-3 h-3 text-purple-400" />
-                            <span className="text-[9px] uppercase tracking-wider">
+                          <div className="flex items-center justify-center gap-1 text-zinc-500 mb-0.5">
+                            <EyeIcon className="w-3 h-3 text-purple-400/80 flex-shrink-0" />
+                            <span className="text-[9px] uppercase tracking-wider text-zinc-500">
                               Reviews
                             </span>
                           </div>
                           <span
-                            className={`text-sm font-semibold ${org.reviews > 0 ? "text-purple-400" : "text-zinc-600"}`}
+                            className={`text-sm font-semibold tabular-nums transition-colors ${org.reviews > 0 ? "text-zinc-200 group-hover:text-white" : "text-zinc-600"}`}
                           >
                             {org.reviews}
                           </span>
                         </div>
 
                         <div className="flex flex-col items-center justify-center px-1 text-center">
-                          <div className="flex items-center gap-1 text-zinc-400 mb-1">
-                            <CommentIcon className="w-3 h-3 text-blue-400" />
-                            <span className="text-[9px] uppercase tracking-wider">
+                          <div className="flex items-center justify-center gap-1 text-zinc-500 mb-0.5">
+                            <CommentIcon className="w-3 h-3 text-blue-400/80 flex-shrink-0" />
+                            <span className="text-[9px] uppercase tracking-wider text-zinc-500">
                               Comments
                             </span>
                           </div>
                           <span
-                            className={`text-sm font-semibold ${org.comments > 0 ? "text-blue-400" : "text-zinc-600"}`}
+                            className={`text-sm font-semibold tabular-nums transition-colors ${org.comments > 0 ? "text-zinc-200 group-hover:text-white" : "text-zinc-600"}`}
                           >
                             {org.comments}
                           </span>
