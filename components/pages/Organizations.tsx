@@ -74,7 +74,6 @@ export default function Organizations({
     | "alphabetical"
   >("total");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
-  const [filterActiveOnly, setFilterActiveOnly] = useState<boolean>(false);
 
   const fetchOrganizationsData = useCallback(async () => {
     await Promise.resolve();
@@ -385,12 +384,7 @@ export default function Organizations({
       );
     }
 
-    // 2. Active-only filter
-    if (filterActiveOnly) {
-      result = result.filter((o) => o.totalContributions > 0);
-    }
-
-    // 3. Sorting
+    // 2. Sorting
     result.sort((a, b) => {
       if (sortBy === "total") {
         return b.totalContributions - a.totalContributions;
@@ -411,13 +405,12 @@ export default function Organizations({
     });
 
     return result;
-  }, [orgs, searchQuery, filterActiveOnly, sortBy]);
+  }, [orgs, searchQuery, sortBy]);
 
   // Calculate dynamic counts based on currently loaded orgs
   const counts = useMemo(() => {
     return {
       totalOrgs: orgs.length,
-      activeOrgs: orgs.filter((o) => o.totalContributions > 0).length,
       totalContributions: orgs.reduce(
         (acc, o) => acc + o.totalContributions,
         0,
@@ -437,7 +430,6 @@ export default function Organizations({
             <div className="h-3 bg-zinc-850 rounded w-1/4" />
           </div>
         </div>
-        <div className="w-16 h-6 bg-zinc-850 rounded-full flex-shrink-0" />
       </div>
 
       <div className="flex items-baseline justify-between pt-1">
@@ -479,7 +471,7 @@ export default function Organizations({
       </div>
 
       {/* Summary Widgets */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           {
             title: "Total Organizations",
@@ -487,19 +479,14 @@ export default function Organizations({
             color: "#ffffff",
           },
           {
-            title: "Active Organizations",
-            value: counts.activeOrgs,
+            title: "Total Contributions",
+            value: counts.totalContributions,
             color: "#e4e4e7",
           },
           {
-            title: "Total Contributions",
-            value: counts.totalContributions,
-            color: "#c4c4c7",
-          },
-          {
-            title: "Active Repositories",
+            title: "Repositories Contributed",
             value: counts.totalRepos,
-            color: "#a1a1aa",
+            color: "#c4c4c7",
           },
         ].map((stat) => (
           <SpotlightCard
@@ -595,24 +582,6 @@ export default function Organizations({
                 </button>
               )}
             </div>
-
-            {/* Active Only Filter Switch */}
-            <button
-              onClick={() => setFilterActiveOnly(!filterActiveOnly)}
-              className={`flex items-center gap-2 border px-3.5 py-2.5 rounded transition-all cursor-pointer ${
-                filterActiveOnly
-                  ? "bg-emerald-950/30 border-emerald-800 text-emerald-400"
-                  : "bg-zinc-900/10 border-zinc-800/80 hover:border-zinc-800 text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${filterActiveOnly ? "bg-emerald-400" : "bg-zinc-600"}`}
-              />
-              <span>
-                Active Only (
-                {orgs.filter((o) => o.totalContributions > 0).length})
-              </span>
-            </button>
           </div>
 
           {/* Sorter Selection */}
@@ -696,17 +665,16 @@ export default function Organizations({
                 />
               </svg>
               <p className="text-xs text-zinc-500">
-                No organizations match the active filters or search term.
+                No organizations match the search term.
               </p>
-              {(searchQuery || filterActiveOnly) && (
+              {searchQuery && (
                 <button
                   onClick={() => {
                     setSearchQuery("");
-                    setFilterActiveOnly(false);
                   }}
                   className="mt-3.5 text-[10px] text-emerald-500 hover:text-emerald-400 hover:underline cursor-pointer transition-colors"
                 >
-                  Clear Filters & Search
+                  Clear Search
                 </button>
               )}
             </div>
@@ -763,23 +731,9 @@ export default function Organizations({
                             </p>
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {total > 0 ? (
-                            <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              Active
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-zinc-900/60 border border-zinc-800/60 text-zinc-500 flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
-                              Inactive
-                            </span>
-                          )}
-                        </div>
                       </div>
 
-                      {/* Primary Stats Header Row: Total & Active Repos */}
+                      {/* Primary Stats Header Row: Total & Repos */}
                       <div className="flex items-baseline justify-between pt-1">
                         <div>
                           <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block mb-0.5">
