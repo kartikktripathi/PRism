@@ -81,6 +81,19 @@ function calculateStreak(contributions: { count: number; date: string }[]) {
   return streak;
 }
 
+function isPageReload(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const navEntries = window.performance?.getEntriesByType?.("navigation");
+    if (navEntries && navEntries.length > 0) {
+      return (navEntries[0] as PerformanceNavigationTiming).type === "reload";
+    }
+    return (window.performance as any)?.navigation?.type === 1;
+  } catch {
+    return false;
+  }
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
   const [prs, setPrs] = useState<any[]>([]);
@@ -125,9 +138,14 @@ export default function Home() {
   const [selectedTab, setSelectedTab] = useState<string>(() => {
     if (typeof window !== "undefined") {
       try {
-        const savedTab = localStorage.getItem("prism_selected_tab");
-        if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
-          return savedTab;
+        localStorage.removeItem("prism_selected_tab");
+        if (isPageReload()) {
+          const savedTab = sessionStorage.getItem("prism_selected_tab");
+          if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
+            return savedTab;
+          }
+        } else {
+          sessionStorage.setItem("prism_selected_tab", "Dashboard");
         }
       } catch {}
     }
@@ -136,13 +154,15 @@ export default function Home() {
   const [isTabLoading, setIsTabLoading] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       try {
-        const savedTab = localStorage.getItem("prism_selected_tab");
-        if (
-          savedTab &&
-          (TABS as readonly string[]).includes(savedTab) &&
-          savedTab !== "Dashboard"
-        ) {
-          return true;
+        if (isPageReload()) {
+          const savedTab = sessionStorage.getItem("prism_selected_tab");
+          if (
+            savedTab &&
+            (TABS as readonly string[]).includes(savedTab) &&
+            savedTab !== "Dashboard"
+          ) {
+            return true;
+          }
         }
       } catch {}
     }
@@ -152,13 +172,22 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const savedTab = localStorage.getItem("prism_selected_tab");
-      if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
-        if (savedTab !== selectedTab) {
-          setSelectedTab(savedTab);
-          if (savedTab !== "Dashboard") {
-            setIsTabLoading(true);
+      localStorage.removeItem("prism_selected_tab");
+      if (isPageReload()) {
+        const savedTab = sessionStorage.getItem("prism_selected_tab");
+        if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
+          if (savedTab !== selectedTab) {
+            setSelectedTab(savedTab);
+            if (savedTab !== "Dashboard") {
+              setIsTabLoading(true);
+            }
           }
+        }
+      } else {
+        sessionStorage.setItem("prism_selected_tab", "Dashboard");
+        if (selectedTab !== "Dashboard") {
+          setSelectedTab("Dashboard");
+          setIsTabLoading(false);
         }
       }
     } catch {}
@@ -167,7 +196,7 @@ export default function Home() {
   useEffect(() => {
     try {
       if (selectedTab && (TABS as readonly string[]).includes(selectedTab)) {
-        localStorage.setItem("prism_selected_tab", selectedTab);
+        sessionStorage.setItem("prism_selected_tab", selectedTab);
       }
     } catch {}
   }, [selectedTab]);
@@ -211,7 +240,7 @@ export default function Home() {
 
   function handleTabChange(tab: string) {
     try {
-      localStorage.setItem("prism_selected_tab", tab);
+      sessionStorage.setItem("prism_selected_tab", tab);
     } catch {}
     if (tab !== "Dashboard") {
       setIsTabLoading(true);
@@ -1080,7 +1109,7 @@ export default function Home() {
         <div
           onClick={() => {
             try {
-              localStorage.setItem("prism_selected_tab", selectedTab);
+              sessionStorage.setItem("prism_selected_tab", selectedTab);
             } catch {}
             window.location.reload();
           }}
