@@ -1021,16 +1021,18 @@ export default function GitWrapped({
                   </div>
                 </div>
                 <div className="h-10 bg-zinc-850/40 rounded w-full animate-pulse" />
-                <div className="space-y-4 pt-4 border-t border-zinc-900/60">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="flex justify-between">
-                        <div className="h-3 bg-zinc-800/60 rounded w-1/3 animate-pulse" />
-                        <div className="h-3 bg-zinc-800/60 rounded w-10 animate-pulse" />
-                      </div>
-                      <div className="h-1.5 bg-zinc-800/30 rounded w-full animate-pulse" />
-                    </div>
-                  ))}
+                <div className="space-y-2 pt-4 border-t border-zinc-900/60">
+                  <div className="flex justify-between items-center">
+                    <div className="h-3 bg-zinc-800/60 rounded w-28 animate-pulse" />
+                    <div className="h-3 bg-zinc-800/60 rounded w-16 animate-pulse" />
+                  </div>
+                  <div className="h-1.5 bg-zinc-800/40 rounded-full w-full animate-pulse" />
+                  <div className="flex gap-3 pt-1">
+                    <div className="h-2.5 bg-zinc-800/50 rounded w-14 animate-pulse" />
+                    <div className="h-2.5 bg-zinc-800/50 rounded w-16 animate-pulse" />
+                    <div className="h-2.5 bg-zinc-800/50 rounded w-14 animate-pulse" />
+                    <div className="h-2.5 bg-zinc-800/50 rounded w-14 animate-pulse" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1100,11 +1102,21 @@ export default function GitWrapped({
     const theme =
       personaThemes[effectiveTimeStats.persona] ||
       personaThemes["Silent Achiever"];
-    const isDayActive = effectiveTimeStats.persona === "Early-Bird Engineer";
-    const isAfternoonActive =
-      effectiveTimeStats.persona === "Post-Lunch Programmer";
-    const isEveningActive = effectiveTimeStats.persona === "Shadow Scripter";
-    const isNightActive = effectiveTimeStats.persona === "Nocturnal Developer";
+
+    const clockTotal =
+      effectiveTimeStats.day +
+      effectiveTimeStats.afternoon +
+      effectiveTimeStats.evening +
+      effectiveTimeStats.night;
+
+    const pctDay =
+      clockTotal > 0 ? (effectiveTimeStats.day / clockTotal) * 100 : 0;
+    const pctAfternoon =
+      clockTotal > 0 ? (effectiveTimeStats.afternoon / clockTotal) * 100 : 0;
+    const pctEvening =
+      clockTotal > 0 ? (effectiveTimeStats.evening / clockTotal) * 100 : 0;
+    const pctNight =
+      clockTotal > 0 ? (effectiveTimeStats.night / clockTotal) * 100 : 0;
 
     return (
       <div
@@ -1201,141 +1213,120 @@ export default function GitWrapped({
               </div>
 
               {/* Hourly Time-of-day breakdown */}
-              <div className="mt-8 pt-6 border-t border-zinc-900/60 space-y-5">
-                <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
-                  Contribution Clock
+              <div className="mt-8 pt-6 border-t border-zinc-900/60 space-y-2">
+                <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500">
+                  <span className="uppercase tracking-wider">Contribution Clock</span>
+                  {clockTotal > 0 ? (
+                    <span className="text-zinc-400">
+                      {pctDay >= pctAfternoon &&
+                        pctDay >= pctEvening &&
+                        pctDay >= pctNight &&
+                        "Mainly Day"}
+                      {pctAfternoon > pctDay &&
+                        pctAfternoon >= pctEvening &&
+                        pctAfternoon >= pctNight &&
+                        "Mainly Afternoon"}
+                      {pctEvening > pctDay &&
+                        pctEvening > pctAfternoon &&
+                        pctEvening >= pctNight &&
+                        "Mainly Evening"}
+                      {pctNight > pctDay &&
+                        pctNight > pctAfternoon &&
+                        pctNight > pctEvening &&
+                        "Mainly Night"}
+                    </span>
+                  ) : (
+                    <span className="text-zinc-600">No activity</span>
+                  )}
                 </div>
 
-                <div className="space-y-4 text-xs">
-                  {/* Day */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-zinc-400">
-                      <span className="flex items-center gap-1.5">
-                        <SunIcon className="w-4 h-4 text-amber-400" /> Day (5am
-                        - 12pm)
-                      </span>
-                      <span
-                        className={`font-semibold ${
-                          isDayActive ? theme.primaryText : "text-zinc-300"
-                        }`}
-                      >
-                        {effectiveTimeStats.percentages.day}%{" "}
-                        <span className="text-[10px] text-zinc-500 font-normal">
-                          ({effectiveTimeStats.day})
-                        </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-950 border border-zinc-900 rounded overflow-hidden">
-                      <div
-                        className="h-full transition-all duration-700"
-                        style={{
-                          width: `${effectiveTimeStats.percentages.day}%`,
-                          backgroundColor: isDayActive
-                            ? theme.spotlight
-                            : undefined,
-                          opacity: isDayActive ? 1 : 0.2,
-                        }}
-                      />
-                    </div>
-                  </div>
+                {/* Single line bar with multiple colors */}
+                <div className="w-full h-1.5 rounded-full overflow-hidden bg-zinc-900/80 flex gap-[1px]">
+                  {clockTotal === 0 ? (
+                    <div
+                      className="w-full h-full bg-zinc-850/40 rounded-full"
+                      title="No contributions recorded for this month"
+                    />
+                  ) : (
+                    <>
+                      {effectiveTimeStats.day > 0 && (
+                        <div
+                          className="bg-amber-400 h-full transition-all duration-300"
+                          style={{ width: `${pctDay}%` }}
+                          title={`Day (5am - 12pm): ${effectiveTimeStats.day} (${Math.round(pctDay)}%)`}
+                        />
+                      )}
+                      {effectiveTimeStats.afternoon > 0 && (
+                        <div
+                          className="bg-emerald-400 h-full transition-all duration-300"
+                          style={{ width: `${pctAfternoon}%` }}
+                          title={`Afternoon (12pm - 5pm): ${effectiveTimeStats.afternoon} (${Math.round(pctAfternoon)}%)`}
+                        />
+                      )}
+                      {effectiveTimeStats.evening > 0 && (
+                        <div
+                          className="bg-fuchsia-400 h-full transition-all duration-300"
+                          style={{ width: `${pctEvening}%` }}
+                          title={`Evening (5pm - 9pm): ${effectiveTimeStats.evening} (${Math.round(pctEvening)}%)`}
+                        />
+                      )}
+                      {effectiveTimeStats.night > 0 && (
+                        <div
+                          className="bg-violet-400 h-full transition-all duration-300"
+                          style={{ width: `${pctNight}%` }}
+                          title={`Night (9pm - 5am): ${effectiveTimeStats.night} (${Math.round(pctNight)}%)`}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
 
-                  {/* Afternoon */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-zinc-400">
-                      <span className="flex items-center gap-1.5">
-                        <BriefcaseIcon className="w-4 h-4 text-emerald-400" />{" "}
-                        Afternoon (12pm - 5pm)
-                      </span>
-                      <span
-                        className={`font-semibold ${
-                          isAfternoonActive
-                            ? theme.primaryText
-                            : "text-zinc-300"
-                        }`}
-                      >
-                        {effectiveTimeStats.percentages.afternoon}%{" "}
-                        <span className="text-[10px] text-zinc-500 font-normal">
-                          ({effectiveTimeStats.afternoon})
+                {/* Minimalist Micro-Legend */}
+                <div className="min-h-[1.25rem] flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[9px] font-mono text-zinc-500">
+                  {clockTotal > 0 ? (
+                    <>
+                      {effectiveTimeStats.day > 0 && (
+                        <span
+                          className="flex items-center gap-1.5"
+                          title={`Day (5am - 12pm): ${effectiveTimeStats.day} contributions (${Math.round(pctDay)}%)`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          Day {Math.round(pctDay)}%
                         </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-950 border border-zinc-900 rounded overflow-hidden">
-                      <div
-                        className="h-full transition-all duration-700"
-                        style={{
-                          width: `${effectiveTimeStats.percentages.afternoon}%`,
-                          backgroundColor: isAfternoonActive
-                            ? theme.spotlight
-                            : undefined,
-                          opacity: isAfternoonActive ? 1 : 0.2,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Evening */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-zinc-400">
-                      <span className="flex items-center gap-1.5">
-                        <TelescopeIcon className="w-4 h-4 text-fuchsia-400" />{" "}
-                        Evening (5pm - 9pm)
-                      </span>
-                      <span
-                        className={`font-semibold ${
-                          isEveningActive ? theme.primaryText : "text-zinc-300"
-                        }`}
-                      >
-                        {effectiveTimeStats.percentages.evening}%{" "}
-                        <span className="text-[10px] text-zinc-500 font-normal">
-                          ({effectiveTimeStats.evening})
+                      )}
+                      {effectiveTimeStats.afternoon > 0 && (
+                        <span
+                          className="flex items-center gap-1.5"
+                          title={`Afternoon (12pm - 5pm): ${effectiveTimeStats.afternoon} contributions (${Math.round(pctAfternoon)}%)`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          Afternoon {Math.round(pctAfternoon)}%
                         </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-950 border border-zinc-900 rounded overflow-hidden">
-                      <div
-                        className="h-full transition-all duration-700"
-                        style={{
-                          width: `${effectiveTimeStats.percentages.evening}%`,
-                          backgroundColor: isEveningActive
-                            ? theme.spotlight
-                            : undefined,
-                          opacity: isEveningActive ? 1 : 0.2,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Night */}
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-zinc-400">
-                      <span className="flex items-center gap-1.5">
-                        <MoonIcon className="w-4 h-4 text-violet-400" /> Night
-                        (9pm - 5am)
-                      </span>
-                      <span
-                        className={`font-semibold ${
-                          isNightActive ? theme.primaryText : "text-zinc-300"
-                        }`}
-                      >
-                        {effectiveTimeStats.percentages.night}%{" "}
-                        <span className="text-[10px] text-zinc-500 font-normal">
-                          ({effectiveTimeStats.night})
+                      )}
+                      {effectiveTimeStats.evening > 0 && (
+                        <span
+                          className="flex items-center gap-1.5"
+                          title={`Evening (5pm - 9pm): ${effectiveTimeStats.evening} contributions (${Math.round(pctEvening)}%)`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400" />
+                          Evening {Math.round(pctEvening)}%
                         </span>
-                      </span>
-                    </div>
-                    <div className="h-2 bg-zinc-950 border border-zinc-900 rounded overflow-hidden">
-                      <div
-                        className="h-full transition-all duration-700"
-                        style={{
-                          width: `${effectiveTimeStats.percentages.night}%`,
-                          backgroundColor: isNightActive
-                            ? theme.spotlight
-                            : undefined,
-                          opacity: isNightActive ? 1 : 0.2,
-                        }}
-                      />
-                    </div>
-                  </div>
+                      )}
+                      {effectiveTimeStats.night > 0 && (
+                        <span
+                          className="flex items-center gap-1.5"
+                          title={`Night (9pm - 5am): ${effectiveTimeStats.night} contributions (${Math.round(pctNight)}%)`}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                          Night {Math.round(pctNight)}%
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-zinc-600 text-[9px]">
+                      No contributions recorded for this month
+                    </span>
+                  )}
                 </div>
               </div>
             </SpotlightCard>
