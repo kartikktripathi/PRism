@@ -302,52 +302,33 @@ export default function ReviewsAndComments({
       {!error && (
         <div className="space-y-8">
           {/* Review Requests Section */}
-          <div className="border-t border-zinc-900/60 pt-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <h2
-                className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
-              >
-                Awaiting Your Review
-              </h2>
-              {!loading && pendingPrs.length > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 border border-amber-800/40 font-mono text-amber-400">
-                  {pendingPrs.length} pending
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-zinc-500 mt-1">
-              Pull requests where your review has been requested, and you have
-              not submitted it yet.
-            </p>
+          {(loading || pendingPrs.length > 0) && (
+            <div className="border-t border-zinc-900/60 pt-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <h2
+                  className={`text-xl text-white font-semibold tracking-wide ${leagueSpartan.className}`}
+                >
+                  Awaiting Your Review
+                </h2>
+                {!loading && pendingPrs.length > 0 && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/40 border border-amber-800/40 font-mono text-amber-400">
+                    {pendingPrs.length} pending
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-zinc-500 mt-1">
+                Pull requests where your review has been requested, and you have
+                not submitted it yet.
+              </p>
 
-            <div className="space-y-3.5">
-              {loading ? (
-                Array.from({ length: 2 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))
-              ) : pendingPrs.length === 0 ? (
-                <div className="rounded-lg border border-zinc-800/60 border-dashed bg-zinc-950/10 py-10 text-center font-mono">
-                  <svg
-                    className="w-8 h-8 text-zinc-700 mx-auto mb-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 12l2 2 4-4"
-                    />
-                  </svg>
-                  <p className="text-xs text-zinc-500">
-                    You are all caught up! No pull requests are awaiting your
-                    review.
-                  </p>
-                </div>
-              ) : (
-                pendingPrs.map((item) => {
-                  const repoName = getRepoName(item.repository_url);
+              <div className="space-y-3.5">
+                {loading ? (
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))
+                ) : (
+                  pendingPrs.map((item) => {
+                    const repoName = getRepoName(item.repository_url);
 
                   return (
                     <SpotlightCard
@@ -469,6 +450,7 @@ export default function ReviewsAndComments({
               )}
             </div>
           </div>
+          )}
 
           {/* Recently Reviewed Section */}
           <div className="border-t border-zinc-900/60 pt-6 space-y-4">
