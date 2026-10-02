@@ -586,20 +586,37 @@ function SkeletonCard() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Module-level cache — persists across tab navigation for the same session.
+// Keyed by accessToken so it auto-invalidates on sign-out / new sign-in.
+// ---------------------------------------------------------------------------
+type GitStatsCache = {
+  stats: MonthlyStat[];
+  monthlyTimeStats: Record<string, TimeStats>;
+};
+const gitStatsCache = new Map<string, GitStatsCache>();
+
 export default function GitWrapped({
   session,
   username,
   onLoadComplete,
 }: GitStatsProps) {
-  const [stats, setStats] = useState<MonthlyStat[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Seed state from cache immediately so the page is never blank on revisit.
+  const cachedEntry = session?.accessToken
+    ? gitStatsCache.get(session.accessToken)
+    : undefined;
+
+  const [stats, setStats] = useState<MonthlyStat[] | null>(
+    cachedEntry?.stats ?? null,
+  );
+  const [loading, setLoading] = useState<boolean>(!cachedEntry);
   const [error, setError] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [timeStats, setTimeStats] = useState<TimeStats | null>(null);
   const [loadingTimeStats, setLoadingTimeStats] = useState<boolean>(false);
   const [monthlyTimeStats, setMonthlyTimeStats] = useState<
     Record<string, TimeStats>
-  >({});
+  >(cachedEntry?.monthlyTimeStats ?? {});
 
   const counts = useMemo(() => {
     if (!stats) {
@@ -621,9 +638,17 @@ export default function GitWrapped({
     );
   }, [stats]);
 
-  const fetchMonthlyStats = useCallback(async () => {
+  const fetchMonthlyStats = useCallback(
+    async (bustCache = false) => {
     if (!username || !session?.accessToken) {
       setError("Please authenticate with GitHub to load your GitStats.");
+      setLoading(false);
+      onLoadComplete?.();
+      return;
+    }
+
+    // If the cache is warm and we're not forcing a refresh, skip all fetches.
+    if (!bustCache && gitStatsCache.has(session.accessToken)) {
       setLoading(false);
       onLoadComplete?.();
       return;
@@ -820,18 +845,31 @@ export default function GitWrapped({
 
       setMonthlyTimeStats((prev) => ({ ...prev, ...initialMap }));
 
-      // Concurrently fetch time stats for months with activity
+      // Concurrently fetch time stats for months with activity, and await all
+      // of them so onLoadComplete fires only after every month is fully loaded.
+      let finalTimeStats: Record<string, TimeStats> = { ...initialMap };
       if (session?.accessToken) {
-        activeStats.forEach(async (st) => {
-          const tStats = await fetchMonthTimeStats(
-            st.month,
-            username,
-            session.accessToken!,
-          );
-          setMonthlyTimeStats((prev) => ({
-            ...prev,
-            [st.month]: tStats,
-          }));
+        await Promise.all(
+          activeStats.map(async (st) => {
+            const tStats = await fetchMonthTimeStats(
+              st.month,
+              username,
+              session.accessToken!,
+            );
+            finalTimeStats = { ...finalTimeStats, [st.month]: tStats };
+            setMonthlyTimeStats((prev) => ({
+              ...prev,
+              [st.month]: tStats,
+            }));
+          }),
+        );
+      }
+
+      // Persist to the module-level cache so re-visits are instant.
+      if (session?.accessToken) {
+        gitStatsCache.set(session.accessToken, {
+          stats: parsedStats,
+          monthlyTimeStats: finalTimeStats,
         });
       }
     } catch (err: unknown) {
@@ -845,7 +883,8 @@ export default function GitWrapped({
       setLoading(false);
       onLoadComplete?.();
     }
-  }, [username, session, onLoadComplete]);
+  },
+  [username, session, onLoadComplete]);
 
   const fetchTimeStats = useCallback(
     async (monthLabel: string) => {
@@ -900,7 +939,8 @@ export default function GitWrapped({
       void (async () => {
         await Promise.resolve();
         if (isMounted) {
-          await fetchMonthlyStats();
+          // Pass bustCache=false — will skip fetching if cache is warm.
+          await fetchMonthlyStats(false);
         }
       })();
     }
@@ -910,7 +950,12 @@ export default function GitWrapped({
   }, [username, session?.accessToken, fetchMonthlyStats]);
 
   const handleRefresh = async () => {
-    await fetchMonthlyStats();
+    // Bust the cache so we truly re-fetch everything.
+    if (session?.accessToken) {
+      gitStatsCache.delete(session.accessToken);
+    }
+    setLoading(true);
+    await fetchMonthlyStats(true);
   };
 
   const selectedStat = stats?.find((s) => s.month === selectedMonth);
