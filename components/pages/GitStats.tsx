@@ -377,12 +377,12 @@ function MonthlyStatCard({
   const persona =
     timeStats?.persona ||
     (stat.commits === 0 && stat.issues === 0 ? "Silent Achiever" : null);
-  const theme = personaThemes[persona || "Silent Achiever"];
+  const theme = persona ? personaThemes[persona] : null;
   const isPersonaLoading = !persona;
 
   return (
     <SpotlightCard
-      spotlightColor={persona ? theme.spotlight : "rgba(255, 255, 255, 0.08)"}
+      spotlightColor={theme?.spotlight ?? "rgba(255, 255, 255, 0.08)"}
       className={`rounded-xl transition-all duration-300 hover:translate-y-[-2px] hover:shadow-2xl ${
         onClick ? "cursor-pointer" : ""
       }`}
@@ -396,7 +396,7 @@ function MonthlyStatCard({
           {/* Persona Banner Image */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={theme.banner}
+            src={theme?.banner ?? "/night.jpg"}
             alt={persona || stat.month}
             className={`w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 ${
               isPersonaLoading ? "opacity-35 grayscale" : "opacity-90"
@@ -410,7 +410,7 @@ function MonthlyStatCard({
           <div className="absolute inset-0 p-4 flex flex-col justify-between z-10">
             {/* Top row: Developer Profile Persona Badge + Dossier CTA */}
             <div className="flex items-center justify-between gap-2">
-              {isPersonaLoading ? (
+              {isPersonaLoading || !theme ? (
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-zinc-800 bg-zinc-950/70 text-[10px] text-zinc-400 backdrop-blur-md animate-pulse">
                   <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-ping" />
                   <span>Profiling Persona...</span>
@@ -432,10 +432,10 @@ function MonthlyStatCard({
               </h3>
               <div
                 className={`text-[10px] tracking-widest uppercase font-semibold mt-0.5 drop-shadow ${
-                  isPersonaLoading ? "text-zinc-500" : theme.primaryText
+                  isPersonaLoading || !theme ? "text-zinc-500" : theme.primaryText
                 }`}
               >
-                {isPersonaLoading
+                {isPersonaLoading || !theme
                   ? "// Activity Analysis"
                   : `// ${theme.themeTitle}`}
               </div>
@@ -535,8 +535,8 @@ function MonthlyStatCard({
         <div className="w-full">
           <MiniBarChart
             data={stat.commitHistory}
-            colorClass={persona ? theme.barColor : undefined}
-            hoverColorClass={persona ? theme.barHoverColor : undefined}
+            colorClass={theme?.barColor}
+            hoverColorClass={theme?.barHoverColor}
           />
         </div>
       </div>
@@ -1145,8 +1145,8 @@ export default function GitWrapped({
     }
 
     const theme =
-      personaThemes[effectiveTimeStats.persona] ||
-      personaThemes["Silent Achiever"];
+      personaThemes[effectiveTimeStats.persona] ??
+      personaThemes["Nocturnal Developer"];
 
     const clockTotal =
       effectiveTimeStats.day +
