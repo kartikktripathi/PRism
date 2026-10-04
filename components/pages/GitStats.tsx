@@ -8,7 +8,6 @@ import {
   BriefcaseIcon,
   TelescopeIcon,
   MoonIcon,
-  EyeClosedIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   GraphIcon,
@@ -224,23 +223,6 @@ const personaThemes: Record<string, ThemeStyle> = {
       "group-hover/bar:bg-violet-400 group-hover/bar:shadow-[0_0_8px_rgba(167,139,250,0.5)]",
     banner: "/night.jpg",
   },
-  "Silent Achiever": {
-    primary: "zinc-400",
-    primaryText: "text-zinc-400",
-    accentBg: "bg-zinc-900/20",
-    accentBorder: "border-zinc-700/30",
-    glow: "shadow-zinc-500/5",
-    glowColor: "bg-zinc-500",
-    spotlight: "#a1a1aa",
-    bgGradient: "from-zinc-950/50 to-zinc-950",
-    icon: EyeClosedIcon,
-    desc: "Quiet, steady, and stealthy. Planning your next major contribution cycle behind the scenes.",
-    themeTitle: "Stealth Strategist",
-    barColor: "bg-zinc-500/80",
-    barHoverColor:
-      "group-hover/bar:bg-zinc-400 group-hover/bar:shadow-[0_0_8px_rgba(161,161,170,0.5)]",
-    banner: "/night.jpg",
-  },
 };
 
 function calculateTimeStats(
@@ -301,7 +283,7 @@ function calculateTimeStats(
       persona = "Nocturnal Developer";
     }
   } else {
-    persona = "Silent Achiever";
+    persona = "Nocturnal Developer";
   }
 
   return {
@@ -327,7 +309,7 @@ async function fetchMonthTimeStats(
       evening: 0,
       night: 0,
       percentages: { day: 0, afternoon: 0, evening: 0, night: 0 },
-      persona: "Silent Achiever",
+      persona: "Nocturnal Developer",
     };
   }
 
@@ -360,7 +342,7 @@ async function fetchMonthTimeStats(
       evening: 0,
       night: 0,
       percentages: { day: 0, afternoon: 0, evening: 0, night: 0 },
-      persona: "Silent Achiever",
+      persona: "Nocturnal Developer",
     };
   }
 }
@@ -374,11 +356,13 @@ function MonthlyStatCard({
   timeStats?: TimeStats | null;
   onClick?: () => void;
 }) {
+  const rawPersona = timeStats?.persona ?? null;
   const persona =
-    timeStats?.persona ||
-    (stat.commits === 0 && stat.issues === 0 ? "Silent Achiever" : null);
+    rawPersona && rawPersona !== "Silent Achiever" && personaThemes[rawPersona]
+      ? rawPersona
+      : null;
   const theme = persona ? personaThemes[persona] : null;
-  const isPersonaLoading = !persona;
+  const isPersonaLoading = !persona || !theme;
 
   return (
     <SpotlightCard
@@ -1144,9 +1128,14 @@ export default function GitWrapped({
       );
     }
 
-    const theme =
-      personaThemes[effectiveTimeStats.persona] ??
-      personaThemes["Nocturnal Developer"];
+    const validPersona =
+      effectiveTimeStats.persona &&
+      effectiveTimeStats.persona !== "Silent Achiever" &&
+      personaThemes[effectiveTimeStats.persona]
+        ? effectiveTimeStats.persona
+        : "Nocturnal Developer";
+
+    const theme = personaThemes[validPersona];
 
     const clockTotal =
       effectiveTimeStats.day +
@@ -1226,7 +1215,7 @@ export default function GitWrapped({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={theme.banner}
-                    alt={effectiveTimeStats.persona}
+                    alt={validPersona}
                     className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
@@ -1243,7 +1232,7 @@ export default function GitWrapped({
                       Persona Profile
                     </div>
                     <h2 className="text-xl font-bold text-white tracking-wide">
-                      {effectiveTimeStats.persona}
+                      {validPersona}
                     </h2>
                     <div
                       className={`text-[10px] tracking-widest mt-0.5 uppercase ${theme.primaryText}`}
