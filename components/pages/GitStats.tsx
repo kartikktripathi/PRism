@@ -808,52 +808,34 @@ export default function GitWrapped({
 
       setStats(parsedStats);
 
-      // Pre-populate timeStats / personas for all months
-      const initialMap: Record<string, TimeStats> = {};
-      const activeStats: MonthlyStat[] = [];
-
-      parsedStats.forEach((st) => {
-        if (st.commits === 0 && st.issues === 0) {
-          initialMap[st.month] = {
-            day: 0,
-            afternoon: 0,
-            evening: 0,
-            night: 0,
-            percentages: { day: 0, afternoon: 0, evening: 0, night: 0 },
-            persona: "Silent Achiever",
-          };
-        } else {
-          activeStats.push(st);
-        }
-      });
-
-      setMonthlyTimeStats((prev) => ({ ...prev, ...initialMap }));
-
-      // Concurrently fetch time stats for months with activity, and await all
-      // of them so onLoadComplete fires only after every month is fully loaded.
-      let finalTimeStats: Record<string, TimeStats> = { ...initialMap };
+      // Concurrently fetch time stats for ALL months before opening the page.
+      // Every month goes through the real API; loader stays until ALL resolve.
+      const fetchedTimeStats: Record<string, TimeStats> = {};
       if (session?.accessToken) {
-        await Promise.all(
-          activeStats.map(async (st) => {
+        const results = await Promise.all(
+          parsedStats.map(async (st) => {
             const tStats = await fetchMonthTimeStats(
               st.month,
               username,
               session.accessToken!,
             );
-            finalTimeStats = { ...finalTimeStats, [st.month]: tStats };
-            setMonthlyTimeStats((prev) => ({
-              ...prev,
-              [st.month]: tStats,
-            }));
+            return { month: st.month, tStats };
           }),
         );
+        results.forEach(({ month, tStats }) => {
+          fetchedTimeStats[month] = tStats;
+        });
       }
+
+      // Simultaneously commit all stats & personas to React state and cache.
+      setStats(parsedStats);
+      setMonthlyTimeStats(fetchedTimeStats);
 
       // Persist to the module-level cache so re-visits are instant.
       if (session?.accessToken) {
         gitStatsCache.set(session.accessToken, {
           stats: parsedStats,
-          monthlyTimeStats: finalTimeStats,
+          monthlyTimeStats: fetchedTimeStats,
         });
       }
     } catch (err: unknown) {
