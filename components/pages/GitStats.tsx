@@ -114,11 +114,10 @@ function MiniBarChart({
                 style={{
                   height: `${Math.max(heightPercent, activity > 0 ? 15 : 5)}%`,
                 }}
-                className={`w-full rounded-[1px] transition-all duration-150 ${
-                  activity > 0
+                className={`w-full rounded-[1px] transition-all duration-150 ${activity > 0
                     ? `${colorClass} ${hoverColorClass}`
                     : "bg-zinc-800/40 group-hover/bar:bg-zinc-700"
-                }`}
+                  }`}
               />
 
               {/* Tooltip */}
@@ -571,36 +570,115 @@ function SkeletonCard() {
 }
 
 // ---------------------------------------------------------------------------
-// Module-level cache — persists across tab navigation for the same session.
-// Keyed by accessToken so it auto-invalidates on sign-out / new sign-in.
+// Session-persistent cache — survives browser refreshes within the same tab.
+// Backed by sessionStorage (cleared when the tab closes) and keyed by
+// accessToken so it auto-invalidates whenever the user signs in with a
+// different account / token.
 // ---------------------------------------------------------------------------
 type GitStatsCache = {
   stats: MonthlyStat[];
   monthlyTimeStats: Record<string, TimeStats>;
 };
-const gitStatsCache = new Map<string, GitStatsCache>();
+
+const CACHE_PREFIX = "gitstats_v2_";
+
+function purgeOldCaches(): void {
+  if (typeof window === "undefined") return;
+  try {
+    for (let i = sessionStorage.length - 1; i >= 0; i--) {
+      const key = sessionStorage.key(i);
+      if (key && key.startsWith("gitstats_") && !key.startsWith(CACHE_PREFIX)) {
+        sessionStorage.removeItem(key);
+      }
+    }
+  } catch {}
+}
+
+function isValidCache(cache: unknown): cache is GitStatsCache {
+  if (!cache || typeof cache !== "object") return false;
+  const c = cache as Partial<GitStatsCache>;
+  if (!Array.isArray(c.stats) || c.stats.length === 0) return false;
+  if (!c.monthlyTimeStats || typeof c.monthlyTimeStats !== "object") return false;
+
+  for (const stat of c.stats) {
+    const tStats = c.monthlyTimeStats[stat.month];
+    if (
+      !tStats ||
+      !tStats.persona ||
+      tStats.persona === "Silent Achiever" ||
+      !personaThemes[tStats.persona]
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function readCache(token: string): GitStatsCache | null {
+  if (typeof window === "undefined") return null;
+  purgeOldCaches();
+  try {
+    const raw = sessionStorage.getItem(CACHE_PREFIX + token);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!isValidCache(parsed)) {
+      sessionStorage.removeItem(CACHE_PREFIX + token);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(token: string, data: GitStatsCache): void {
+  if (typeof window === "undefined") return;
+  if (!isValidCache(data)) return;
+  try {
+    purgeOldCaches();
+    Object.keys(sessionStorage)
+      .filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE_PREFIX + token)
+      .forEach((k) => sessionStorage.removeItem(k));
+    sessionStorage.setItem(CACHE_PREFIX + token, JSON.stringify(data));
+  } catch {
+    /* storage quota — silently skip */
+  }
+}
+
+function clearCache(token: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(CACHE_PREFIX + token);
+  } catch {
+    /* ignore */
+  }
+}
 
 export default function GitWrapped({
   session,
   username,
   onLoadComplete,
 }: GitStatsProps) {
-  // Seed state from cache immediately so the page is never blank on revisit.
-  const cachedEntry = session?.accessToken
-    ? gitStatsCache.get(session.accessToken)
-    : undefined;
+  // If accessToken is already present and we have a valid cache, hydrate
+  // state synchronously on mount so tab switching is instantaneous with zero flash.
+  const cachedOnMount = useMemo(() => {
+    if (session?.accessToken) {
+      return readCache(session.accessToken);
+    }
+    return null;
+  }, [session?.accessToken]);
 
   const [stats, setStats] = useState<MonthlyStat[] | null>(
-    cachedEntry?.stats ?? null,
+    () => cachedOnMount?.stats ?? null,
   );
-  const [loading, setLoading] = useState<boolean>(!cachedEntry);
+  const [loading, setLoading] = useState<boolean>(() => !cachedOnMount);
   const [error, setError] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [timeStats, setTimeStats] = useState<TimeStats | null>(null);
   const [loadingTimeStats, setLoadingTimeStats] = useState<boolean>(false);
   const [monthlyTimeStats, setMonthlyTimeStats] = useState<
     Record<string, TimeStats>
-  >(cachedEntry?.monthlyTimeStats ?? {});
+  >(() => cachedOnMount?.monthlyTimeStats ?? {});
 
   const counts = useMemo(() => {
     if (!stats) {
@@ -624,26 +702,31 @@ export default function GitWrapped({
 
   const fetchMonthlyStats = useCallback(
     async (bustCache = false) => {
-    if (!username || !session?.accessToken) {
-      setError("Please authenticate with GitHub to load your GitStats.");
-      setLoading(false);
-      onLoadComplete?.();
-      return;
-    }
+      if (!username || !session?.accessToken) {
+        setError("Please authenticate with GitHub to load your GitStats.");
+        setLoading(false);
+        onLoadComplete?.();
+        return;
+      }
 
-    // If the cache is warm and we're not forcing a refresh, skip all fetches.
-    if (!bustCache && gitStatsCache.has(session.accessToken)) {
-      setLoading(false);
-      onLoadComplete?.();
-      return;
-    }
+      // If the cache is warm and we're not forcing a refresh, restore state and skip fetch.
+      if (!bustCache) {
+        const cached = readCache(session.accessToken);
+        if (cached) {
+          setStats(cached.stats);
+          setMonthlyTimeStats(cached.monthlyTimeStats);
+          setLoading(false);
+          onLoadComplete?.();
+          return;
+        }
+      }
 
-    setError(null);
-    try {
-      const months = getPastMonths(6);
-      const queryFields = months
-        .map(
-          (m, idx) => `
+      setError(null);
+      try {
+        const months = getPastMonths(6);
+        const queryFields = months
+          .map(
+            (m, idx) => `
           month_${idx}: contributionsCollection(from: "${m.from}", to: "${m.to}") {
             totalCommitContributions
             totalPullRequestContributions
@@ -682,10 +765,10 @@ export default function GitWrapped({
             }
           }
         `,
-        )
-        .join("\n");
+          )
+          .join("\n");
 
-      const queryStr = `
+        const queryStr = `
         query userMonthlyStats($LOGIN: String!) {
           user(login: $LOGIN) {
             ${queryFields}
@@ -693,164 +776,162 @@ export default function GitWrapped({
         }
       `;
 
-      const res = await fetch("https://api.github.com/graphql", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: queryStr,
-          variables: {
-            LOGIN: username,
+        const res = await fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            "Content-Type": "application/json",
           },
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`GraphQL request failed: ${res.statusText}`);
-      }
-
-      const json = await res.json();
-      if (json.errors) {
-        throw new Error(json.errors[0]?.message || "GitHub GraphQL error");
-      }
-
-      const userObj = json.data?.user;
-      if (!userObj) {
-        throw new Error("User data not found in response.");
-      }
-
-      const parsedStats: MonthlyStat[] = months.map((m, idx) => {
-        const monthData = userObj[`month_${idx}`];
-
-        // Extract commit counts per day
-        const dayEntries: { date: string; count: number }[] = [];
-        if (monthData?.contributionCalendar?.weeks) {
-          const targetPrefix = m.from.substring(0, 7); // e.g. "2026-06"
-          monthData.contributionCalendar.weeks.forEach(
-            (week: {
-              contributionDays?: {
-                date?: string;
-                contributionCount?: number;
-              }[];
-            }) => {
-              if (week.contributionDays) {
-                week.contributionDays.forEach((day) => {
-                  if (day.date && day.date.startsWith(targetPrefix)) {
-                    dayEntries.push({
-                      date: day.date,
-                      count: day.contributionCount || 0,
-                    });
-                  }
-                });
-              }
+          body: JSON.stringify({
+            query: queryStr,
+            variables: {
+              LOGIN: username,
             },
-          );
-        }
-        dayEntries.sort((a, b) => a.date.localeCompare(b.date));
-        const history = dayEntries.map((e) => e.count);
-
-        // Calculate language scores based on commits and reviews in repositories
-        const languageScores: { [name: string]: number } = {};
-
-        if (monthData?.commitContributionsByRepository) {
-          monthData.commitContributionsByRepository.forEach(
-            (c: {
-              repository?: { primaryLanguage?: { name?: string } };
-              contributions?: { totalCount?: number };
-            }) => {
-              const lang = c.repository?.primaryLanguage?.name;
-              const count = c.contributions?.totalCount || 0;
-              if (lang && count > 0) {
-                languageScores[lang] = (languageScores[lang] || 0) + count;
-              }
-            },
-          );
-        }
-
-        if (monthData?.pullRequestReviewContributionsByRepository) {
-          monthData.pullRequestReviewContributionsByRepository.forEach(
-            (r: {
-              repository?: { primaryLanguage?: { name?: string } };
-              contributions?: { totalCount?: number };
-            }) => {
-              const lang = r.repository?.primaryLanguage?.name;
-              const count = r.contributions?.totalCount || 0;
-              if (lang && count > 0) {
-                languageScores[lang] = (languageScores[lang] || 0) + count;
-              }
-            },
-          );
-        }
-
-        let mostUsedLanguage = "N/A";
-        let maxScore = 0;
-        Object.entries(languageScores).forEach(([lang, score]) => {
-          if (score > maxScore) {
-            maxScore = score;
-            mostUsedLanguage = lang;
-          }
-        });
-
-        return {
-          month: m.label,
-          commits: monthData?.totalCommitContributions || 0,
-          repositories: monthData?.commitContributionsByRepository?.length || 0,
-          pullRequests: monthData?.totalPullRequestContributions || 0,
-          issues: monthData?.totalIssueContributions || 0,
-          reviews: monthData?.totalPullRequestReviewContributions || 0,
-          commitHistory: history,
-          mostUsedLanguage,
-          reposCreated: monthData?.totalRepositoryContributions || 0,
-        };
-      });
-
-      setStats(parsedStats);
-
-      // Concurrently fetch time stats for ALL months before opening the page.
-      // Every month goes through the real API; loader stays until ALL resolve.
-      const fetchedTimeStats: Record<string, TimeStats> = {};
-      if (session?.accessToken) {
-        const results = await Promise.all(
-          parsedStats.map(async (st) => {
-            const tStats = await fetchMonthTimeStats(
-              st.month,
-              username,
-              session.accessToken!,
-            );
-            return { month: st.month, tStats };
           }),
-        );
-        results.forEach(({ month, tStats }) => {
-          fetchedTimeStats[month] = tStats;
         });
-      }
 
-      // Simultaneously commit all stats & personas to React state and cache.
-      setStats(parsedStats);
-      setMonthlyTimeStats(fetchedTimeStats);
+        if (!res.ok) {
+          throw new Error(`GraphQL request failed: ${res.statusText}`);
+        }
 
-      // Persist to the module-level cache so re-visits are instant.
-      if (session?.accessToken) {
-        gitStatsCache.set(session.accessToken, {
-          stats: parsedStats,
-          monthlyTimeStats: fetchedTimeStats,
+        const json = await res.json();
+        if (json.errors) {
+          throw new Error(json.errors[0]?.message || "GitHub GraphQL error");
+        }
+
+        const userObj = json.data?.user;
+        if (!userObj) {
+          throw new Error("User data not found in response.");
+        }
+
+        const parsedStats: MonthlyStat[] = months.map((m, idx) => {
+          const monthData = userObj[`month_${idx}`];
+
+          // Extract commit counts per day
+          const dayEntries: { date: string; count: number }[] = [];
+          if (monthData?.contributionCalendar?.weeks) {
+            const targetPrefix = m.from.substring(0, 7); // e.g. "2026-06"
+            monthData.contributionCalendar.weeks.forEach(
+              (week: {
+                contributionDays?: {
+                  date?: string;
+                  contributionCount?: number;
+                }[];
+              }) => {
+                if (week.contributionDays) {
+                  week.contributionDays.forEach((day) => {
+                    if (day.date && day.date.startsWith(targetPrefix)) {
+                      dayEntries.push({
+                        date: day.date,
+                        count: day.contributionCount || 0,
+                      });
+                    }
+                  });
+                }
+              },
+            );
+          }
+          dayEntries.sort((a, b) => a.date.localeCompare(b.date));
+          const history = dayEntries.map((e) => e.count);
+
+          // Calculate language scores based on commits and reviews in repositories
+          const languageScores: { [name: string]: number } = {};
+
+          if (monthData?.commitContributionsByRepository) {
+            monthData.commitContributionsByRepository.forEach(
+              (c: {
+                repository?: { primaryLanguage?: { name?: string } };
+                contributions?: { totalCount?: number };
+              }) => {
+                const lang = c.repository?.primaryLanguage?.name;
+                const count = c.contributions?.totalCount || 0;
+                if (lang && count > 0) {
+                  languageScores[lang] = (languageScores[lang] || 0) + count;
+                }
+              },
+            );
+          }
+
+          if (monthData?.pullRequestReviewContributionsByRepository) {
+            monthData.pullRequestReviewContributionsByRepository.forEach(
+              (r: {
+                repository?: { primaryLanguage?: { name?: string } };
+                contributions?: { totalCount?: number };
+              }) => {
+                const lang = r.repository?.primaryLanguage?.name;
+                const count = r.contributions?.totalCount || 0;
+                if (lang && count > 0) {
+                  languageScores[lang] = (languageScores[lang] || 0) + count;
+                }
+              },
+            );
+          }
+
+          let mostUsedLanguage = "N/A";
+          let maxScore = 0;
+          Object.entries(languageScores).forEach(([lang, score]) => {
+            if (score > maxScore) {
+              maxScore = score;
+              mostUsedLanguage = lang;
+            }
+          });
+
+          return {
+            month: m.label,
+            commits: monthData?.totalCommitContributions || 0,
+            repositories: monthData?.commitContributionsByRepository?.length || 0,
+            pullRequests: monthData?.totalPullRequestContributions || 0,
+            issues: monthData?.totalIssueContributions || 0,
+            reviews: monthData?.totalPullRequestReviewContributions || 0,
+            commitHistory: history,
+            mostUsedLanguage,
+            reposCreated: monthData?.totalRepositoryContributions || 0,
+          };
         });
+
+        // Concurrently fetch time stats for ALL months before opening the page.
+        // Every month goes through the real API; loader stays until ALL resolve.
+        const fetchedTimeStats: Record<string, TimeStats> = {};
+        if (session?.accessToken) {
+          const results = await Promise.all(
+            parsedStats.map(async (st) => {
+              const tStats = await fetchMonthTimeStats(
+                st.month,
+                username,
+                session.accessToken!,
+              );
+              return { month: st.month, tStats };
+            }),
+          );
+          results.forEach(({ month, tStats }) => {
+            fetchedTimeStats[month] = tStats;
+          });
+        }
+
+        // Simultaneously commit all stats & personas to React state and cache.
+        setStats(parsedStats);
+        setMonthlyTimeStats(fetchedTimeStats);
+
+        // Persist to sessionStorage so re-visits (and browser refreshes) are instant.
+        if (session?.accessToken) {
+          writeCache(session.accessToken, {
+            stats: parsedStats,
+            monthlyTimeStats: fetchedTimeStats,
+          });
+        }
+      } catch (err: unknown) {
+        console.error("Error fetching monthly stats:", err);
+        const errMsg =
+          err instanceof Error
+            ? err.message
+            : "Something went wrong while loading GitStats.";
+        setError(errMsg);
+      } finally {
+        setLoading(false);
+        onLoadComplete?.();
       }
-    } catch (err: unknown) {
-      console.error("Error fetching monthly stats:", err);
-      const errMsg =
-        err instanceof Error
-          ? err.message
-          : "Something went wrong while loading GitStats.";
-      setError(errMsg);
-    } finally {
-      setLoading(false);
-      onLoadComplete?.();
-    }
-  },
-  [username, session, onLoadComplete]);
+    },
+    [username, session, onLoadComplete]);
 
   const fetchTimeStats = useCallback(
     async (monthLabel: string) => {
@@ -916,9 +997,9 @@ export default function GitWrapped({
   }, [username, session?.accessToken, fetchMonthlyStats]);
 
   const handleRefresh = async () => {
-    // Bust the cache so we truly re-fetch everything.
+    // Bust the sessionStorage cache so we truly re-fetch everything.
     if (session?.accessToken) {
-      gitStatsCache.delete(session.accessToken);
+      clearCache(session.accessToken);
     }
     setLoading(true);
     await fetchMonthlyStats(true);
@@ -1637,16 +1718,16 @@ export default function GitWrapped({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading
               ? Array.from({ length: 6 }).map((_, idx) => (
-                  <SkeletonCard key={idx} />
-                ))
+                <SkeletonCard key={idx} />
+              ))
               : stats?.map((stat) => (
-                  <MonthlyStatCard
-                    key={stat.month}
-                    stat={stat}
-                    timeStats={monthlyTimeStats[stat.month]}
-                    onClick={() => setSelectedMonth(stat.month)}
-                  />
-                ))}
+                <MonthlyStatCard
+                  key={stat.month}
+                  stat={stat}
+                  timeStats={monthlyTimeStats[stat.month]}
+                  onClick={() => setSelectedMonth(stat.month)}
+                />
+              ))}
           </div>
         </div>
       )}
