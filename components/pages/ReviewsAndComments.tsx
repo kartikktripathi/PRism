@@ -322,134 +322,136 @@ export default function ReviewsAndComments({
               </p>
 
               <div className="space-y-3.5">
-                {loading ? (
-                  Array.from({ length: 2 }).map((_, i) => (
-                    <SkeletonCard key={i} />
-                  ))
-                ) : (
-                  pendingPrs.map((item) => {
-                    const repoName = getRepoName(item.repository_url);
+                {loading
+                  ? Array.from({ length: 2 }).map((_, i) => (
+                      <SkeletonCard key={i} />
+                    ))
+                  : pendingPrs.map((item) => {
+                      const repoName = getRepoName(item.repository_url);
 
-                  return (
-                    <SpotlightCard
-                      key={item.id}
-                      spotlightColor="rgba(255, 255, 255, 0.08)"
-                      className="group rounded-lg transition-all duration-300"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full h-full">
-                        {/* Left Side: Status Icon, Title, and Meta */}
-                        <div className="flex items-start gap-3.5 min-w-0">
-                          <span className="mt-1 flex-shrink-0 flex items-center justify-center">
-                            <GitPullRequestIcon
-                              size={16}
-                              className="text-emerald-500"
-                            />
-                          </span>
+                      return (
+                        <SpotlightCard
+                          key={item.id}
+                          spotlightColor="rgba(255, 255, 255, 0.08)"
+                          className="group rounded-lg transition-all duration-300"
+                        >
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full h-full">
+                            {/* Left Side: Status Icon, Title, and Meta */}
+                            <div className="flex items-start gap-3.5 min-w-0">
+                              <span className="mt-1 flex-shrink-0 flex items-center justify-center">
+                                <GitPullRequestIcon
+                                  size={16}
+                                  className="text-emerald-500"
+                                />
+                              </span>
 
-                          <div className="space-y-1.5 min-w-0">
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                              <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors">
-                                {repoName}
-                              </span>
-                              <span className="text-[11px] font-mono text-zinc-600">
-                                #{item.number}
-                              </span>
-                              <span className="text-[9px] bg-amber-950/40 border border-amber-800/40 text-amber-400 font-mono px-1.5 py-0.5 rounded-full">
-                                Pending Review
-                              </span>
-                            </div>
+                              <div className="space-y-1.5 min-w-0">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                  <span className="text-[11px] font-mono text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                                    {repoName}
+                                  </span>
+                                  <span className="text-[11px] font-mono text-zinc-600">
+                                    #{item.number}
+                                  </span>
+                                  <span className="text-[9px] bg-amber-950/40 border border-amber-800/40 text-amber-400 font-mono px-1.5 py-0.5 rounded-full">
+                                    Pending Review
+                                  </span>
+                                </div>
 
-                            <a
-                              href={item.html_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors duration-150 leading-relaxed font-sans pr-4"
-                            >
-                              {item.title}
-                            </a>
+                                <a
+                                  href={item.html_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors duration-150 leading-relaxed font-sans pr-4"
+                                >
+                                  {item.title}
+                                </a>
 
-                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                              <span className="text-[10px] font-mono text-zinc-600">
-                                by{" "}
-                                <span className="text-zinc-500 font-medium">
-                                  {item.user?.login}
-                                </span>
-                              </span>
-                              <span className="text-zinc-700 text-[10px] font-mono">
-                                •
-                              </span>
-                              <span
-                                className="text-[10px] font-mono text-zinc-600"
-                                title={new Date(
-                                  item.created_at,
-                                ).toLocaleString()}
-                              >
-                                opened {formatRelativeTime(item.created_at)}
-                              </span>
-                              {item.labels && item.labels.length > 0 && (
-                                <>
+                                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                  <span className="text-[10px] font-mono text-zinc-600">
+                                    by{" "}
+                                    <span className="text-zinc-500 font-medium">
+                                      {item.user?.login}
+                                    </span>
+                                  </span>
                                   <span className="text-zinc-700 text-[10px] font-mono">
                                     •
                                   </span>
-                                  <div className="flex flex-wrap gap-1">
-                                    {item.labels.slice(0, 5).map((label) => {
-                                      const styles = getLabelStyles(
-                                        label.color,
-                                      );
-                                      return (
-                                        <span
-                                          key={label.id}
-                                          style={styles}
-                                          className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
-                                          title={label.description}
-                                        >
-                                          {label.name}
-                                        </span>
-                                      );
-                                    })}
-                                  </div>
-                                </>
+                                  <span
+                                    className="text-[10px] font-mono text-zinc-600"
+                                    title={new Date(
+                                      item.created_at,
+                                    ).toLocaleString()}
+                                  >
+                                    opened {formatRelativeTime(item.created_at)}
+                                  </span>
+                                  {item.labels && item.labels.length > 0 && (
+                                    <>
+                                      <span className="text-zinc-700 text-[10px] font-mono">
+                                        •
+                                      </span>
+                                      <div className="flex flex-wrap gap-1">
+                                        {item.labels
+                                          .slice(0, 5)
+                                          .map((label) => {
+                                            const styles = getLabelStyles(
+                                              label.color,
+                                            );
+                                            return (
+                                              <span
+                                                key={label.id}
+                                                style={styles}
+                                                className="text-[9px] font-mono px-1.5 py-0.5 rounded border leading-none font-medium"
+                                                title={label.description}
+                                              >
+                                                {label.name}
+                                              </span>
+                                            );
+                                          })}
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Right Side: Comments and Assignees */}
+                            <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
+                              {item.comments > 0 && (
+                                <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
+                                  <CommentIcon size={14} />
+                                  <span>{item.comments}</span>
+                                </div>
                               )}
-                            </div>
-                          </div>
-                        </div>
 
-                        {/* Right Side: Comments and Assignees */}
-                        <div className="flex items-center gap-5 ml-7.5 md:ml-0 flex-shrink-0 self-end md:self-center">
-                          {item.comments > 0 && (
-                            <div className="flex items-center gap-1.5 text-zinc-600 group-hover:text-zinc-500 transition-colors font-mono text-[10px]">
-                              <CommentIcon size={14} />
-                              <span>{item.comments}</span>
-                            </div>
-                          )}
-
-                          {item.assignees && item.assignees.length > 0 && (
-                            <div className="flex -space-x-1.5 overflow-hidden">
-                              {item.assignees.slice(0, 3).map((assignee) => (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  key={assignee.login}
-                                  src={assignee.avatar_url}
-                                  className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
-                                  alt={assignee.login}
-                                  title={`Assigned to ${assignee.login}`}
-                                />
-                              ))}
-                              {item.assignees.length > 3 && (
-                                <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
-                                  +{item.assignees.length - 3}
+                              {item.assignees && item.assignees.length > 0 && (
+                                <div className="flex -space-x-1.5 overflow-hidden">
+                                  {item.assignees
+                                    .slice(0, 3)
+                                    .map((assignee) => (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        key={assignee.login}
+                                        src={assignee.avatar_url}
+                                        className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 object-cover inline-block"
+                                        alt={assignee.login}
+                                        title={`Assigned to ${assignee.login}`}
+                                      />
+                                    ))}
+                                  {item.assignees.length > 3 && (
+                                    <div className="w-5.5 h-5.5 rounded-full border border-zinc-950 bg-zinc-900 text-zinc-500 font-mono text-[8px] flex items-center justify-center inline-block">
+                                      +{item.assignees.length - 3}
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </SpotlightCard>
-                  );
-                })
-              )}
+                          </div>
+                        </SpotlightCard>
+                      );
+                    })}
+              </div>
             </div>
-          </div>
           )}
 
           {/* Recently Reviewed Section */}

@@ -114,10 +114,11 @@ function MiniBarChart({
                 style={{
                   height: `${Math.max(heightPercent, activity > 0 ? 15 : 5)}%`,
                 }}
-                className={`w-full rounded-[1px] transition-all duration-150 ${activity > 0
+                className={`w-full rounded-[1px] transition-all duration-150 ${
+                  activity > 0
                     ? `${colorClass} ${hoverColorClass}`
                     : "bg-zinc-800/40 group-hover/bar:bg-zinc-700"
-                  }`}
+                }`}
               />
 
               {/* Tooltip */}
@@ -415,7 +416,9 @@ function MonthlyStatCard({
               </h3>
               <div
                 className={`text-[10px] tracking-widest uppercase font-semibold mt-0.5 drop-shadow ${
-                  isPersonaLoading || !theme ? "text-zinc-500" : theme.primaryText
+                  isPersonaLoading || !theme
+                    ? "text-zinc-500"
+                    : theme.primaryText
                 }`}
               >
                 {isPersonaLoading || !theme
@@ -598,7 +601,8 @@ function isValidCache(cache: unknown): cache is GitStatsCache {
   if (!cache || typeof cache !== "object") return false;
   const c = cache as Partial<GitStatsCache>;
   if (!Array.isArray(c.stats) || c.stats.length === 0) return false;
-  if (!c.monthlyTimeStats || typeof c.monthlyTimeStats !== "object") return false;
+  if (!c.monthlyTimeStats || typeof c.monthlyTimeStats !== "object")
+    return false;
 
   for (const stat of c.stats) {
     const tStats = c.monthlyTimeStats[stat.month];
@@ -879,7 +883,8 @@ export default function GitWrapped({
           return {
             month: m.label,
             commits: monthData?.totalCommitContributions || 0,
-            repositories: monthData?.commitContributionsByRepository?.length || 0,
+            repositories:
+              monthData?.commitContributionsByRepository?.length || 0,
             pullRequests: monthData?.totalPullRequestContributions || 0,
             issues: monthData?.totalIssueContributions || 0,
             reviews: monthData?.totalPullRequestReviewContributions || 0,
@@ -931,7 +936,8 @@ export default function GitWrapped({
         onLoadComplete?.();
       }
     },
-    [username, session, onLoadComplete]);
+    [username, session, onLoadComplete],
+  );
 
   const fetchTimeStats = useCallback(
     async (monthLabel: string) => {
@@ -1312,7 +1318,9 @@ export default function GitWrapped({
               {/* Hourly Time-of-day breakdown */}
               <div className="mt-8 pt-6 border-t border-zinc-900/60 space-y-2">
                 <div className="flex justify-between items-center text-[10px] font-mono text-zinc-500">
-                  <span className="uppercase tracking-wider">Contribution Clock</span>
+                  <span className="uppercase tracking-wider">
+                    Contribution Clock
+                  </span>
                   {clockTotal > 0 ? (
                     <span className="text-zinc-400">
                       {pctDay >= pctAfternoon &&
@@ -1718,16 +1726,16 @@ export default function GitWrapped({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {loading
               ? Array.from({ length: 6 }).map((_, idx) => (
-                <SkeletonCard key={idx} />
-              ))
+                  <SkeletonCard key={idx} />
+                ))
               : stats?.map((stat) => (
-                <MonthlyStatCard
-                  key={stat.month}
-                  stat={stat}
-                  timeStats={monthlyTimeStats[stat.month]}
-                  onClick={() => setSelectedMonth(stat.month)}
-                />
-              ))}
+                  <MonthlyStatCard
+                    key={stat.month}
+                    stat={stat}
+                    timeStats={monthlyTimeStats[stat.month]}
+                    onClick={() => setSelectedMonth(stat.month)}
+                  />
+                ))}
           </div>
         </div>
       )}

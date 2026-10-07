@@ -846,11 +846,31 @@ export default function Organizations({
                           <span>Activity Distribution</span>
                           {total > 0 ? (
                             <span className="text-zinc-400">
-                              {pctCommits >= pctPrs && pctCommits >= pctIssues && pctCommits >= pctReviews && pctCommits >= pctComments && "Mainly Commits"}
-                              {pctPrs > pctCommits && pctPrs >= pctIssues && pctPrs >= pctReviews && pctPrs >= pctComments && "Mainly Pull Requests"}
-                              {pctIssues > pctCommits && pctIssues > pctPrs && pctIssues >= pctReviews && pctIssues >= pctComments && "Mainly Issues"}
-                              {pctReviews > pctCommits && pctReviews > pctPrs && pctReviews > pctIssues && pctReviews >= pctComments && "Mainly Reviews"}
-                              {pctComments > pctCommits && pctComments > pctPrs && pctComments > pctIssues && pctComments > pctReviews && "Mainly Discussions"}
+                              {pctCommits >= pctPrs &&
+                                pctCommits >= pctIssues &&
+                                pctCommits >= pctReviews &&
+                                pctCommits >= pctComments &&
+                                "Mainly Commits"}
+                              {pctPrs > pctCommits &&
+                                pctPrs >= pctIssues &&
+                                pctPrs >= pctReviews &&
+                                pctPrs >= pctComments &&
+                                "Mainly Pull Requests"}
+                              {pctIssues > pctCommits &&
+                                pctIssues > pctPrs &&
+                                pctIssues >= pctReviews &&
+                                pctIssues >= pctComments &&
+                                "Mainly Issues"}
+                              {pctReviews > pctCommits &&
+                                pctReviews > pctPrs &&
+                                pctReviews > pctIssues &&
+                                pctReviews >= pctComments &&
+                                "Mainly Reviews"}
+                              {pctComments > pctCommits &&
+                                pctComments > pctPrs &&
+                                pctComments > pctIssues &&
+                                pctComments > pctReviews &&
+                                "Mainly Discussions"}
                             </span>
                           ) : (
                             <span className="text-zinc-600">No activity</span>
