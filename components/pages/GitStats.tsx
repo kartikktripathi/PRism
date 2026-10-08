@@ -138,14 +138,12 @@ function MiniBarChart({
 }
 
 interface ThemeStyle {
-  primary: string;
   primaryText: string;
   accentBg: string;
   accentBorder: string;
   glow: string;
   glowColor: string;
   spotlight: string;
-  bgGradient: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
   desc: string;
   themeTitle: string;
@@ -156,14 +154,12 @@ interface ThemeStyle {
 
 const personaThemes: Record<string, ThemeStyle> = {
   "Early-Bird Engineer": {
-    primary: "amber-400",
     primaryText: "text-amber-400",
     accentBg: "bg-amber-950/20",
     accentBorder: "border-amber-500/30",
     glow: "shadow-amber-500/10",
     glowColor: "bg-amber-500",
     spotlight: "#fbbf24",
-    bgGradient: "from-amber-950/10 via-zinc-950/50 to-zinc-950",
     icon: SunIcon,
     desc: "You conquer the codebase before the rest of the world wakes up. Armed with sunrise focus and early commits.",
     themeTitle: "Dawn Catalyst",
@@ -173,14 +169,12 @@ const personaThemes: Record<string, ThemeStyle> = {
     banner: "/morning.jpg",
   },
   "Post-Lunch Programmer": {
-    primary: "emerald-400",
     primaryText: "text-emerald-400",
     accentBg: "bg-emerald-950/20",
     accentBorder: "border-emerald-500/30",
     glow: "shadow-emerald-500/10",
     glowColor: "bg-emerald-500",
     spotlight: "#34d399",
-    bgGradient: "from-emerald-950/10 via-zinc-950/50 to-zinc-950",
     icon: BriefcaseIcon,
     desc: "You do your best work in the afternoon flow, bridging morning inspiration with solid, execution-focused releases.",
     themeTitle: "Midday Engine",
@@ -190,14 +184,12 @@ const personaThemes: Record<string, ThemeStyle> = {
     banner: "/afternoon.jpg",
   },
   "Shadow Scripter": {
-    primary: "fuchsia-400",
     primaryText: "text-fuchsia-400",
     accentBg: "bg-fuchsia-950/20",
     accentBorder: "border-fuchsia-500/30",
     glow: "shadow-fuchsia-500/10",
     glowColor: "bg-fuchsia-500",
     spotlight: "#e879f9",
-    bgGradient: "from-fuchsia-950/10 via-zinc-950/50 to-zinc-950",
     icon: TelescopeIcon,
     desc: "As daylight fades, your productivity rises. Navigating the twilight and evening hours with quiet, focused execution.",
     themeTitle: "Twilight Architect",
@@ -207,14 +199,12 @@ const personaThemes: Record<string, ThemeStyle> = {
     banner: "/evening.jpg",
   },
   "Nocturnal Developer": {
-    primary: "violet-400",
     primaryText: "text-violet-400",
     accentBg: "bg-violet-950/20",
     accentBorder: "border-violet-500/30",
     glow: "shadow-violet-500/10",
     glowColor: "bg-violet-500",
     spotlight: "#a78bfa",
-    bgGradient: "from-violet-950/10 via-zinc-950/50 to-zinc-950",
     icon: MoonIcon,
     desc: "A master of the midnight oil. Your keyboard clicks through the quiet of the night, turning caffeine and silence into clean code.",
     themeTitle: "Midnight Alchemist",
@@ -663,14 +653,13 @@ export default function GitWrapped({
   username,
   onLoadComplete,
 }: GitStatsProps) {
-  // If accessToken is already present and we have a valid cache, hydrate
-  // state synchronously on mount so tab switching is instantaneous with zero flash.
+  const token = session?.accessToken;
   const cachedOnMount = useMemo(() => {
-    if (session?.accessToken) {
-      return readCache(session.accessToken);
+    if (token) {
+      return readCache(token);
     }
     return null;
-  }, [session?.accessToken]);
+  }, [token]);
 
   const [stats, setStats] = useState<MonthlyStat[] | null>(
     () => cachedOnMount?.stats ?? null,
@@ -678,8 +667,6 @@ export default function GitWrapped({
   const [loading, setLoading] = useState<boolean>(() => !cachedOnMount);
   const [error, setError] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [timeStats, setTimeStats] = useState<TimeStats | null>(null);
-  const [loadingTimeStats, setLoadingTimeStats] = useState<boolean>(false);
   const [monthlyTimeStats, setMonthlyTimeStats] = useState<
     Record<string, TimeStats>
   >(() => cachedOnMount?.monthlyTimeStats ?? {});
@@ -939,53 +926,6 @@ export default function GitWrapped({
     [username, session, onLoadComplete],
   );
 
-  const fetchTimeStats = useCallback(
-    async (monthLabel: string) => {
-      if (!username || !session?.accessToken) return;
-
-      if (monthlyTimeStats[monthLabel]) {
-        setTimeStats(monthlyTimeStats[monthLabel]);
-        return;
-      }
-
-      setLoadingTimeStats(true);
-      setTimeStats(null);
-
-      try {
-        const statsResult = await fetchMonthTimeStats(
-          monthLabel,
-          username,
-          session.accessToken,
-        );
-        setTimeStats(statsResult);
-        setMonthlyTimeStats((prev) => ({
-          ...prev,
-          [monthLabel]: statsResult,
-        }));
-      } catch (err) {
-        console.error("Error fetching time stats:", err);
-      } finally {
-        setLoadingTimeStats(false);
-      }
-    },
-    [username, session, monthlyTimeStats],
-  );
-
-  useEffect(() => {
-    let active = true;
-    if (selectedMonth && !monthlyTimeStats[selectedMonth]) {
-      void (async () => {
-        await Promise.resolve();
-        if (active) {
-          await fetchTimeStats(selectedMonth);
-        }
-      })();
-    }
-    return () => {
-      active = false;
-    };
-  }, [selectedMonth, monthlyTimeStats, fetchTimeStats]);
-
   useEffect(() => {
     let isMounted = true;
     if (username && session?.accessToken) {
@@ -1085,87 +1025,11 @@ export default function GitWrapped({
     }
   }
 
-  const effectiveTimeStats =
-    (selectedMonth ? monthlyTimeStats[selectedMonth] : null) || timeStats;
+  const effectiveTimeStats = selectedMonth
+    ? monthlyTimeStats[selectedMonth]
+    : null;
 
   if (selectedMonth) {
-    if (!effectiveTimeStats && loadingTimeStats) {
-      return (
-        <div
-          className={`space-y-8 select-none animate-pulse ${montserrat.className}`}
-        >
-          {/* Header Skeleton */}
-          <div className="flex items-center justify-between">
-            <div className="h-9 bg-zinc-900 border border-zinc-800 rounded w-32 animate-pulse" />
-            <div className="h-8 bg-zinc-900 border border-zinc-850 rounded-full w-40 animate-pulse" />
-          </div>
-          <div className="space-y-4 pt-2">
-            <div className="h-12 bg-zinc-900 rounded w-1/3 animate-pulse" />
-            <div className="h-3 bg-zinc-900 rounded w-1/4 animate-pulse" />
-          </div>
-
-          {/* Main Grid Skeleton */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
-            {/* Left panel skeleton */}
-            <div className="lg:col-span-5 bg-zinc-900/20 border border-zinc-900 rounded-xl overflow-hidden shadow-2xl">
-              <div className="h-36 sm:h-44 bg-zinc-850/60 animate-pulse w-full" />
-              <div className="p-5 space-y-6">
-                <div className="flex items-center gap-4 w-full">
-                  <div className="w-12 h-12 bg-zinc-800/60 rounded-full animate-pulse flex-shrink-0" />
-                  <div className="space-y-2 flex-1">
-                    <div className="h-3 bg-zinc-800/60 rounded w-1/3 animate-pulse" />
-                    <div className="h-5 bg-zinc-800/60 rounded w-2/3 animate-pulse" />
-                    <div className="h-3 bg-zinc-800/60 rounded w-1/4 animate-pulse" />
-                  </div>
-                </div>
-                <div className="h-10 bg-zinc-850/40 rounded w-full animate-pulse" />
-                <div className="space-y-2 pt-4 border-t border-zinc-900/60">
-                  <div className="flex justify-between items-center">
-                    <div className="h-3 bg-zinc-800/60 rounded w-28 animate-pulse" />
-                    <div className="h-3 bg-zinc-800/60 rounded w-16 animate-pulse" />
-                  </div>
-                  <div className="h-1.5 bg-zinc-800/40 rounded-full w-full animate-pulse" />
-                  <div className="flex gap-3 pt-1">
-                    <div className="h-2.5 bg-zinc-800/50 rounded w-14 animate-pulse" />
-                    <div className="h-2.5 bg-zinc-800/50 rounded w-16 animate-pulse" />
-                    <div className="h-2.5 bg-zinc-800/50 rounded w-14 animate-pulse" />
-                    <div className="h-2.5 bg-zinc-800/50 rounded w-14 animate-pulse" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right panel skeleton */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-[120px] bg-zinc-900/20 border border-zinc-900 rounded-lg p-5 flex flex-col justify-between"
-                  >
-                    <div className="h-3 bg-zinc-850 rounded w-2/3 animate-pulse" />
-                    <div className="h-8 bg-zinc-850 rounded w-1/3 animate-pulse" />
-                  </div>
-                ))}
-              </div>
-              <div className="h-[180px] bg-zinc-900/20 border border-zinc-900 rounded-lg p-6 space-y-4">
-                <div className="h-4 bg-zinc-850 rounded w-1/4 animate-pulse" />
-                <div className="h-3 bg-zinc-850 rounded w-1/3 animate-pulse" />
-                <div className="h-12 bg-zinc-850/40 rounded w-full animate-pulse" />
-              </div>
-              <div className="h-[120px] bg-zinc-900/20 border border-zinc-900 rounded-lg p-6 space-y-4">
-                <div className="h-4 bg-zinc-850 rounded w-1/4 animate-pulse" />
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="h-10 bg-zinc-850/40 rounded w-full animate-pulse" />
-                  <div className="h-10 bg-zinc-850/40 rounded w-full animate-pulse" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     if (!effectiveTimeStats) {
       return (
         <div className={`space-y-8 select-none ${montserrat.className}`}>
