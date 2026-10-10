@@ -15,6 +15,7 @@ import { LineHoverLink } from "@/components/ui/line-hover-link";
 import { FolderPreview } from "@/components/ui/folder-preview";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dither } from "@/components/ui/dither";
+import { CommandMenu } from "@/components/ui/command-menu";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -151,6 +152,19 @@ export default function Home() {
     }
     return "Dashboard";
   });
+  const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandMenuOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
   const [isTabLoading, setIsTabLoading] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -1416,6 +1430,14 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CommandMenu
+        isOpen={isCommandMenuOpen}
+        onClose={() => setIsCommandMenuOpen(false)}
+        pages={TABS}
+        activePage={selectedTab}
+        onSelectPage={(page) => handleTabChange(page)}
+      />
     </main>
   );
 }
