@@ -16,6 +16,7 @@ import { FolderPreview } from "@/components/ui/folder-preview";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dither } from "@/components/ui/dither";
 import { CommandMenu } from "@/components/ui/command-menu";
+import { SearchIcon } from "@primer/octicons-react";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -1131,6 +1132,20 @@ export default function Home() {
         >
           <img src="/logo.png" className="w-36 h-16 object-contain" />
         </div>
+
+        {/* Center: Command K Palette Button */}
+        <button
+          type="button"
+          onClick={() => setIsCommandMenuOpen(true)}
+          className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs text-zinc-400 hover:text-zinc-200 transition-all cursor-pointer shadow-sm"
+          title="Search pages (⌘K)"
+        >
+          <SearchIcon size={14} className="text-zinc-500" />
+          <span className="font-sans">Search pages...</span>
+          <kbd className="ml-1.5 px-1.5 py-0.5 text-[10px] font-mono bg-zinc-950 border border-zinc-800 rounded text-zinc-400">
+            ⌘K
+          </kbd>
+        </button>
 
         {/* Right Side: GitHub Avatar & Name */}
         <div className="group/profile relative flex items-center h-full pr-1">
