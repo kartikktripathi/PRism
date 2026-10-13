@@ -1331,7 +1331,7 @@ export default function Home() {
               <FolderPreview
                 variant="ardra"
                 size="md"
-                label={isSidebarHovered ? "MENU" : "HOVER ME"}
+                label={isSidebarHovered ? "MENU" : "HOVER ME | ⌘ + K"}
                 isHovered={isSidebarHovered}
                 className="text-zinc-400"
               />
