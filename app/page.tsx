@@ -1331,9 +1331,23 @@ export default function Home() {
               <FolderPreview
                 variant="ardra"
                 size="md"
-                label={isSidebarHovered ? "MENU" : "HOVER ME | ⌘ + K"}
+                label={
+                  isSidebarHovered ? (
+                    <span className="flex flex-col items-center justify-center min-h-[28px]">
+                      MENU
+                    </span>
+                  ) : (
+                    <span className="flex flex-col items-center justify-center min-h-[28px] gap-0.5 leading-tight">
+                      <span>HOVER ME</span>
+                      <span className="text-[10px] text-zinc-500 font-mono tracking-wider">
+                        ⌘ + K
+                      </span>
+                    </span>
+                  )
+                }
                 isHovered={isSidebarHovered}
-                className="text-zinc-400"
+                className="text-zinc-400 cursor-pointer"
+                onClick={() => setIsCommandMenuOpen(true)}
               />
             </div>
           </nav>

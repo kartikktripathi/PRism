@@ -55,7 +55,7 @@ export interface FolderPreviewProps {
   variant?: FolderVariant;
   images?: string[];
   files?: { name: string; type?: "txt" | "gif" | "mp3" | "default" }[];
-  label?: string;
+  label?: React.ReactNode;
   size?: "sm" | "md" | "lg";
   className?: string;
   onClick?: () => void;
@@ -243,7 +243,7 @@ export const FolderPreview = React.forwardRef<
         </div>
 
         {label && (
-          <h3
+          <div
             className={cn(
               "mt-2 font-medium text-center",
               sizes.caption,
@@ -251,7 +251,7 @@ export const FolderPreview = React.forwardRef<
             )}
           >
             {label}
-          </h3>
+          </div>
         )}
       </div>
     );
