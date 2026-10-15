@@ -32,11 +32,11 @@ const PAGE_ICONS: Record<
 };
 
 const PAGE_DESCRIPTIONS: Record<string, string> = {
-  Dashboard: "Overview, contribution metrics & recent streaks",
-  "Issues & PRs": "Pull requests & issues breakdown",
-  "Reviews & Comments": "Code review workload & discussions",
-  Organizations: "Affiliated organizations & team stats",
-  GitStats: "Developer persona, commit timeline & velocity",
+  Dashboard: "Overview & streaks",
+  "Issues & PRs": "Pull requests & issues",
+  "Reviews & Comments": "Reviews & discussions",
+  Organizations: "Teams & affiliated orgs",
+  GitStats: "Velocity & developer stats",
 };
 
 export function CommandMenu({
@@ -73,18 +73,47 @@ export function CommandMenu({
     }
   }, [filteredPages.length, selectedIndex]);
 
-  // Handle keyboard events (ArrowUp, ArrowDown, Enter, Escape)
+  // Handle keyboard events (ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Enter, Escape)
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") {
+    const total = filteredPages.length;
+    if (total === 0) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+      return;
+    }
+
+    if (e.key === "ArrowRight") {
       e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev < filteredPages.length - 1 ? prev + 1 : 0,
-      );
+      setSelectedIndex((prev) => (prev + 1) % total);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 + total) % total);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (total === 5) {
+        // Row 1 (0, 1, 2) -> Row 2 (3, 4)
+        if (selectedIndex === 0) setSelectedIndex(3);
+        else if (selectedIndex === 1) setSelectedIndex(4);
+        else if (selectedIndex === 2) setSelectedIndex(4);
+        else if (selectedIndex === 3) setSelectedIndex(0);
+        else if (selectedIndex === 4) setSelectedIndex(1);
+      } else {
+        setSelectedIndex((prev) => (prev + 1) % total);
+      }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev > 0 ? prev - 1 : filteredPages.length - 1,
-      );
+      if (total === 5) {
+        // Row 2 (3, 4) -> Row 1 (0, 1, 2)
+        if (selectedIndex === 3) setSelectedIndex(0);
+        else if (selectedIndex === 4) setSelectedIndex(1);
+        else if (selectedIndex === 0) setSelectedIndex(3);
+        else if (selectedIndex === 1) setSelectedIndex(4);
+        else if (selectedIndex === 2) setSelectedIndex(4);
+      } else {
+        setSelectedIndex((prev) => (prev - 1 + total) % total);
+      }
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (filteredPages[selectedIndex]) {
@@ -95,6 +124,59 @@ export function CommandMenu({
       e.preventDefault();
       onClose();
     }
+  };
+
+  const row1 = filteredPages.slice(0, 3);
+  const row2 = filteredPages.slice(3, 5);
+
+  const renderCard = (page: string, index: number) => {
+    const Icon = PAGE_ICONS[page] || HomeIcon;
+    const isCurrent = page === activePage;
+    const isHighlighted = index === selectedIndex;
+    const description = PAGE_DESCRIPTIONS[page];
+
+    return (
+      <div
+        key={page}
+        onClick={() => {
+          onSelectPage(page);
+          onClose();
+        }}
+        onMouseEnter={() => setSelectedIndex(index)}
+        className={`relative w-[145px] sm:w-[155px] h-[132px] p-3.5 rounded-xl cursor-pointer transition-all flex flex-col items-center justify-center text-center select-none ${
+          isHighlighted
+            ? "bg-zinc-800/90 border-zinc-600 shadow-xl scale-[1.03] text-white ring-1 ring-zinc-500/30"
+            : "bg-zinc-900/60 border border-zinc-800/80 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/90 hover:scale-[1.01]"
+        }`}
+      >
+        {isCurrent && (
+          <span className="absolute top-2 right-2 flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Active
+          </span>
+        )}
+
+        <div
+          className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 transition-all ${
+            isHighlighted
+              ? "bg-white/10 text-white shadow-inner scale-105"
+              : "bg-zinc-950/70 text-zinc-400 border border-zinc-800"
+          }`}
+        >
+          <Icon size={20} />
+        </div>
+
+        <span className="text-xs font-semibold tracking-wide leading-tight line-clamp-1">
+          {page}
+        </span>
+
+        {description && (
+          <span className="text-[10px] text-zinc-500 mt-1 leading-tight line-clamp-1 max-w-[125px]">
+            {description}
+          </span>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -117,7 +199,7 @@ export function CommandMenu({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -8 }}
             transition={{ type: "spring", duration: 0.2, bounce: 0 }}
-            className="relative w-full max-w-lg bg-[#0e0e11] border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-10 flex flex-col font-sans"
+            className="relative w-full max-w-xl bg-[#0e0e11] border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-10 flex flex-col font-sans"
             onKeyDown={handleKeyDown}
           >
             {/* Search Input Bar */}
@@ -141,7 +223,7 @@ export function CommandMenu({
                     setSearchQuery("");
                     inputRef.current?.focus();
                   }}
-                  className="text-zinc-500 hover:text-zinc-300 p-1"
+                  className="text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer"
                 >
                   <XIcon size={14} />
                 </button>
@@ -152,77 +234,36 @@ export function CommandMenu({
               )}
             </div>
 
-            {/* Pages List */}
+            {/* Pages Grid Area */}
             <div
               ref={listRef}
-              className="max-h-72 overflow-y-auto p-2 space-y-1 select-none"
+              className="p-5 overflow-y-auto max-h-[380px] select-none flex flex-col items-center justify-center"
             >
-              <div className="px-2 py-1.5 text-[11px] font-mono uppercase tracking-wider text-zinc-500">
-                Pages
+              <div className="w-full flex items-center justify-between px-2 pb-3 text-[11px] font-mono uppercase tracking-wider text-zinc-500">
+                <span>Navigate Pages</span>
+                <span className="text-[10px]">
+                  {filteredPages.length} {filteredPages.length === 1 ? "page" : "pages"}
+                </span>
               </div>
 
               {filteredPages.length === 0 ? (
-                <div className="py-8 text-center text-sm text-zinc-500">
+                <div className="py-12 text-center text-sm text-zinc-500">
                   No pages found matching &ldquo;{searchQuery}&rdquo;
                 </div>
               ) : (
-                filteredPages.map((page, index) => {
-                  const Icon = PAGE_ICONS[page] || HomeIcon;
-                  const isCurrent = page === activePage;
-                  const isHighlighted = index === selectedIndex;
-                  const description = PAGE_DESCRIPTIONS[page];
+                <div className="flex flex-col gap-3 items-center w-full">
+                  {/* First row: 3 items (centered) */}
+                  <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+                    {row1.map((page, idx) => renderCard(page, idx))}
+                  </div>
 
-                  return (
-                    <div
-                      key={page}
-                      onClick={() => {
-                        onSelectPage(page);
-                        onClose();
-                      }}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
-                        isHighlighted
-                          ? "bg-zinc-800/80 text-white"
-                          : "text-zinc-300 hover:bg-zinc-900"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`p-1.5 rounded-md flex items-center justify-center ${
-                            isHighlighted
-                              ? "bg-zinc-700 text-white"
-                              : "bg-zinc-900 text-zinc-400 border border-zinc-800"
-                          }`}
-                        >
-                          <Icon size={16} />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-medium tracking-wide truncate">
-                            {page}
-                          </span>
-                          {description && (
-                            <span className="text-xs text-zinc-500 truncate">
-                              {description}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 ml-3">
-                        {isCurrent && (
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            Current
-                          </span>
-                        )}
-                        {isHighlighted && (
-                          <span className="text-xs font-mono text-zinc-400">
-                            ↵
-                          </span>
-                        )}
-                      </div>
+                  {/* Second row: 2 items (centered) */}
+                  {row2.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+                      {row2.map((page, idx) => renderCard(page, idx + 3))}
                     </div>
-                  );
-                })
+                  )}
+                </div>
               )}
             </div>
 
@@ -231,12 +272,18 @@ export function CommandMenu({
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
                   <kbd className="px-1 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">
+                    ←
+                  </kbd>
+                  <kbd className="px-1 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">
                     ↑
                   </kbd>
                   <kbd className="px-1 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">
                     ↓
                   </kbd>
-                  <span>Navigate</span>
+                  <kbd className="px-1 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">
+                    →
+                  </kbd>
+                  <span className="ml-1">Navigate</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-zinc-700 rounded text-[10px]">
@@ -258,3 +305,4 @@ export function CommandMenu({
     </AnimatePresence>
   );
 }
+
