@@ -10,6 +10,9 @@ import {
   GraphIcon,
   XIcon,
 } from "@primer/octicons-react";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({ subsets: ["latin"] });
 
 interface CommandMenuProps {
   isOpen: boolean;
@@ -191,22 +194,10 @@ export function CommandMenu({
             className="relative w-full max-w-xl bg-[#0e0e11] border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-10 flex flex-col font-sans"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/80">
-              <div className="flex items-center gap-2.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <h2 className="text-sm font-medium text-zinc-200 tracking-wide font-sans">
-                  Switch Page
-                </h2>
-                <span className="text-xs text-zinc-500 font-mono">⌘K</span>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="text-zinc-500 hover:text-zinc-300 p-1 rounded-md hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                title="Close (Esc)"
-              >
-                <XIcon size={16} />
-              </button>
+            <div
+              className={`flex items-center justify-center px-6 py-4 border-b border-zinc-800/80 ${montserrat.className}`}
+            >
+              Command Menu
             </div>
 
             {/* Pages Grid Area */}
