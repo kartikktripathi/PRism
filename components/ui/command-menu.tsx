@@ -135,10 +135,10 @@ export function CommandMenu({
           onClose();
         }}
         onMouseEnter={() => setSelectedIndex(index)}
-        className={`relative w-[150px] sm:w-[160px] h-[135px] p-3.5 rounded-xl cursor-pointer transition-all flex flex-col items-center justify-center text-center select-none ${
+        className={`relative w-[150px] sm:w-[160px] h-[135px] p-3.5 rounded-xl cursor-pointer border transition-colors duration-150 flex flex-col items-center justify-center text-center select-none ${
           isHighlighted
-            ? "bg-zinc-800/90 border-zinc-500 shadow-xl scale-[1.03] text-white ring-1 ring-zinc-500/40"
-            : "bg-zinc-900/60 border border-zinc-800/80 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/90 hover:scale-[1.01]"
+            ? "bg-zinc-800/80 border-zinc-700 shadow-lg text-white"
+            : "bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/90"
         }`}
       >
         {isCurrent && (
@@ -149,10 +149,10 @@ export function CommandMenu({
         )}
 
         <div
-          className={`w-11 h-11 rounded-lg flex items-center justify-center mb-2.5 transition-all ${
+          className={`w-11 h-11 rounded-lg flex items-center justify-center mb-2.5 transition-colors border ${
             isHighlighted
-              ? "bg-white/10 text-white shadow-inner scale-105"
-              : "bg-zinc-950/70 text-zinc-400 border border-zinc-800"
+              ? "bg-zinc-800 text-white border-zinc-700"
+              : "bg-zinc-950/70 text-zinc-400 border-zinc-800"
           }`}
         >
           <Icon size={22} />
