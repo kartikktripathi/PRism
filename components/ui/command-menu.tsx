@@ -135,7 +135,7 @@ export function CommandMenu({
           onClose();
         }}
         onMouseEnter={() => setSelectedIndex(index)}
-        className={`relative w-[150px] sm:w-[160px] h-[135px] p-3.5 rounded-xl cursor-pointer border transition-all duration-150 flex flex-col items-center justify-center text-center select-none ${
+        className={`relative w-[150px] sm:w-[160px] h-[135px] px-2.5 py-3 rounded-xl cursor-pointer border transition-all duration-150 flex flex-col items-center justify-center text-center select-none ${
           isHighlighted
             ? isCurrent
               ? "bg-zinc-800 border-zinc-500 ring-1 ring-white/20 shadow-xl text-white"
@@ -146,7 +146,7 @@ export function CommandMenu({
         }`}
       >
         <div
-          className={`w-11 h-11 rounded-lg flex items-center justify-center mb-2.5 transition-colors border ${
+          className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 transition-colors border ${
             isHighlighted
               ? isCurrent
                 ? "bg-zinc-800 text-white border-zinc-600"
@@ -156,16 +156,16 @@ export function CommandMenu({
                 : "bg-zinc-950/70 text-zinc-500 border-zinc-800"
           }`}
         >
-          <Icon size={22} />
+          <Icon size={20} />
         </div>
 
-        <span className="text-xs font-semibold tracking-wide leading-tight line-clamp-1">
+        <span className="text-[11.5px] sm:text-xs font-semibold tracking-tight leading-tight text-center px-1 break-words">
           {page}
         </span>
 
         {description && (
           <span
-            className={`text-[10px] mt-1 leading-tight line-clamp-1 max-w-[130px] ${
+            className={`text-[10px] mt-1 leading-tight text-center px-1 max-w-full ${
               isCurrent ? "text-zinc-400" : "text-zinc-500"
             }`}
           >
