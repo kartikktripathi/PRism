@@ -135,24 +135,25 @@ export function CommandMenu({
           onClose();
         }}
         onMouseEnter={() => setSelectedIndex(index)}
-        className={`relative w-[150px] sm:w-[160px] h-[135px] p-3.5 rounded-xl cursor-pointer border transition-colors duration-150 flex flex-col items-center justify-center text-center select-none ${
+        className={`relative w-[150px] sm:w-[160px] h-[135px] p-3.5 rounded-xl cursor-pointer border transition-all duration-150 flex flex-col items-center justify-center text-center select-none ${
           isHighlighted
-            ? "bg-zinc-800/80 border-zinc-700 shadow-lg text-white"
-            : "bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:border-zinc-700 hover:bg-zinc-900/90"
+            ? isCurrent
+              ? "bg-zinc-800 border-zinc-500 ring-1 ring-white/20 shadow-xl text-white"
+              : "bg-zinc-800/80 border-zinc-700 shadow-lg text-white"
+            : isCurrent
+              ? "bg-zinc-800/60 border-zinc-600 ring-1 ring-white/10 text-white shadow-sm hover:border-zinc-500 hover:bg-zinc-800/80"
+              : "bg-zinc-900/60 border-zinc-800/80 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/90 hover:text-zinc-200"
         }`}
       >
-        {isCurrent && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Active
-          </span>
-        )}
-
         <div
           className={`w-11 h-11 rounded-lg flex items-center justify-center mb-2.5 transition-colors border ${
             isHighlighted
-              ? "bg-zinc-800 text-white border-zinc-700"
-              : "bg-zinc-950/70 text-zinc-400 border-zinc-800"
+              ? isCurrent
+                ? "bg-zinc-800 text-white border-zinc-600"
+                : "bg-zinc-800 text-white border-zinc-700"
+              : isCurrent
+                ? "bg-zinc-800/80 text-white border-zinc-700"
+                : "bg-zinc-950/70 text-zinc-500 border-zinc-800"
           }`}
         >
           <Icon size={22} />
@@ -163,7 +164,11 @@ export function CommandMenu({
         </span>
 
         {description && (
-          <span className="text-[10px] text-zinc-500 mt-1 leading-tight line-clamp-1 max-w-[130px]">
+          <span
+            className={`text-[10px] mt-1 leading-tight line-clamp-1 max-w-[130px] ${
+              isCurrent ? "text-zinc-400" : "text-zinc-500"
+            }`}
+          >
             {description}
           </span>
         )}
