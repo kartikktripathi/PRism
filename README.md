@@ -83,6 +83,7 @@ PRism/
 │   │   └── ReviewsAndComments.tsx # Code review queues & comment activity
 │   └── ui/                        # Reusable interface & visual elements
 │       ├── animated-counter.tsx   # Number rolling interpolation
+│       ├── command-menu.tsx       # Quick keyboard command palette
 │       ├── dashboard-loader.tsx   # Visual loading skeleton sequences
 │       ├── dither.tsx             # Custom shader dither effect component
 │       ├── folder-preview.tsx     # Dynamic drag-and-drop workspace UI
