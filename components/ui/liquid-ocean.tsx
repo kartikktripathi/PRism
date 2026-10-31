@@ -1,9 +1,16 @@
+/* eslint-disable react/no-unknown-property */
 "use client";
 
 import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { cn } from "../../lib/utils";
+
+// Deterministic pseudo-random generator to ensure pure renders
+function pseudoRandom(seed: number) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 const DEFAULT_THEME = {
   background: 0x000000,
@@ -32,15 +39,28 @@ function OceanMesh({
 }: OceanMeshProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const wireRef = useRef<THREE.Mesh>(null);
+  const wavesRef = useRef<
+    Array<{
+      x: number;
+      y: number;
+      z: number;
+      ang: number;
+      amp: number;
+      speed: number;
+    }>
+  >([]);
 
-  const { geometry, waves } = useMemo(() => {
-    const geo = new THREE.PlaneGeometry(
+  const geometry = useMemo(() => {
+    return new THREE.PlaneGeometry(
       geoSize,
       geoSize,
       geoFragments,
       geoFragments,
     );
-    const positionAttribute = geo.getAttribute("position");
+  }, [geoSize, geoFragments]);
+
+  useEffect(() => {
+    const positionAttribute = geometry.getAttribute("position");
     const waveData: Array<{
       x: number;
       y: number;
@@ -51,26 +71,30 @@ function OceanMesh({
     }> = [];
 
     for (let i = 0; i < positionAttribute.count; i++) {
+      const r1 = pseudoRandom(i * 12.9898 + 78.233);
+      const r2 = pseudoRandom(i * 43.123 + 19.842);
       waveData.push({
         x: positionAttribute.getX(i),
         y: positionAttribute.getY(i),
         z: positionAttribute.getZ(i),
         ang: Math.PI * 2,
-        amp: Math.random() * waveAmplitude,
-        speed: 0.03 + Math.random() * waveSpeed,
+        amp: r1 * waveAmplitude,
+        speed: 0.03 + r2 * waveSpeed,
       });
     }
 
-    return { geometry: geo, waves: waveData };
-  }, [geoSize, geoFragments, waveAmplitude, waveSpeed]);
+    wavesRef.current = waveData;
+  }, [geometry, waveAmplitude, waveSpeed]);
 
   useFrame(() => {
     if (!meshRef.current) return;
 
     const positionAttribute = meshRef.current.geometry.getAttribute("position");
+    const waves = wavesRef.current;
 
     for (let i = 0; i < positionAttribute.count; i++) {
       const wave = waves[i];
+      if (!wave) continue;
       positionAttribute.setX(i, wave.x + Math.cos(wave.ang) * wave.amp);
       positionAttribute.setY(i, wave.y + Math.sin(wave.ang / 2) * wave.amp);
       positionAttribute.setZ(i, wave.z + Math.cos(wave.ang / 3) * wave.amp);
@@ -165,18 +189,27 @@ function BoatGroup({
   const boats = useMemo(() => {
     const items: BoatData[] = [];
     for (let i = 0; i < count; i++) {
-      const x = -Math.random() * spreadRange + Math.random() * spreadRange;
-      const z = -Math.random() * spreadRange + Math.random() * spreadRange;
-      const sX = Math.random();
-      const sY = 0.5 + Math.random() * 2;
+      const r1 = pseudoRandom(i * 17.13 + 3.41);
+      const r2 = pseudoRandom(i * 29.87 + 9.17);
+      const r3 = pseudoRandom(i * 41.53 + 12.33);
+      const r4 = pseudoRandom(i * 53.21 + 15.49);
+      const r5 = pseudoRandom(i * 67.89 + 21.73);
+      const r6 = pseudoRandom(i * 79.11 + 31.95);
+      const r7 = pseudoRandom(i * 91.37 + 45.19);
+      const r8 = pseudoRandom(i * 103.59 + 57.81);
+
+      const x = -r1 * spreadRange + r2 * spreadRange;
+      const z = -r3 * spreadRange + r4 * spreadRange;
+      const sX = r5;
+      const sY = 0.5 + r6 * 2;
 
       items.push({
         position: [x, 0, z],
         scale: [sX, sY, sX],
-        rotationY: (Math.random() * 360 * Math.PI) / 180,
-        vel: 1 + Math.random() * 4,
-        amp: 1 + Math.random() * 6,
-        pos: Math.random() * 0.2,
+        rotationY: (r7 * 360 * Math.PI) / 180,
+        vel: 1 + r8 * 4,
+        amp: 1 + r5 * 6,
+        pos: r6 * 0.2,
       });
     }
     return items;
