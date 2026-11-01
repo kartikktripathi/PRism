@@ -34,7 +34,10 @@ export function DashboardLoader(
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black select-none overflow-hidden">
+    <div
+      suppressHydrationWarning
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black select-none overflow-hidden"
+    >
       {/* Pulse keyframes style block */}
       <style>{`
         @keyframes scale-pulse {
@@ -65,8 +68,8 @@ export function DashboardLoader(
         }
       `}</style>
 
-      <div className="flex flex-col items-center">
-        <div className="relative animate-scale-pulse">
+      <div suppressHydrationWarning className="flex flex-col items-center">
+        <div suppressHydrationWarning className="relative animate-scale-pulse">
           <img
             src="/logo.png"
             className="w-64 h-32 object-contain"
