@@ -136,22 +136,7 @@ export default function Home() {
   });
   const lenisRef = useRef<LenisRef>(null);
 
-  const [selectedTab, setSelectedTab] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.removeItem("prism_selected_tab");
-        if (isPageReload()) {
-          const savedTab = sessionStorage.getItem("prism_selected_tab");
-          if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
-            return savedTab;
-          }
-        } else {
-          sessionStorage.setItem("prism_selected_tab", "Dashboard");
-        }
-      } catch {}
-    }
-    return "Dashboard";
-  });
+  const [selectedTab, setSelectedTab] = useState<string>("Dashboard");
   const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -165,23 +150,7 @@ export default function Home() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-  const [isTabLoading, setIsTabLoading] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        if (isPageReload()) {
-          const savedTab = sessionStorage.getItem("prism_selected_tab");
-          if (
-            savedTab &&
-            (TABS as readonly string[]).includes(savedTab) &&
-            savedTab !== "Dashboard"
-          ) {
-            return true;
-          }
-        }
-      } catch {}
-    }
-    return false;
-  });
+  const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   useEffect(() => {
@@ -190,19 +159,13 @@ export default function Home() {
       if (isPageReload()) {
         const savedTab = sessionStorage.getItem("prism_selected_tab");
         if (savedTab && (TABS as readonly string[]).includes(savedTab)) {
-          if (savedTab !== selectedTab) {
+          if (savedTab !== "Dashboard") {
             setSelectedTab(savedTab);
-            if (savedTab !== "Dashboard") {
-              setIsTabLoading(true);
-            }
+            setIsTabLoading(true);
           }
         }
       } else {
         sessionStorage.setItem("prism_selected_tab", "Dashboard");
-        if (selectedTab !== "Dashboard") {
-          setSelectedTab("Dashboard");
-          setIsTabLoading(false);
-        }
       }
     } catch {}
   }, []);
