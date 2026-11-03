@@ -244,17 +244,28 @@ function DitheredWaves({
   }, [size, gl, waveUniforms]);
 
   const prevColor = useRef([...waveColor]);
-  useFrame(({ clock }) => {
+  const currentSpeed = useRef(waveSpeed);
+
+  useFrame((_, delta) => {
     if (!mesh.current) return;
     const mat = mesh.current.material as THREE.ShaderMaterial;
     if (!mat || !mat.uniforms) return;
     const u = mat.uniforms;
 
+    // Smoothly interpolate currentSpeed towards target waveSpeed
+    currentSpeed.current = THREE.MathUtils.damp(
+      currentSpeed.current,
+      waveSpeed,
+      6,
+      delta,
+    );
+
     if (u.time && !disableAnimation) {
-      u.time.value = clock.getElapsedTime();
+      // Accumulate time based on the active speed for seamless speed transitions
+      u.time.value += delta * currentSpeed.current;
     }
 
-    if (u.waveSpeed) u.waveSpeed.value = waveSpeed;
+    if (u.waveSpeed) u.waveSpeed.value = 1.0;
     if (u.waveFrequency) u.waveFrequency.value = waveFrequency;
     if (u.waveAmplitude) u.waveAmplitude.value = waveAmplitude;
 
