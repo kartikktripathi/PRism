@@ -1165,17 +1165,18 @@ export default function Home() {
       <div className="flex flex-1 overflow-hidden w-full">
         {/* Sidebar Nav */}
         <aside
+          onMouseEnter={() => setIsSidebarHovered(true)}
           onMouseLeave={() => setIsSidebarHovered(false)}
           className="w-60 bg-black py-8 px-4 flex flex-col justify-end h-[calc(100vh-80px)] mt-4 flex-shrink-0 relative overflow-hidden border-r border-t rounded-tr-2xl border-zinc-900"
         >
           {/* Dither Background Shader */}
           <div
             className={`absolute inset-0 z-0 transition-opacity duration-700 ease-in-out ${
-              isSidebarHovered ? "opacity-0 pointer-events-none" : "opacity-25"
+              isSidebarHovered ? "opacity-35" : "opacity-25"
             }`}
           >
             <Dither
-              waveSpeed={0.03}
+              waveSpeed={isSidebarHovered ? 0.008 : 0.03}
               waveFrequency={3.5}
               waveAmplitude={0.35}
               waveColor={[0.5, 0.5, 0.5]}
