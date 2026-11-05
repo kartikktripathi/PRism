@@ -34,6 +34,26 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const removeAttrs = function() {
+                    const els = document.querySelectorAll('[bis_skin_checked]');
+                    for (let i = 0; i < els.length; i++) {
+                      els[i].removeAttribute('bis_skin_checked');
+                    }
+                  };
+                  removeAttrs();
+                  window.addEventListener('DOMContentLoaded', removeAttrs);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         suppressHydrationWarning
         className={`${dmSans.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
