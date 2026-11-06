@@ -47,7 +47,16 @@ export default function RootLayout({
                     }
                   };
                   removeAttrs();
-                  window.addEventListener('DOMContentLoaded', removeAttrs);
+                  const observer = new MutationObserver(removeAttrs);
+                  observer.observe(document.documentElement, {
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['bis_skin_checked']
+                  });
+                  window.addEventListener('DOMContentLoaded', function() {
+                    removeAttrs();
+                    setTimeout(function() { observer.disconnect(); }, 1500);
+                  });
                 } catch (e) {}
               })();
             `,
